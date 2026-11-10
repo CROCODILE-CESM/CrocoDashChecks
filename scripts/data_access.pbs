@@ -1,8 +1,8 @@
 #!/bin/bash
 #PBS -N croc_data_access
 #PBS -A NCGD0011
-#PBS -l select=1:ncpus=4:mem=32GB
-#PBS -l walltime=03:00:00
+#PBS -l select=1:ncpus=8:mem=64GB
+#PBS -l walltime=01:30:00
 #PBS -j oe
 #
 # Daily data-access check on GLADE: check_data_access.py with the CrocoDash env
