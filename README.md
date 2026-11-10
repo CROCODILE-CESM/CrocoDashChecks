@@ -1,4 +1,20 @@
-# SeaSloth
+# CrocoDashChecks
+
+Checks that CrocoDash works end to end, beyond its own unit tests: real CESM runs on Derecho, performance benchmarks, and a daily check that the data sources CrocoDash reads are reachable. Reports: <https://crocodile-cesm.github.io/CrocoDashChecks/>
+
+## Weekly CESM runs on Derecho
+
+Every Monday, MOM_interface's regional smoke tests are built with the latest CrocoDash `main` and CESM `crocodash`, then run (see [`cesm_runs/`](cesm_runs/README.md)):
+
+| Compset | Components | SMS_D_Ld2 |
+|---|---|---|
+| `CR_JRA_GLOFAS` | MOM6 + GLOFAS runoff | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.CR_JRA_GLOFAS.json) |
+| `CR1850MARBL_JRA_GLOFAS` | + MARBL | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.CR1850MARBL_JRA_GLOFAS.json) |
+| `GR_JRA_GLOFAS` | + CICE | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.GR_JRA_GLOFAS.json) |
+| `CWR_JRA_GLOFAS` | + WW3 | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.CWR_JRA_GLOFAS.json) |
+| `GWR1850MARBL_JRA_GLOFAS` | MOM6 + CICE + WW3 + MARBL + GLOFAS | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.GWR1850MARBL_JRA_GLOFAS.json) |
+
+## Benchmarks
 
 A one-time performance snapshot for parts of the CROC ocean modeling ecosystem that don't
 change commit-to-commit: xESMF/ESMF regridding (external libraries), the mom6_forge
@@ -6,9 +22,7 @@ bathymetry pipeline, and the CrocoDash OBC regrid+merge pipeline. Commit-by-comm
 performance tracking for CrocoDash/mom6_forge code itself lives in those repos' own
 pytest-benchmark suites, not here.
 
-Two static pages, no charts, no narrative — just tables of what pytest-benchmark measured.
-
-## What's benchmarked
+### What's benchmarked
 
 | Suite | File(s) | Data needed | What it measures |
 |---|---|---|---|
@@ -27,7 +41,7 @@ data and take meaningful time even at their smallest parameter value.
 Data-source health (are GLORYS/GEBCO/GLOFAS/etc. reachable?) is a separate concern —
 see [Data access health](#data-access-health) below.
 
-## Running the perf benchmarks
+### Running the perf benchmarks
 
 ```bash
 conda activate CrocoDash
@@ -56,7 +70,7 @@ is checked **daily**, independent of the perf benchmarks above. This runs entire
 `.github/workflows/publish.yml`'s daily schedule — no HPC job to babysit:
 
 ```bash
-# What the daily CI job runs, inside the crocontainer image:
+# By hand; the daily CI job runs the same check in the crocontainer image:
 conda activate CrocoDash
 python scripts/check_data_access.py     # writes results/health.json
 python scripts/generate_health_report.py
@@ -66,7 +80,7 @@ open report/health.html
 You can also run this by hand (locally, in the `CrocoDash` env) to check status without
 waiting for the schedule.
 
-## HPC data-dependent benchmarks
+### HPC data-dependent benchmarks
 
 Fill in paths in `benchmarks/data_config.json` to enable the tests that need real data:
 

@@ -1,0 +1,69 @@
+#!/bin/bash
+#PBS -N croc_mom_tests
+#PBS -A NCGD0011
+#PBS -q main
+#PBS -l select=1:ncpus=128:mpiprocs=128:mem=235GB
+#PBS -l walltime=06:00:00
+#PBS -j oe
+#
+# Runs run_mom_tests.py on one Derecho node: CrocoDash forcing generation (the
+# GLOFAS runoff map) needs more memory than a login node allows, and
+# case.submit --no-batch runs the model right here. Tests run one at a time
+# (every GLOFAS-runoff case needs tens of GB, and five at once overran 200 GB):
+# 4 MPI tasks for the small ocean, ice and wave grids, 56 for the data
+# atmosphere, data runoff and mediator, which read global data.
+#
+#   qsub -v CESMROOT=~/CESM_crocodash,CONDA_ENV=CrocoDash run_mom_tests.pbs
+#
+# cron_submit.sh submits this weekly; see README.md.
+#
+# CESMROOT  : a checkout of CROCODILE-CESM/CESM branch `crocodash` (required)
+# CONDA_ENV : conda env with the CrocoDash to test installed (default: CrocoDash)
+# TESTROOT  : where test dirs go (default: /glade/derecho/scratch/$USER/croc_tests)
+# CROCODASH_SRC : optional CrocoDash checkout (with submodules) to test instead
+#                 of the one installed in CONDA_ENV, e.g. a clone of main
+# UPDATE    : if set, reset this repo, CESMROOT and CROCODASH_SRC to their branch tips first
+# PUBLISH   : if set, push one README badge per test to the test-results branch
+# EXTRA     : extra args for run_mom_tests.py, e.g. "--only MARBL"
+set -euo pipefail
+
+: "${CESMROOT:?set CESMROOT to a CESM checkout of branch crocodash}"
+CONDA_ENV=${CONDA_ENV:-CrocoDash}
+TESTROOT=${TESTROOT:-/glade/derecho/scratch/$USER/croc_tests}
+
+module load conda
+conda activate "$CONDA_ENV"
+# ESMF ships with the conda env; don't mix in a system ESMF module.
+export ESMFMKFILE=$CONDA_PREFIX/lib/esmf.mk
+
+if [ -n "${UPDATE:-}" ]; then
+  # These are CI-only clones: follow each branch tip, even across force-pushes.
+  sync() { git -C "$1" fetch -q && git -C "$1" reset -q --hard '@{u}'; }
+  # This repo too (PBS already holds its own copy of this script).
+  sync "$PBS_O_WORKDIR"
+  sync "$CESMROOT"
+  # When upstream moves a submodule inside a sparse checkout (CAM's cam-sima),
+  # git's on-demand submodule fetch fails with "Could not access submodule".
+  # fleximod updates submodules itself, so turn that recursion off.
+  (cd "$CESMROOT" && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=fetch.recurseSubmodules GIT_CONFIG_VALUE_0=false \
+    ./bin/git-fleximod update)
+  if [ -n "${CROCODASH_SRC:-}" ]; then
+    sync "$CROCODASH_SRC"
+    git -C "$CROCODASH_SRC" submodule update -q --init --recursive
+  fi
+fi
+
+if [ -n "${CROCODASH_SRC:-}" ]; then
+  S=$CROCODASH_SRC/CrocoDash
+  export PYTHONPATH=$CROCODASH_SRC:$S/rm6:$S/visualCaseGen:$S/visualCaseGen/ProConPy:$S/visualCaseGen/external/mom6_forge:$S/visualCaseGen/external/ipyfilechooser:$CROCODASH_SRC/gallery${PYTHONPATH:+:$PYTHONPATH}
+fi
+python -c "import CrocoDash, regional_mom6; print('CrocoDash from', CrocoDash.__file__)"
+
+cd "$PBS_O_WORKDIR"
+BADGES=$TESTROOT/badges.$PBS_JOBID
+python run_mom_tests.py --cesmroot "$CESMROOT" --test-root "$TESTROOT" --parallel 1 --ntasks 4 --data-ntasks 56 \
+  --badge-dir "$BADGES" ${EXTRA:-}
+
+if [ -n "${PUBLISH:-}" ]; then
+  bash publish_badges.sh "$BADGES"
+fi

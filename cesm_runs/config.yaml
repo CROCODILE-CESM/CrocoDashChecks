@@ -1,0 +1,56 @@
+# Our domain + forcing for run_mom_tests.py. Each regional SMS test in
+# MOM_interface's testlist_mom.xml is rebuilt with CrocoDash on this config,
+# keeping only the test's compset and options (_D, _Ld2, ...).
+#
+# Small box over the Labrador coast (20x16 at 1/4 deg): CICE has ice to work
+# with, and the coastline gives the GLOFAS runoff map rivers to map.
+# Ocean/ice/wave forcing is synthetic (no downloads); bathymetry, runoff,
+# river nutrients and the MARBL IC are real files on GLADE.
+
+grid:
+  resolution: 0.25
+  xstart: 299.0
+  lenx: 5.0
+  ystart: 54.0
+  leny: 4.0
+  name: labsea_test
+
+topo:
+  min_depth: 10.0
+  source:
+    type: dataset
+    bathymetry_path: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/gebco/GEBCO_2024.nc
+    longitude_coordinate_name: lon
+    latitude_coordinate_name: lat
+    vertical_coordinate_name: elevation
+
+# depth defaults to the topography's maximum depth
+vgrid:
+  type: uniform
+  nk: 10
+
+# Extra Case(...) kwargs. cesmroot/caseroot/inputdir/compset/machine/project
+# are filled in by the script.
+case: {}
+
+# configure_forcings kwargs. "common" always applies; every other key is a
+# set of compset-longname substrings ("+"-joined = all required) and applies
+# only when the test's compset contains them.
+forcings:
+  common:
+    date_range: ["2020-01-01 00:00:00", "2020-01-05 00:00:00"]
+    product_name: reference_ocean
+    function_name: get_reference_ocean_data
+  CICE:
+    restore_ice: true
+    cice_product_name: reference_ice
+    cice_function_name: get_reference_ice_data
+  WW3:
+    ww3_obc_product_name: reference_waves
+    ww3_obc_function_name: get_reference_wave_spectra
+  "%MARBL":
+    marbl_ic_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/bgc/ecosys_jan_IC_omip_latlon_1x1_180W_c231221.nc
+  DROF:
+    rof_esmf_mesh_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/rof/glofas/dis24/GLOFAS_esmf_mesh_v4.nc
+  "%MARBL+DROF":
+    global_river_nutrients_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/rof/river_nutrients/river_nutrients.GNEWS_GNM.glofas.20250916.64bit.nc
