@@ -1,4 +1,4 @@
-# Adding New Benchmarks to SeaSloth
+# Adding New Benchmarks to CrocoDashChecks
 
 ## Which file to edit
 
@@ -12,7 +12,7 @@
 | mom6_forge runoff mapping (`gen_rof_maps`) | `benchmarks/mom6_forge/test_mapping.py` |
 | CrocoDash OBC regrid+merge pipeline | `benchmarks/crocodash/test_obc.py` |
 
-Remember: SeaSloth is for one-time/stable-reference benchmarks only (external libraries,
+Remember: CrocoDashChecks is for one-time/stable-reference benchmarks only (external libraries,
 or CROC pipelines that need a reference number but aren't worth commit-by-commit tracking).
 If you're adding a benchmark to track CrocoDash/mom6_forge code performance over time, it
 belongs in that repo's own pytest-benchmark suite instead.

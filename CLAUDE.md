@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project Overview
 
-**SeaSloth** is a one-time performance snapshot for parts of the CROC ocean modeling
+**CrocoDashChecks** (formerly SeaSloth) checks CrocoDash end to end. `cesm_runs/` holds the weekly Derecho CESM runs (MOM_interface's regional SMS tests built with CrocoDash, see `cesm_runs/README.md`), which publish badges to the `test-results` branch. The rest is a one-time performance snapshot for parts of the CROC ocean modeling
 ecosystem that don't change commit-to-commit: xESMF/ESMF regridding (external libraries),
 the mom6_forge bathymetry pipeline, and the CrocoDash OBC regrid+merge pipeline. It uses
 [pytest-benchmark](https://pytest-benchmark.readthedocs.io/) and renders one static HTML
@@ -13,7 +13,7 @@ an `index.html` landing page, all plain inline HTML/CSS/SVG (no charting library
 hand-written narrative.
 
 Commit-by-commit performance tracking for CrocoDash/mom6_forge code lives in those repos'
-own pytest-benchmark suites — not here. SeaSloth previously used ASV (airspeed velocity)
+own pytest-benchmark suites — not here. SeaSloth (this repo's old name) previously used ASV (airspeed velocity)
 for commit tracking; that's gone.
 
 GitHub org: https://github.com/CROCODILE-CESM
@@ -55,7 +55,7 @@ Key conventions:
 ## Directory Structure
 
 ```
-SeaSloth/
+CrocoDashChecks/
 ├── pyproject.toml                        # deps + light/heavy marker registration
 ├── benchmarks/
 │   ├── data_config.json                  # Paths to GEBCO, GLORYS, OBC config

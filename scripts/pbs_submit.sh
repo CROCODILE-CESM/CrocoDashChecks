@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#PBS -N seasloth_bench
+#PBS -N checks_bench
 #PBS -l select=1:ncpus=8:mem=128GB
 #PBS -l walltime=08:00:00
 #PBS -q casper
@@ -18,7 +18,7 @@ conda activate CrocoDash
 REPO_ROOT="${PBS_O_WORKDIR:-/glade/u/home/manishrv/documents/croc/dev/SeaSloth}"
 cd "$REPO_ROOT"
 
-echo "=== SeaSloth HPC benchmarks: $(date) ==="
+echo "=== CrocoDashChecks HPC benchmarks: $(date) ==="
 echo "Node: $(hostname)"
 
 bash scripts/run_benchmarks.sh
