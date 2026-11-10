@@ -250,7 +250,10 @@ benchmark file — not the xarray helpers.
 All plain stdlib (`json` + f-strings) — no matplotlib, no numpy, no image generation. Every
 generator shares one page shell — CSS, header, cross-page nav bar — from
 `scripts/report_common.py`, so adding or renaming a report page means updating `NAV_PAGES`
-in one place rather than five nav bars by hand.
+in one place rather than five nav bars by hand. The header has three tabs (Dashboard, Data
+access, Performance); a page whose `NAV_PAGES` parent is `performance.html` is linked from the
+Performance page (written by `generate_dashboard.py`), gets a "Performance ›" link above its
+title, and marks Performance as its tab.
 
 `scripts/generate_report.py` groups `results/latest.json`'s benchmarks by suite (parsed from
 `fullname`) then by test function, and writes three suite pages:

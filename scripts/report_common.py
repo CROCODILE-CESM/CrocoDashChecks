@@ -12,17 +12,20 @@ Pages URL instead of only living in the git repo.
 
 import shutil
 
-# (href, label, source results/*.json filename or None, nav group) for every
-# page in report/, in nav-bar order. The json name is what gets linked as "raw
-# data" on that page, and is the file publish_results_json() copies into report/.
+# (href, label, source results/*.json filename or None, parent page) for every
+# page in report/. Pages with no parent are the header's tabs; the performance
+# reports sit under the Performance page, which links them, and their tab is
+# Performance. The json name is what gets linked as "raw data" on that page,
+# and is the file publish_results_json() copies into report/.
 NAV_PAGES = [
     ("index.html", "Dashboard", None, None),
-    ("health.html", "Data access", "health.json", "Checks"),
-    ("mom6_scaling.html", "MOM6 scaling", "mom6_scaling.json", "Performance"),
-    ("runoff_mapping.html", "Runoff mapping", "latest.json", "Performance"),
-    ("regridding.html", "Regridding", "latest.json", "Performance"),
-    ("crocodash.html", "CrocoDash OBC", "latest.json", "Performance"),
-    ("mom6_forge.html", "mom6_forge bathymetry", "latest.json", "Performance"),
+    ("health.html", "Data access", "health.json", None),
+    ("performance.html", "Performance", None, None),
+    ("mom6_scaling.html", "MOM6 scaling", "mom6_scaling.json", "performance.html"),
+    ("runoff_mapping.html", "Runoff mapping", "latest.json", "performance.html"),
+    ("regridding.html", "Regridding", "latest.json", "performance.html"),
+    ("crocodash.html", "CrocoDash OBC", "latest.json", "performance.html"),
+    ("mom6_forge.html", "mom6_forge bathymetry", "latest.json", "performance.html"),
 ]
 
 # Colors are the dataviz reference palette's ink, surface and status roles.
@@ -44,8 +47,8 @@ BASE_CSS = """
   header p { margin: 0 0 0.8rem; color: var(--ink-2); font-size: 0.92rem; }
   header nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 1.1rem;
                font-size: 0.85rem; }
-  header nav .group { color: var(--muted); font-size: 0.7rem; text-transform: uppercase;
-                      letter-spacing: 0.05em; margin-left: 0.4rem; }
+  header .crumb { margin: 0 0 0.15rem; font-size: 0.8rem; }
+  header .crumb a { color: var(--ink-2); text-decoration: none; }
   header nav a { color: var(--ink-2); text-decoration: none; padding: 0.15rem 0;
                  border-bottom: 2px solid transparent; }
   header nav a:hover { color: var(--ink); }
@@ -105,17 +108,29 @@ LINECHART_CSS = """
 """
 
 
+def parent_of(current):
+    return next((parent for href, _, _, parent in NAV_PAGES if href == current), None)
+
+
 def render_nav(current):
-    """Nav links to every report page, under their group labels, with the
-    page being rendered marked as current."""
-    parts, group = [], None
-    for href, label, _, page_group in NAV_PAGES:
-        if page_group and page_group != group:
-            parts.append(f'<span class="group">{page_group}</span>')
-        group = page_group
-        mark = ' aria-current="page"' if href == current else ""
-        parts.append(f'<a href="{href}"{mark}>{label}</a>')
-    return "".join(parts)
+    """The header's tabs, with the current page's tab (its own, or its
+    parent's) marked."""
+    tab = parent_of(current) or current
+    links = []
+    for href, label, _, parent in NAV_PAGES:
+        if parent is None:
+            mark = ' aria-current="page"' if href == tab else ""
+            links.append(f'<a href="{href}"{mark}>{label}</a>')
+    return "".join(links)
+
+
+def render_crumb(current):
+    """A link back to the page's parent, for pages under a tab."""
+    parent = parent_of(current)
+    if not parent:
+        return ""
+    label = next(label for href, label, _, _ in NAV_PAGES if href == parent)
+    return f'<p class="crumb"><a href="{parent}">{label} &rsaquo;</a></p>'
 
 
 def json_link_for(current):
@@ -144,7 +159,7 @@ def page_shell(current, title, subtitle_html, body_html, footer_text, extra_css=
 </head>
 <body>
 <header><div class="wrap">
-  <h1>{title}</h1>
+  {render_crumb(current)}<h1>{title}</h1>
   <p>{subtitle_html}{json_link}</p>
   <nav>{render_nav(current)}</nav>
 </div></header>
