@@ -8,7 +8,7 @@ Checks that CrocoDash works end to end on NCAR's systems. Results: <https://croc
 |---|---|---|
 | [`cesm_runs/`](cesm_runs/README.md) | MOM_interface's regional SMS tests, each built with CrocoDash and run in CESM on Derecho | Mondays 02:00 MT |
 | [`data_access/`](data_access/) | Every way CrocoDash fetches data (`ProductRegistry.validate_function`), called for real on Casper | Daily 05:00 MT |
-| [`performance/`](performance/) | How long the expensive steps take (GEBCO bathymetry, GLOFAS runoff mapping) and MOM6's speed vs. tasks | By hand |
+| [`performance/`](performance/) | How long the expensive steps take (open boundaries, GEBCO bathymetry, GLOFAS runoff mapping) and MOM6's speed vs. tasks | By hand |
 | [`site/`](site/build_site.py) | Builds the results page from the three folders' JSON | On every push to `main` |
 
 ## How it runs
@@ -31,9 +31,15 @@ The crontab on `cron.hpc.ucar.edu` submits both scheduled checks; the cron host 
 
 ```bash
 python data_access/check.py                       # in the CrocoDash env, on GLADE
-pytest performance/test_topo.py --benchmark-json=performance/topo.json            # CrocoDash env, ~60 GB node
-pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json   # mom6_forge env
 python site/build_site.py                          # -> site/_build/index.html
+```
+
+The performance tests use [pytest-benchmark](https://pytest-benchmark.readthedocs.io/) (`pip install pytest-benchmark`); each case is timed once, with its peak memory, and the page reads the JSON they write. Run them on a compute node:
+
+```bash
+pytest performance/test_obc.py --benchmark-json=performance/obc.json                  # CrocoDash env
+pytest performance/test_topo.py --benchmark-json=performance/topo.json                # CrocoDash env, ~60 GB
+pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json   # mom6_forge env
 ```
 
 `performance/mom6_scaling.json` holds a hand-run NTASKS_OCN sweep (the scripts are in the CROC monorepo's `dev/scaling_test/`).
