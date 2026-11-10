@@ -24,7 +24,7 @@ def measure_rss(fn, *args, **kwargs):
     return result, (after - before) / 1024**2
 
 
-def measure_peak_rss(fn, *args, **kwargs):
+def measure_peak_rss(fn, *args, include_children=False, **kwargs):
     """Call fn(*args, **kwargs), returning (result, peak_rss_mb).
 
     peak_rss_mb is the *absolute* high-water RSS of the process observed during
@@ -40,16 +40,31 @@ def measure_peak_rss(fn, *args, **kwargs):
     The trade-off is that the peak includes whatever the process was already
     holding, so it is an upper bound on the call's own footprint rather than an
     attribution of it.
+
+    include_children=True sums the RSS of the process and all its descendants,
+    for calls that fork workers (CrocoDash's OBC pool). Forked workers share
+    pages copy-on-write, so the sum is again an upper bound.
     """
     proc = psutil.Process(os.getpid())
-    peak = proc.memory_info().rss
+
+    def rss():
+        procs = [proc] + (proc.children(recursive=True) if include_children else [])
+        total = 0
+        for p in procs:
+            try:
+                total += p.memory_info().rss
+            except psutil.Error:  # a worker can exit between listing and reading
+                pass
+        return total
+
+    peak = rss()
     done = threading.Event()
 
     def watch():
         nonlocal peak
         while not done.wait(_PEAK_POLL_SECONDS):
             try:
-                peak = max(peak, proc.memory_info().rss)
+                peak = max(peak, rss())
             except psutil.Error:  # process introspection can race at teardown
                 return
 
@@ -57,7 +72,7 @@ def measure_peak_rss(fn, *args, **kwargs):
     watcher.start()
     try:
         result = fn(*args, **kwargs)
-        peak = max(peak, proc.memory_info().rss)
+        peak = max(peak, rss())
     finally:
         done.set()
         watcher.join(timeout=1.0)

@@ -370,6 +370,54 @@ def performance_section():
         "<p class='sub'>One-time measurements of CrocoDash's expensive steps, for sizing jobs. "
         f"Run by hand on GLADE (<a href='{REPO_URL}/tree/main/performance'>performance/</a>).</p>"
     ]
+    obc = load(PERF / "obc.json")
+    if obc and obc.get("benchmarks"):
+        cpus = obc["benchmarks"][0]["extra_info"]["cpus"]
+        parts.append(
+            "<p class='sub'>Open boundaries: CrocoDash's <span class='mono'>"
+            "ConditionsConfigurator.process_bc</span> on the synthetic "
+            "<span class='mono'>reference_ocean</span> product (a month of daily data, "
+            f"four boundaries, 0.1&deg; model grid, {cpus} cores). Memory counts the "
+            "forked REGRID workers, so it is an upper bound.</p>"
+        )
+    for test, sweep, axis, label in (
+        (
+            "test_by_source_resolution",
+            "by source resolution, 10&deg; box",
+            "Source resolution",
+            lambda e: f"{e['source_res_deg']:g}&deg;",
+        ),
+        (
+            "test_by_domain_size",
+            "by domain size, 0.25&deg; source",
+            "Domain",
+            lambda e: f"{e['size_deg']:g}&deg; square",
+        ),
+    ):
+        rows = sorted(bench_rows(obc, test), key=lambda b: b["extra_info"]["n_src"])
+        if rows:
+            parts.append(
+                f"<h3>Open boundaries, {sweep}</h3>"
+                + table(
+                    [
+                        (axis, 0),
+                        ("Source points", 1),
+                        ("Boundary cells", 1),
+                        ("Time", 1),
+                        ("Peak memory", 1),
+                    ],
+                    [
+                        (
+                            label(b["extra_info"]),
+                            f"{b['extra_info']['n_src']:,}",
+                            f"{b['extra_info']['n_dst']:,}",
+                            fmt_s(b["stats"]["mean"]),
+                            fmt_mb(b["extra_info"]["peak_rss_mb"]),
+                        )
+                        for b in rows
+                    ],
+                )
+            )
     rows = sorted(
         bench_rows(topo, "test_set_from_dataset"),
         key=lambda b: b["params"]["domain_deg"],
