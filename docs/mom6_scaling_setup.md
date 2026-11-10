@@ -2,7 +2,7 @@
 
 How the `results/mom6_scaling.json` / `report/mom6_scaling.html` numbers were produced.
 This is a hand-run CESM case sweep, not a pytest-benchmark suite — see
-`how_benchmarking_works.md` for that side of SeaSloth. Scripts and notebooks referenced
+`how_benchmarking_works.md` for that side of CrocoDashChecks. Scripts and notebooks referenced
 below live under `dev/scaling_test/` in the outer croc monorepo, not in this repo.
 
 ---

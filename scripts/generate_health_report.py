@@ -98,7 +98,7 @@ def build_html(data):
     )
     return page_shell(
         "health.html",
-        "SeaSloth Data Access Health",
+        "CrocoDashChecks Data Access Health",
         subtitle,
         body,
         footer,

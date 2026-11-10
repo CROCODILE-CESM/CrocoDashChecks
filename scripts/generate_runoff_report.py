@@ -46,7 +46,7 @@ from generate_report import (  # noqa: E402
 from report_common import LINECHART_CSS, page_shell, publish_results_json  # noqa: E402
 
 PAGE = "runoff_mapping.html"
-TITLE = "SeaSloth — Runoff mapping"
+TITLE = "CrocoDashChecks — Runoff mapping"
 SUBTITLE = (
     "GLOFAS &rarr; ocean mapping file generation (<code>mom6_forge.gen_rof_maps</code>), "
     "one-time snapshot on Derecho/GLADE."

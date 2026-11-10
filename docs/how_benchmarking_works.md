@@ -1,7 +1,7 @@
-# How SeaSloth Benchmarking Works
+# How CrocoDashChecks Benchmarking Works
 
 This document explains what actually happens when you run a benchmark — from invocation
-through timing to the report pages. No ASV knowledge needed; SeaSloth no longer uses it.
+through timing to the report pages. No ASV knowledge needed; CrocoDashChecks no longer uses it.
 
 ---
 
@@ -27,7 +27,7 @@ There's no commit-hash bookkeeping, no `environment_type`, no ASV conda-env matr
 pytest-benchmark just runs the currently-active environment's code and times it.
 
 **Results are a snapshot, not a timeline.** `results/latest.json` is fully overwritten by
-every `run_benchmarks.sh` run. SeaSloth doesn't track how these numbers change over commits
+every `run_benchmarks.sh` run. CrocoDashChecks doesn't track how these numbers change over commits
 — xESMF/ESMF are external libraries that don't change with CROC's code, and the mom6_forge/
 CrocoDash pipelines that *do* change per-commit are benchmarked with pytest-benchmark
 commit tracking in their own repos, not here.

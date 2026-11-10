@@ -738,7 +738,7 @@ def build_regridding_page(grouped):
     )
     return page_shell(
         "regridding.html",
-        "SeaSloth — Regridding",
+        "CrocoDashChecks — Regridding",
         "xESMF/ESMF weight generation + apply cost, one-time snapshot on Derecho/GLADE.",
         body,
         FOOTER,
@@ -755,7 +755,7 @@ def build_crocodash_page(grouped):
     )
     return page_shell(
         "crocodash.html",
-        "SeaSloth — CrocoDash",
+        "CrocoDashChecks — CrocoDash",
         "OBC forcing pipeline (regrid + merge) benchmarks, one-time snapshot on Derecho/GLADE.",
         body,
         FOOTER,
@@ -778,7 +778,7 @@ def build_mom6_forge_page(grouped):
     )
     return page_shell(
         "mom6_forge.html",
-        "SeaSloth — mom6_forge",
+        "CrocoDashChecks — mom6_forge",
         "Bathymetry pipeline (Topo.set_from_dataset) benchmarks, one-time snapshot on Derecho/GLADE.",
         body,
         FOOTER,
@@ -815,7 +815,7 @@ def build_index_page():
     body = f"<section><h2>Reports</h2>{cards}</section>"
     return page_shell(
         "index.html",
-        "SeaSloth",
+        "CrocoDashChecks",
         "One-time perf snapshot for parts of the CROC ocean modeling ecosystem "
         "that don&rsquo;t change commit-to-commit.",
         body,
