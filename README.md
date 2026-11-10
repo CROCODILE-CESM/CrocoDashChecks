@@ -1,18 +1,12 @@
 # CrocoDashChecks
 
+[![weekly CESM runs](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/cesm_runs.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#cesm) [![data access](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/data_access.json)](https://crocodile-cesm.github.io/CrocoDashChecks/health.html)
+
 Checks that CrocoDash works end to end, beyond its own unit tests: real CESM runs on Derecho, performance benchmarks, and a daily check that the data sources CrocoDash reads are reachable. Dashboard: <https://crocodile-cesm.github.io/CrocoDashChecks/>
 
 ## Weekly CESM runs on Derecho
 
-Every Monday, MOM_interface's regional smoke tests are built with the latest CrocoDash `main` and CESM `crocodash`, then run (see [`cesm_runs/`](cesm_runs/README.md)):
-
-| Compset | Components | SMS_D_Ld2 |
-|---|---|---|
-| `CR_JRA_GLOFAS` | MOM6 + GLOFAS runoff | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.CR_JRA_GLOFAS.json) |
-| `CR1850MARBL_JRA_GLOFAS` | + MARBL | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.CR1850MARBL_JRA_GLOFAS.json) |
-| `GR_JRA_GLOFAS` | + CICE | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.GR_JRA_GLOFAS.json) |
-| `CWR_JRA_GLOFAS` | + WW3 | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.CWR_JRA_GLOFAS.json) |
-| `GWR1850MARBL_JRA_GLOFAS` | MOM6 + CICE + WW3 + MARBL + GLOFAS | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/SMS_D_Ld2.GWR1850MARBL_JRA_GLOFAS.json) |
+Every Monday, MOM_interface's regional smoke tests are built with the latest CrocoDash `main` and CESM `crocodash`, then run on a Derecho node (see [`cesm_runs/`](cesm_runs/README.md)). The job pushes its summary, `cesm_runs.json`, to the `test-results` branch, and the [dashboard](https://crocodile-cesm.github.io/CrocoDashChecks/#cesm) shows each test's phases from it.
 
 ## Benchmarks
 
@@ -66,16 +60,14 @@ open report/index.html
 
 ## Data access health
 
-![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/data_access.json)
-
 Whether GLORYS/GEBCO/GLOFAS/etc. are reachable and CrocoDash's access methods still work
 is checked **daily on GLADE**, so the checks that read GLADE (GLORYS from RDA, CESM output,
 the CICE restart) can pass too. A daily crontab line on `cron.hpc.ucar.edu` runs
 [`scripts/data_access_cron.sh`](scripts/data_access_cron.sh), which submits
 [`scripts/data_access.pbs`](scripts/data_access.pbs) to Casper. The job runs the check in the
 `CrocoDash` env with your credentials (`~/.cdsapirc`, `~/.copernicusmarine`), pushes
-`results/health.json` to `main` (which rebuilds the report) and the badge above to
-`test-results`. Its log goes to `/glade/work/$USER/croc_ci/logs/`.
+`results/health.json` to `main`, which rebuilds the site. Its log goes to
+`/glade/work/$USER/croc_ci/logs/`.
 
 ```bash
 # Crontab line (daily, 05:00 MT), next to the weekly CESM runs':
@@ -105,7 +97,9 @@ configured.
 
 `.github/workflows/publish.yml` runs on push to `main` (including the daily health push from
 GLADE) and on manual dispatch. It regenerates every report page from whatever is committed
-under `results/` and deploys them to GitHub Pages. It never runs the benchmarks or the
+under `results/`, plus `cesm_runs.json` from the `test-results` branch, and deploys them to
+GitHub Pages. The two badges at the top are written with the site
+(`report/badges/*.json`), from the same counts as the dashboard's tiles. It never runs the benchmarks or the
 data-access check; those need GLADE.
 
 > **First-time GitHub Pages setup:** Settings → Pages → Source → GitHub Actions.

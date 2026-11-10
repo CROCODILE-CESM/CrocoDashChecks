@@ -18,7 +18,7 @@
 #                 the one installed in CONDA_ENV. It is not updated here; the weekly
 #                 CESM-run job keeps it at its branch tip.
 # UPDATE        : if set, reset this repo to its branch tip first
-# PUBLISH       : if set, push results/health.json to main and a badge to test-results
+# PUBLISH       : if set, push results/health.json to main, which rebuilds the site
 set -euo pipefail
 
 CONDA_ENV=${CONDA_ENV:-CrocoDash}
@@ -46,18 +46,5 @@ if [ -n "${PUBLISH:-}" ]; then
   OUT=$(mktemp -d)
   cp results/health.json "$OUT/"
   BRANCH=main DEST=results MSG="Daily data-access health $(date +%F)" \
-    bash cesm_runs/publish_badges.sh "$OUT"
-
-  BADGE=$(mktemp -d)
-  python - "$BADGE/data_access.json" <<'EOF'
-import json, sys
-h = json.load(open("results/health.json"))
-checks = h["validate_checks"] + h["link_checks"]
-ok = sum(1 for c in checks if c.get("ok"))
-color = "brightgreen" if ok == len(checks) else "orange" if ok >= 0.8 * len(checks) else "red"
-badge = {"schemaVersion": 1, "label": "data access",
-         "message": f"{ok}/{len(checks)} ok ({h['date'][:10]})", "color": color}
-open(sys.argv[1], "w").write(json.dumps(badge) + "\n")
-EOF
-  bash cesm_runs/publish_badges.sh "$BADGE"
+    bash cesm_runs/push_results.sh "$OUT"
 fi

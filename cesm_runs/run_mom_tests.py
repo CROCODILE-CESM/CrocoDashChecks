@@ -50,8 +50,8 @@ def parse_args():
     p.add_argument("--data-ntasks", type=int,
                    help="MPI tasks for the data atmosphere, data runoff and mediator (default: --ntasks)")
     p.add_argument("--dry-run", action="store_true", help="list the tests and exit")
-    p.add_argument("--badge-dir", type=Path,
-                   help="also write a shields.io endpoint badge (JSON) per test, and cesm_runs.json, here")
+    p.add_argument("--results-dir", type=Path,
+                   help="also write cesm_runs.json, the summary the dashboard reads, here")
     return p.parse_args()
 
 
@@ -153,24 +153,6 @@ def read_phases(testdir):
     return [(f[2], f[0]) for f in fields if len(f) >= 3]
 
 
-def write_badge(testdir, name, badge_dir):
-    """shields.io endpoint JSON: passing, or the first phase that failed."""
-    statuses = read_phases(testdir)
-    failed = [phase for phase, status in statuses if status == TEST_FAIL_STATUS]
-    passed = (RUN_PHASE, TEST_PASS_STATUS) in statuses
-    message = "passing" if passed else f"failing: {failed[0]}" if failed else "incomplete"
-    # Keyed without machine/compiler/test id, so each run overwrites last run's badge.
-    testname, grid, compset, *_ = name.split(".")
-    badge = {
-        "schemaVersion": 1,
-        "label": f"{testname} {compset}",
-        "message": f"{message} ({datetime.date.today()})",
-        "color": "brightgreen" if passed else "red",
-    }
-    badge_dir.mkdir(parents=True, exist_ok=True)
-    (badge_dir / f"{testname}.{compset}.json").write_text(json.dumps(badge) + "\n")
-
-
 def git_ref(path):
     """{"branch", "commit"} of a checkout, or None outside one."""
     def git(*a):
@@ -180,9 +162,9 @@ def git_ref(path):
     return {"branch": git("rev-parse", "--abbrev-ref", "HEAD"), "commit": commit} if commit else None
 
 
-def write_summary(tests, args, badge_dir):
-    """cesm_runs.json next to the badges: what was tested and every test's
-    phases, for the dashboard."""
+def write_summary(tests, args, results_dir):
+    """cesm_runs.json: what was tested and every test's phases, for the
+    dashboard (and its badge)."""
     summary = {
         "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "cesm": git_ref(args.cesmroot),
@@ -199,7 +181,8 @@ def write_summary(tests, args, badge_dir):
             "phases": phases,
             "passed": (RUN_PHASE, TEST_PASS_STATUS) in phases,
         })
-    (badge_dir / "cesm_runs.json").write_text(json.dumps(summary, indent=1) + "\n")
+    results_dir.mkdir(parents=True, exist_ok=True)
+    (results_dir / "cesm_runs.json").write_text(json.dumps(summary, indent=1) + "\n")
 
 
 def run_test(test, cfg, args):
@@ -272,10 +255,8 @@ def main():
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:
         list(pool.map(lambda t: run_test(t, cfg, args), tests))
     subprocess.run([str(args.test_root / f"cs.status.{args.test_id}")])
-    if args.badge_dir:
-        for name, *_ in tests:
-            write_badge(args.test_root / f"{name}.{args.test_id}", name, args.badge_dir)
-        write_summary(tests, args, args.badge_dir)
+    if args.results_dir:
+        write_summary(tests, args, args.results_dir)
 
 
 if __name__ == "__main__":

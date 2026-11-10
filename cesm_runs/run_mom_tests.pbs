@@ -23,7 +23,7 @@
 # CROCODASH_SRC : optional CrocoDash checkout (with submodules) to test instead
 #                 of the one installed in CONDA_ENV, e.g. a clone of main
 # UPDATE    : if set, reset this repo, CESMROOT and CROCODASH_SRC to their branch tips first
-# PUBLISH   : if set, push one README badge per test to the test-results branch
+# PUBLISH   : if set, push cesm_runs.json (the dashboard's summary) to the test-results branch
 # EXTRA     : extra args for run_mom_tests.py, e.g. "--only MARBL"
 set -euo pipefail
 
@@ -60,10 +60,10 @@ fi
 python -c "import CrocoDash, regional_mom6; print('CrocoDash from', CrocoDash.__file__)"
 
 cd "$PBS_O_WORKDIR"
-BADGES=$TESTROOT/badges.$PBS_JOBID
+RESULTS=$TESTROOT/results.$PBS_JOBID
 python run_mom_tests.py --cesmroot "$CESMROOT" --test-root "$TESTROOT" --parallel 1 --ntasks 4 --data-ntasks 56 \
-  --badge-dir "$BADGES" ${EXTRA:-}
+  --results-dir "$RESULTS" ${EXTRA:-}
 
 if [ -n "${PUBLISH:-}" ]; then
-  bash publish_badges.sh "$BADGES"
+  bash push_results.sh "$RESULTS"
 fi

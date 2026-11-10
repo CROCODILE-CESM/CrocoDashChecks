@@ -11,7 +11,8 @@ Reads, each optional (a missing one renders as "no results yet"):
 
 Every number on the page is computed from those files.
 
-Output: report/index.html
+Output: report/index.html, and report/badges/{cesm_runs,data_access}.json
+(shields.io endpoint badges for the README, from the same counts as the tiles).
 """
 
 import json
@@ -25,6 +26,7 @@ from report_common import NAV_PAGES, page_shell, publish_results_json
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = REPO_ROOT / "results"
 OUTPUT_FILE = REPO_ROOT / "report" / "index.html"
+BADGE_DIR = REPO_ROOT / "report" / "badges"
 REPO_URL = "https://github.com/CROCODILE-CESM/CrocoDashChecks"
 MOUNTAIN_TZ = ZoneInfo("America/Denver")
 
@@ -281,23 +283,27 @@ def health_checks(health):
     return health.get("validate_checks", []) + health.get("link_checks", [])
 
 
+def health_status(health):
+    checks = health_checks(health)
+    return sum(1 for c in checks if c["ok"]), len(checks)
+
+
 def health_tile(health):
     href = "health.html"
     if not health or not health.get("date"):
         return no_results_tile("Data access", href, "Checked every day on GLADE.")
-    checks = health_checks(health)
-    ok = sum(1 for c in checks if c["ok"])
-    if ok == len(checks):
+    ok, total = health_status(health)
+    if ok == total:
         state = chip("good", "All OK")
     else:
         state = chip(
-            "warning" if ok >= 0.8 * len(checks) else "critical",
-            f"{len(checks) - ok} failing",
+            "warning" if ok >= 0.8 * total else "critical",
+            f"{total - ok} failing",
         )
     return tile(
         "Data access",
         href,
-        f"{ok}/{len(checks)}",
+        f"{ok}/{total}",
         "checks OK",
         state + stale_chip(health["date"], "health"),
         f"Checked {when(health['date'])}",
@@ -410,6 +416,51 @@ def how_panel():
     )
 
 
+def badge(label, counts, word, iso, kind, warn_at):
+    """A shields.io endpoint badge: the same counts, colors and staleness as
+    the dashboard's tile for that check."""
+    if counts is None:
+        return {
+            "schemaVersion": 1,
+            "label": label,
+            "message": "no results",
+            "color": "lightgrey",
+        }
+    ok, total = counts
+    message = f"{ok}/{total} {word}"
+    color = (
+        "brightgreen" if ok == total else "orange" if ok >= warn_at * total else "red"
+    )
+    if age_days(iso) > STALE_DAYS[kind]:
+        message, color = f"{message}, stale", "yellow"
+    return {"schemaVersion": 1, "label": label, "message": message, "color": color}
+
+
+def write_badges(runs, health):
+    BADGE_DIR.mkdir(parents=True, exist_ok=True)
+    have_health = health and health.get("date")
+    badges = {
+        "cesm_runs.json": badge(
+            "weekly CESM runs",
+            cesm_status(runs) if runs else None,
+            "passing",
+            runs and runs["date"],
+            "cesm",
+            warn_at=1,
+        ),
+        "data_access.json": badge(
+            "data access",
+            health_status(health) if have_health else None,
+            "OK",
+            have_health and health["date"],
+            "health",
+            warn_at=0.8,
+        ),
+    }
+    for name, b in badges.items():
+        (BADGE_DIR / name).write_text(json.dumps(b) + "\n")
+
+
 def build_html(runs, health, latest):
     body = (
         "<p class='lede'>CrocoDashChecks checks that CrocoDash works end to end on NCAR's systems: "
@@ -436,9 +487,9 @@ def build_html(runs, health, latest):
 
 def main():
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_FILE.write_text(
-        build_html(load("cesm_runs.json"), load("health.json"), load("latest.json"))
-    )
+    runs, health = load("cesm_runs.json"), load("health.json")
+    OUTPUT_FILE.write_text(build_html(runs, health, load("latest.json")))
+    write_badges(runs, health)
     publish_results_json(RESULTS_DIR / "cesm_runs.json", OUTPUT_FILE.parent)
     print(f"Dashboard written to {OUTPUT_FILE}")
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project Overview
 
-**CrocoDashChecks** (formerly SeaSloth) checks CrocoDash end to end. `cesm_runs/` holds the weekly Derecho CESM runs (MOM_interface's regional SMS tests built with CrocoDash, see `cesm_runs/README.md`), which publish badges to the `test-results` branch. The rest is a one-time performance snapshot for parts of the CROC ocean modeling
+**CrocoDashChecks** (formerly SeaSloth) checks CrocoDash end to end. `cesm_runs/` holds the weekly Derecho CESM runs (MOM_interface's regional SMS tests built with CrocoDash, see `cesm_runs/README.md`), which push `cesm_runs.json` (every test's phases) to the `test-results` branch. The rest is a one-time performance snapshot for parts of the CROC ocean modeling
 ecosystem that don't change commit-to-commit: xESMF/ESMF regridding (external libraries),
 the mom6_forge bathymetry pipeline, and the CrocoDash OBC regrid+merge pipeline. It uses
 [pytest-benchmark](https://pytest-benchmark.readthedocs.io/) and renders one static HTML
@@ -79,7 +79,7 @@ CrocoDashChecks/
 │   ├── generate_report.py                # results/latest.json -> report/{regridding,crocodash,mom6_forge,index}.html
 │   ├── generate_runoff_report.py         # results/latest.json -> report/runoff_mapping.html
 │   ├── check_data_access.py              # link + validate_function checks -> results/health.json
-│   ├── data_access.pbs                   # daily Casper job: check, push health.json + badge
+│   ├── data_access.pbs                   # daily Casper job: check, push health.json
 │   ├── data_access_cron.sh               # cron entry point: qsubs data_access.pbs
 │   ├── generate_health_report.py         # results/health.json -> report/health.html
 │   ├── generate_scaling_report.py        # results/mom6_scaling.json -> report/mom6_scaling.html
@@ -198,8 +198,8 @@ the suite as skipped, not as fast.
 
 Data access health runs separately, daily on GLADE: a crontab line on `cron.hpc.ucar.edu`
 runs `scripts/data_access_cron.sh`, which qsubs `scripts/data_access.pbs` to Casper. The job
-pushes `results/health.json` to `main` and a `data_access.json` badge to `test-results`,
-both through `cesm_runs/publish_badges.sh`. Each access method is checked in its own process,
+pushes `results/health.json` to `main` through `cesm_runs/push_results.sh` (which the weekly
+job uses to push `cesm_runs.json` to `test-results`). Each access method is checked in its own process,
 `VALIDATE_WORKERS` at a time; one still running after `VALIDATE_TIMEOUT` is killed with its
 process group, its temp dir (and any partial download) removed, and a failing check records
 its last error line as `detail` in `health.json`. Run it by hand the same way locally:
@@ -271,7 +271,8 @@ performance snapshot; the CESM runs' per-phase table from `results/cesm_runs.jso
 before building); data access grouped by product from `results/health.json`; and cards
 linking the performance pages. Status colors (good/warning/critical) mark state only, always
 beside a text label. A check older than `STALE_DAYS` gets a "Stale" chip, since a schedule
-that stops running fails silently otherwise. Every number on it comes from the JSON.
+that stops running fails silently otherwise. Every number on it comes from the JSON. It also writes the README's two badges,
+`report/badges/{cesm_runs,data_access}.json`, from the same counts as the tiles.
 
 `test_mapping`'s two sweeps are *not* on the mom6_forge page — they have their own page
 (below). `TESTS_ON_OTHER_PAGES` in `generate_report.py` is what keeps them from also

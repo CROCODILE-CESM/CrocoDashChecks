@@ -1,17 +1,18 @@
 #!/bin/bash
-# Push the badge JSONs written by `run_mom_tests.py --badge-dir` to this repo's
-# `test-results` branch, which the README's shields.io badges read.
+# Push the result JSONs in a directory to a branch of this repo: by default
+# the weekly run's cesm_runs.json (run_mom_tests.py --results-dir) to the
+# `test-results` branch, which publish.yml reads when it builds the site.
 #
-#   publish_badges.sh <badge-dir>
+#   push_results.sh <results-dir>
 #
-# BRANCH, DEST and MSG push other files the same way, e.g. the daily data-access
-# snapshot: BRANCH=main DEST=results MSG="..." publish_badges.sh <dir-with-health.json>
+# BRANCH, DEST and MSG push to elsewhere, e.g. the daily data-access snapshot:
+#   BRANCH=main DEST=results MSG="..." push_results.sh <dir-with-health.json>
 #
 # Authenticates with the token that `gh auth login` stored in
 # ~/.config/gh/hosts.yml; Derecho has no gh module, so gh itself isn't needed.
 set -euo pipefail
 
-BADGE_DIR=$(cd "$1" && pwd)
+RESULTS_DIR=$(cd "$1" && pwd)
 REPO=https://github.com/CROCODILE-CESM/CrocoDashChecks
 BRANCH=${BRANCH:-test-results}
 DEST=${DEST:-.}
@@ -29,7 +30,7 @@ else
 fi
 
 mkdir -p "$WORK/$DEST"
-cp "$BADGE_DIR"/*.json "$WORK/$DEST"/
+cp "$RESULTS_DIR"/*.json "$WORK/$DEST"/
 git_ add -A
 git_ diff --cached --quiet && exit 0
 git_ commit -q -m "${MSG:-Test results $(date +%F)}"
@@ -40,5 +41,5 @@ for _ in 1 2 3 4 5; do
   git_ pull -q --rebase origin "$BRANCH" || true
   sleep $((RANDOM % 20))
 done
-echo "Could not push badges to $BRANCH" >&2
+echo "Could not push results to $BRANCH" >&2
 exit 1

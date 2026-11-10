@@ -22,11 +22,11 @@ qsub -v CESMROOT=$HOME/CESM_crocodash,CONDA_ENV=CrocoDash run_mom_tests.pbs
 
 `python run_mom_tests.py --cesmroot ~/CESM_crocodash --test-root /tmp/x --dry-run` lists the tests that would run.
 
-## Weekly runs and README badges
+## Weekly runs and the dashboard
 
 `cron_submit.sh` runs from your crontab on NCAR's cron server. It submits `run_mom_tests.pbs` with:
 - `UPDATE=1`: reset this repo and the CESM and CrocoDash clones to their branch tips first (the cron server has no git, so the job does this). The branches tested are whatever the clones have checked out, e.g. `git -C $CI_ROOT/CrocoDash checkout main`;
-- `PUBLISH=1`: push one badge JSON per test to this repo's `test-results` branch, which the badges in the top-level README read.
+- `PUBLISH=1`: push `cesm_runs.json` (the commits tested and every test's phases) to this repo's `test-results` branch, which the [dashboard](https://crocodile-cesm.github.io/CrocoDashChecks/) and its badge read when the site next rebuilds (at the latest, after the next daily data-access push).
 
 PBS mails you when the job ends; its log is in `$CI_ROOT/logs/`. The push uses the token from your `gh` login (`gh auth login` once on GLADE, e.g. on Casper).
 
