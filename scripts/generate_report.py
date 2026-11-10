@@ -8,9 +8,9 @@ mean/min/max timing and RSS memory (when tracked). No charts beyond the
 regridding heatmap and the per-suite line charts, no narrative — just the
 numbers pytest-benchmark already computed.
 
-Output: report/regridding.html, report/crocodash.html, report/mom6_forge.html,
-plus report/index.html (a landing page linking to every report page). The runoff
-mapping charts defined here are rendered by scripts/generate_runoff_report.py.
+Output: report/regridding.html, report/crocodash.html, report/mom6_forge.html.
+The landing page (report/index.html) is scripts/generate_dashboard.py's. The
+runoff mapping charts defined here are rendered by scripts/generate_runoff_report.py.
 """
 
 import json
@@ -22,7 +22,6 @@ from pathlib import Path
 from report_common import (
     HEATMAP_CSS,
     LINECHART_CSS,
-    NAV_PAGES,
     page_shell,
     publish_results_json,
 )
@@ -786,43 +785,6 @@ def build_mom6_forge_page(grouped):
     )
 
 
-LANDING_DESCRIPTIONS = {
-    "regridding.html": "xESMF/ESMF weight generation + apply cost across grid sizes.",
-    "crocodash.html": "OBC forcing pipeline (regrid + merge) cost vs. chunk size.",
-    "mom6_forge.html": "Bathymetry pipeline (Topo.set_from_dataset) cost vs. grid size.",
-    "runoff_mapping.html": (
-        "GLOFAS runoff mapping (gen_rof_maps) cost up a ladder of ocean domain "
-        "sizes, against the production ROF mesh."
-    ),
-    "health.html": "Daily data-source reachability + validate_function checks.",
-    "mom6_scaling.html": "MOM6 NTASKS_OCN strong-scaling sweep on Derecho.",
-}
-
-
-def build_index_page():
-    """Landing page — no benchmark content of its own, just a card per report
-    linking out to it (plus its raw JSON, for anything that wants to consume
-    the data programmatically). Regenerated every run so it's never missing
-    a page."""
-    cards = "".join(
-        f"<div class='card'><h3><a href='{href}'>{label}</a></h3>"
-        f"<p>{LANDING_DESCRIPTIONS[href]}"
-        + (f" <a href='{json_name}'>[JSON]</a>" if json_name else "")
-        + "</p></div>"
-        for href, label, json_name in NAV_PAGES
-        if href in LANDING_DESCRIPTIONS
-    )
-    body = f"<section><h2>Reports</h2>{cards}</section>"
-    return page_shell(
-        "index.html",
-        "CrocoDashChecks",
-        "One-time perf snapshot for parts of the CROC ocean modeling ecosystem "
-        "that don&rsquo;t change commit-to-commit.",
-        body,
-        FOOTER,
-    )
-
-
 def main():
     benchmarks = load_benchmarks()
     if not benchmarks:
@@ -834,7 +796,6 @@ def main():
     grouped = build_tables(benchmarks)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     pages = {
-        "index.html": build_index_page(),
         "regridding.html": build_regridding_page(grouped),
         "crocodash.html": build_crocodash_page(grouped),
         "mom6_forge.html": build_mom6_forge_page(grouped),

@@ -35,3 +35,6 @@ weights_*.nc
 
 # OS
 .DS_Store
+
+# Fetched from the test-results branch by publish.yml at build time.
+results/cesm_runs.json

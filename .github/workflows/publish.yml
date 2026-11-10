@@ -30,6 +30,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      # The weekly CESM-run job pushes its summary to the test-results
+      # branch, not main; the dashboard shows nothing for it if it's missing.
+      - name: Fetch the weekly CESM-run results
+        run: |
+          git fetch --depth 1 origin test-results
+          git show FETCH_HEAD:cesm_runs.json > results/cesm_runs.json || rm -f results/cesm_runs.json
+
       - name: Generate benchmark report
         run: python scripts/generate_report.py
 
@@ -41,6 +48,9 @@ jobs:
 
       - name: Generate MOM6 scaling report
         run: python scripts/generate_scaling_report.py
+
+      - name: Generate dashboard
+        run: python scripts/generate_dashboard.py
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
