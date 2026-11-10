@@ -2,7 +2,7 @@
 
 CrocoDashChecks checks CrocoDash end to end: weekly CESM runs (`cesm_runs/`), a daily
 data-access check (`data_access/`), and performance snapshots (`performance/`). `site/build_site.py`
-turns their JSON into one page on GitHub Pages. See README.md for what runs where.
+turns their JSON into two pages on GitHub Pages: the checks, and performance with its charts and fits. See README.md for what runs where.
 
 ## Rules
 

@@ -2,14 +2,14 @@
 
 [![weekly CESM runs](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/cesm_runs.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#cesm) [![data access](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/data_access.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#data-access)
 
-Checks that CrocoDash works end to end on NCAR's systems. Results: <https://crocodile-cesm.github.io/CrocoDashChecks/>
+Checks that CrocoDash works end to end on NCAR's systems. Results: <https://crocodile-cesm.github.io/CrocoDashChecks/>; performance and sizing fits: <https://crocodile-cesm.github.io/CrocoDashChecks/performance.html>
 
 | Folder | What it checks | When |
 |---|---|---|
 | [`cesm_runs/`](cesm_runs/README.md) | MOM_interface's regional SMS tests, each built with CrocoDash and run in CESM on Derecho | Mondays 02:00 MT |
 | [`data_access/`](data_access/) | Every way CrocoDash fetches data (`ProductRegistry.validate_function`), called for real on Casper | Daily 05:00 MT |
 | [`performance/`](performance/) | How long the expensive steps take (open boundaries, GEBCO bathymetry, GLOFAS runoff mapping) and MOM6's speed vs. tasks | By hand |
-| [`site/`](site/build_site.py) | Builds the results page from the three folders' JSON | On every push to `main` |
+| [`site/`](site/build_site.py) | Builds the two results pages from the three folders' JSON: the checks, and [performance](https://crocodile-cesm.github.io/CrocoDashChecks/performance.html) with charts and fits | On every push to `main` |
 
 ## How it runs
 
