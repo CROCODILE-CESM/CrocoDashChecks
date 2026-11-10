@@ -372,24 +372,25 @@ def performance_section():
     ]
     obc = load(PERF / "obc.json")
     if obc and obc.get("benchmarks"):
-        cpus = obc["benchmarks"][0]["extra_info"]["cpus"]
         parts.append(
             "<p class='sub'>Open boundaries: CrocoDash's <span class='mono'>"
             "ConditionsConfigurator.process_bc</span> on the synthetic "
-            "<span class='mono'>reference_ocean</span> product (a month of daily data, "
-            f"four boundaries, 0.1&deg; model grid, {cpus} cores). Memory counts the "
-            "forked REGRID workers, so it is an upper bound.</p>"
+            "<span class='mono'>reference_ocean</span> product (daily data, four "
+            "boundaries, 0.1&deg; model grid). REGRID does the boundaries one after "
+            "another, each over its 30-day slices with min(cores, slices) workers, so a "
+            "month uses at most two. Memory counts the forked workers, so it is an "
+            "upper bound.</p>"
         )
     for test, sweep, axis, label in (
         (
             "test_by_source_resolution",
-            "by source resolution, 10&deg; box",
+            "by source resolution, a month on a 10&deg; box",
             "Source resolution",
             lambda e: f"{e['source_res_deg']:g}&deg;",
         ),
         (
             "test_by_domain_size",
-            "by domain size, 0.25&deg; source",
+            "by domain size, a month at a 0.25&deg; source",
             "Domain",
             lambda e: f"{e['size_deg']:g}&deg; square",
         ),
@@ -418,6 +419,34 @@ def performance_section():
                     ],
                 )
             )
+    rows = sorted(
+        bench_rows(obc, "test_by_workers"), key=lambda b: b["extra_info"]["workers"]
+    )
+    if rows:
+        serial = next(
+            (b["stats"]["mean"] for b in rows if b["extra_info"]["workers"] == 1), None
+        )
+        parts.append(
+            "<h3>Open boundaries, by worker count, a year on a 10&deg; box at a "
+            "0.25&deg; source (<span class='mono'>CROCODASH_MAX_WORKERS</span>)</h3>"
+            + table(
+                [
+                    ("Workers", 1),
+                    ("Time", 1),
+                    ("Speed-up vs. 1", 1),
+                    ("Peak memory", 1),
+                ],
+                [
+                    (
+                        b["extra_info"]["regrid_workers"],
+                        fmt_s(b["stats"]["mean"]),
+                        f"{serial / b['stats']['mean']:.1f}&times;" if serial else "",
+                        fmt_mb(b["extra_info"]["peak_rss_mb"]),
+                    )
+                    for b in rows
+                ],
+            )
+        )
     rows = sorted(
         bench_rows(topo, "test_set_from_dataset"),
         key=lambda b: b["params"]["domain_deg"],

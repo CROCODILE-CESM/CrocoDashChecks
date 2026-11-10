@@ -1,0 +1,1013 @@
+{
+    "machine_info": {
+        "node": "crhtc79",
+        "processor": "x86_64",
+        "machine": "x86_64",
+        "python_compiler": "GCC 15.3.0",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.11.16",
+        "python_version": "3.11.16",
+        "python_build": [
+            "main",
+            "Sep  2 2026 23:39:52"
+        ],
+        "release": "6.4.0-150600.23.103-default",
+        "system": "Linux",
+        "cpu": {
+            "python_version": "3.11.16.final.0 (64 bit)",
+            "cpuinfo_version": [
+                10,
+                1,
+                1
+            ],
+            "cpuinfo_version_string": "10.1.1",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 128,
+            "arch_string_raw": "x86_64",
+            "vendor_id_raw": "AuthenticAMD",
+            "brand_raw": "AMD EPYC 9554 64-Core Processor",
+            "hz_advertised_friendly": "3.7501 GHz",
+            "hz_actual_friendly": "3.7501 GHz",
+            "hz_advertised": [
+                3750101000,
+                0
+            ],
+            "hz_actual": [
+                3750101000,
+                0
+            ],
+            "stepping": 1,
+            "model": 17,
+            "family": 25,
+            "flags": [
+                "3dnowext",
+                "3dnowprefetch",
+                "abm",
+                "adx",
+                "aes",
+                "amd_ibpb_ret",
+                "amd_lbr_v2",
+                "amd_ppin",
+                "aperfmperf",
+                "apic",
+                "arat",
+                "avic",
+                "avx",
+                "avx2",
+                "avx512_bf16",
+                "avx512_bitalg",
+                "avx512_vbmi2",
+                "avx512_vnni",
+                "avx512_vpopcntdq",
+                "avx512bitalg",
+                "avx512bw",
+                "avx512cd",
+                "avx512dq",
+                "avx512f",
+                "avx512ifma",
+                "avx512vbmi",
+                "avx512vbmi2",
+                "avx512vl",
+                "avx512vnni",
+                "avx512vpopcntdq",
+                "bmi1",
+                "bmi2",
+                "bpext",
+                "cat_l3",
+                "cdp_l3",
+                "clear_cpu_buf_vm",
+                "clflush",
+                "clflushopt",
+                "clwb",
+                "clzero",
+                "cmov",
+                "cmp_legacy",
+                "constant_tsc",
+                "cpb",
+                "cppc",
+                "cpuid",
+                "cqm",
+                "cqm_llc",
+                "cqm_mbm_local",
+                "cqm_mbm_total",
+                "cqm_occup_llc",
+                "cr8_legacy",
+                "cx16",
+                "cx8",
+                "dbx",
+                "de",
+                "debug_swap",
+                "decodeassists",
+                "erms",
+                "extapic",
+                "extd_apicid",
+                "f16c",
+                "flush_l1d",
+                "flushbyasid",
+                "fma",
+                "fpu",
+                "fsgsbase",
+                "fsrm",
+                "fxsr",
+                "fxsr_opt",
+                "gfni",
+                "ht",
+                "hw_pstate",
+                "ibpb",
+                "ibpb_exit_to_user",
+                "ibrs",
+                "ibrs_enhanced",
+                "ibs",
+                "invpcid",
+                "irperf",
+                "la57",
+                "lahf_lm",
+                "lbrv",
+                "lm",
+                "mba",
+                "mca",
+                "mce",
+                "misalignsse",
+                "mmx",
+                "mmxext",
+                "monitor",
+                "movbe",
+                "msr",
+                "mtrr",
+                "mwaitx",
+                "nonstop_tsc",
+                "nopl",
+                "npt",
+                "nrip_save",
+                "nx",
+                "ospke",
+                "osvw",
+                "osxsave",
+                "overflow_recov",
+                "pae",
+                "pat",
+                "pausefilter",
+                "pci_l2i",
+                "pcid",
+                "pclmulqdq",
+                "pdpe1gb",
+                "perfctr_core",
+                "perfctr_llc",
+                "perfctr_nb",
+                "perfmon_v2",
+                "pfthreshold",
+                "pge",
+                "pku",
+                "pni",
+                "popcnt",
+                "pqe",
+                "pqm",
+                "pse",
+                "pse36",
+                "rapl",
+                "rdpid",
+                "rdpru",
+                "rdrand",
+                "rdrnd",
+                "rdseed",
+                "rdt_a",
+                "rdtscp",
+                "rep_good",
+                "sep",
+                "sha",
+                "sha_ni",
+                "skinit",
+                "smap",
+                "smca",
+                "smep",
+                "ssbd",
+                "sse",
+                "sse2",
+                "sse4_1",
+                "sse4_2",
+                "sse4a",
+                "ssse3",
+                "stibp",
+                "succor",
+                "svm",
+                "svm_lock",
+                "syscall",
+                "tce",
+                "topoext",
+                "tsc",
+                "tsc_scale",
+                "umip",
+                "user_shstk",
+                "v_spec_ctrl",
+                "v_vmsave_vmload",
+                "vaes",
+                "verw_clear",
+                "vgif",
+                "vmcb_clean",
+                "vme",
+                "vmmcall",
+                "vnmi",
+                "vpclmulqdq",
+                "wbnoinvd",
+                "wdt",
+                "x2apic",
+                "x2avic",
+                "xgetbv1",
+                "xsave",
+                "xsavec",
+                "xsaveerptr",
+                "xsaveopt",
+                "xsaves"
+            ],
+            "l3_cache_size": 1048576,
+            "l2_cache_size": 67108864,
+            "l1_data_cache_size": 2097152,
+            "l1_instruction_cache_size": 2097152,
+            "l2_cache_line_size": 1024,
+            "l2_cache_associativity": 6
+        }
+    },
+    "commit_info": {
+        "id": "c96b976a38a9dab2df346b31954fe11cb050e92b",
+        "time": "2026-11-10T13:19:58-07:00",
+        "author_time": "2026-11-10T13:19:38-07:00",
+        "dirty": true,
+        "project": "CrocoDashChecks",
+        "branch": "obc-workers"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_by_source_resolution[0.5]",
+            "fullname": "performance/test_obc.py::test_by_source_resolution[0.5]",
+            "params": {
+                "source_res_deg": 0.5
+            },
+            "param": "0.5",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.5,
+                "model_res_deg": 0.1,
+                "n_src": 500,
+                "n_dst": 400,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2038.55078125
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 17.726730408961885,
+                "max": 17.726730408961885,
+                "mean": 17.726730408961885,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 17.726730408961885,
+                "iqr": 0.0,
+                "q1": 17.726730408961885,
+                "q3": 17.726730408961885,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 17.726730408961885,
+                "hd15iqr": 17.726730408961885,
+                "ops": 0.05641198218338348,
+                "total": 17.726730408961885,
+                "data": [
+                    17.726730408961885
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_source_resolution[0.25]",
+            "fullname": "performance/test_obc.py::test_by_source_resolution[0.25]",
+            "params": {
+                "source_res_deg": 0.25
+            },
+            "param": "0.25",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1764,
+                "n_dst": 400,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2150.9609375
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 15.307477276073769,
+                "max": 15.307477276073769,
+                "mean": 15.307477276073769,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 15.307477276073769,
+                "iqr": 0.0,
+                "q1": 15.307477276073769,
+                "q3": 15.307477276073769,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 15.307477276073769,
+                "hd15iqr": 15.307477276073769,
+                "ops": 0.06532755084098946,
+                "total": 15.307477276073769,
+                "data": [
+                    15.307477276073769
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_source_resolution[0.1]",
+            "fullname": "performance/test_obc.py::test_by_source_resolution[0.1]",
+            "params": {
+                "source_res_deg": 0.1
+            },
+            "param": "0.1",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.1,
+                "model_res_deg": 0.1,
+                "n_src": 10560,
+                "n_dst": 400,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2327.34375
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 17.674683458986692,
+                "max": 17.674683458986692,
+                "mean": 17.674683458986692,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 17.674683458986692,
+                "iqr": 0.0,
+                "q1": 17.674683458986692,
+                "q3": 17.674683458986692,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 17.674683458986692,
+                "hd15iqr": 17.674683458986692,
+                "ops": 0.05657809953544317,
+                "total": 17.674683458986692,
+                "data": [
+                    17.674683458986692
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_source_resolution[0.05]",
+            "fullname": "performance/test_obc.py::test_by_source_resolution[0.05]",
+            "params": {
+                "source_res_deg": 0.05
+            },
+            "param": "0.05",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.05,
+                "model_res_deg": 0.1,
+                "n_src": 40152,
+                "n_dst": 400,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2934.46484375
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 20.045989557984285,
+                "max": 20.045989557984285,
+                "mean": 20.045989557984285,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 20.045989557984285,
+                "iqr": 0.0,
+                "q1": 20.045989557984285,
+                "q3": 20.045989557984285,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 20.045989557984285,
+                "hd15iqr": 20.045989557984285,
+                "ops": 0.049885289878428656,
+                "total": 20.045989557984285,
+                "data": [
+                    20.045989557984285
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_source_resolution[0.025]",
+            "fullname": "performance/test_obc.py::test_by_source_resolution[0.025]",
+            "params": {
+                "source_res_deg": 0.025
+            },
+            "param": "0.025",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.025,
+                "model_res_deg": 0.1,
+                "n_src": 154548,
+                "n_dst": 400,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 5594.3828125
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 21.857334202970378,
+                "max": 21.857334202970378,
+                "mean": 21.857334202970378,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 21.857334202970378,
+                "iqr": 0.0,
+                "q1": 21.857334202970378,
+                "q3": 21.857334202970378,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 21.857334202970378,
+                "hd15iqr": 21.857334202970378,
+                "ops": 0.04575123346304974,
+                "total": 21.857334202970378,
+                "data": [
+                    21.857334202970378
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_domain_size[2.5]",
+            "fullname": "performance/test_obc.py::test_by_domain_size[2.5]",
+            "params": {
+                "size_deg": 2.5
+            },
+            "param": "2.5",
+            "extra_info": {
+                "size_deg": 2.5,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 684,
+                "n_dst": 100,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2170.3046875
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 15.894646830041893,
+                "max": 15.894646830041893,
+                "mean": 15.894646830041893,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 15.894646830041893,
+                "iqr": 0.0,
+                "q1": 15.894646830041893,
+                "q3": 15.894646830041893,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 15.894646830041893,
+                "hd15iqr": 15.894646830041893,
+                "ops": 0.06291426356891028,
+                "total": 15.894646830041893,
+                "data": [
+                    15.894646830041893
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_domain_size[5.0]",
+            "fullname": "performance/test_obc.py::test_by_domain_size[5.0]",
+            "params": {
+                "size_deg": 5.0
+            },
+            "param": "5.0",
+            "extra_info": {
+                "size_deg": 5.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1044,
+                "n_dst": 200,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2175.33203125
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 15.329010652960278,
+                "max": 15.329010652960278,
+                "mean": 15.329010652960278,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 15.329010652960278,
+                "iqr": 0.0,
+                "q1": 15.329010652960278,
+                "q3": 15.329010652960278,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 15.329010652960278,
+                "hd15iqr": 15.329010652960278,
+                "ops": 0.06523578218055996,
+                "total": 15.329010652960278,
+                "data": [
+                    15.329010652960278
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_domain_size[10.0]",
+            "fullname": "performance/test_obc.py::test_by_domain_size[10.0]",
+            "params": {
+                "size_deg": 10.0
+            },
+            "param": "10.0",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1764,
+                "n_dst": 400,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2180.25390625
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 15.654022602015175,
+                "max": 15.654022602015175,
+                "mean": 15.654022602015175,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 15.654022602015175,
+                "iqr": 0.0,
+                "q1": 15.654022602015175,
+                "q3": 15.654022602015175,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 15.654022602015175,
+                "hd15iqr": 15.654022602015175,
+                "ops": 0.06388134381965617,
+                "total": 15.654022602015175,
+                "data": [
+                    15.654022602015175
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_domain_size[20.0]",
+            "fullname": "performance/test_obc.py::test_by_domain_size[20.0]",
+            "params": {
+                "size_deg": 20.0
+            },
+            "param": "20.0",
+            "extra_info": {
+                "size_deg": 20.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 3204,
+                "n_dst": 800,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2320.72265625
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 17.706718927947804,
+                "max": 17.706718927947804,
+                "mean": 17.706718927947804,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 17.706718927947804,
+                "iqr": 0.0,
+                "q1": 17.706718927947804,
+                "q3": 17.706718927947804,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 17.706718927947804,
+                "hd15iqr": 17.706718927947804,
+                "ops": 0.05647573692614656,
+                "total": 17.706718927947804,
+                "data": [
+                    17.706718927947804
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_domain_size[40.0]",
+            "fullname": "performance/test_obc.py::test_by_domain_size[40.0]",
+            "params": {
+                "size_deg": 40.0
+            },
+            "param": "40.0",
+            "extra_info": {
+                "size_deg": 40.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 6084,
+                "n_dst": 1600,
+                "days": 31,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2854.48828125
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 20.542042976012453,
+                "max": 20.542042976012453,
+                "mean": 20.542042976012453,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 20.542042976012453,
+                "iqr": 0.0,
+                "q1": 20.542042976012453,
+                "q3": 20.542042976012453,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 20.542042976012453,
+                "hd15iqr": 20.542042976012453,
+                "ops": 0.0486806497857944,
+                "total": 20.542042976012453,
+                "data": [
+                    20.542042976012453
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_workers[1]",
+            "fullname": "performance/test_obc.py::test_by_workers[1]",
+            "params": {
+                "workers": 1
+            },
+            "param": "1",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1764,
+                "n_dst": 400,
+                "days": 366,
+                "regrid_workers": 1,
+                "peak_rss_mb": 944.5390625,
+                "workers": 1
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 71.19414991803933,
+                "max": 71.19414991803933,
+                "mean": 71.19414991803933,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 71.19414991803933,
+                "iqr": 0.0,
+                "q1": 71.19414991803933,
+                "q3": 71.19414991803933,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 71.19414991803933,
+                "hd15iqr": 71.19414991803933,
+                "ops": 0.01404609790483105,
+                "total": 71.19414991803933,
+                "data": [
+                    71.19414991803933
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_workers[2]",
+            "fullname": "performance/test_obc.py::test_by_workers[2]",
+            "params": {
+                "workers": 2
+            },
+            "param": "2",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1764,
+                "n_dst": 400,
+                "days": 366,
+                "regrid_workers": 2,
+                "peak_rss_mb": 2293.8359375,
+                "workers": 2
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 42.5682861689711,
+                "max": 42.5682861689711,
+                "mean": 42.5682861689711,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 42.5682861689711,
+                "iqr": 0.0,
+                "q1": 42.5682861689711,
+                "q3": 42.5682861689711,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 42.5682861689711,
+                "hd15iqr": 42.5682861689711,
+                "ops": 0.023491666919137576,
+                "total": 42.5682861689711,
+                "data": [
+                    42.5682861689711
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_workers[4]",
+            "fullname": "performance/test_obc.py::test_by_workers[4]",
+            "params": {
+                "workers": 4
+            },
+            "param": "4",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1764,
+                "n_dst": 400,
+                "days": 366,
+                "regrid_workers": 4,
+                "peak_rss_mb": 3808.0859375,
+                "workers": 4
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 33.4325110350037,
+                "max": 33.4325110350037,
+                "mean": 33.4325110350037,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 33.4325110350037,
+                "iqr": 0.0,
+                "q1": 33.4325110350037,
+                "q3": 33.4325110350037,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 33.4325110350037,
+                "hd15iqr": 33.4325110350037,
+                "ops": 0.02991100485850447,
+                "total": 33.4325110350037,
+                "data": [
+                    33.4325110350037
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_workers[8]",
+            "fullname": "performance/test_obc.py::test_by_workers[8]",
+            "params": {
+                "workers": 8
+            },
+            "param": "8",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1764,
+                "n_dst": 400,
+                "days": 366,
+                "regrid_workers": 8,
+                "peak_rss_mb": 6883.4296875,
+                "workers": 8
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 27.17634868796449,
+                "max": 27.17634868796449,
+                "mean": 27.17634868796449,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 27.17634868796449,
+                "iqr": 0.0,
+                "q1": 27.17634868796449,
+                "q3": 27.17634868796449,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 27.17634868796449,
+                "hd15iqr": 27.17634868796449,
+                "ops": 0.03679670184842995,
+                "total": 27.17634868796449,
+                "data": [
+                    27.17634868796449
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_workers[12]",
+            "fullname": "performance/test_obc.py::test_by_workers[12]",
+            "params": {
+                "workers": 12
+            },
+            "param": "12",
+            "extra_info": {
+                "size_deg": 10.0,
+                "source_res_deg": 0.25,
+                "model_res_deg": 0.1,
+                "n_src": 1764,
+                "n_dst": 400,
+                "days": 366,
+                "regrid_workers": 12,
+                "peak_rss_mb": 9932.2109375,
+                "workers": 12
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 27.865266475942917,
+                "max": 27.865266475942917,
+                "mean": 27.865266475942917,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 27.865266475942917,
+                "iqr": 0.0,
+                "q1": 27.865266475942917,
+                "q3": 27.865266475942917,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 27.865266475942917,
+                "hd15iqr": 27.865266475942917,
+                "ops": 0.035886970643662634,
+                "total": 27.865266475942917,
+                "data": [
+                    27.865266475942917
+                ],
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2026-11-10T20:30:58.997323+00:00",
+    "version": "5.3.1"
+}
