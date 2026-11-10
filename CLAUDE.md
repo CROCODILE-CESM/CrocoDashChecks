@@ -199,7 +199,10 @@ the suite as skipped, not as fast.
 Data access health runs separately, daily on GLADE: a crontab line on `cron.hpc.ucar.edu`
 runs `scripts/data_access_cron.sh`, which qsubs `scripts/data_access.pbs` to Casper. The job
 pushes `results/health.json` to `main` and a `data_access.json` badge to `test-results`,
-both through `cesm_runs/publish_badges.sh`. Run it by hand the same way locally:
+both through `cesm_runs/publish_badges.sh`. Each access method is checked in its own process,
+`VALIDATE_WORKERS` at a time; one still running after `VALIDATE_TIMEOUT` is killed with its
+process group, its temp dir (and any partial download) removed, and a failing check records
+its last error line as `detail` in `health.json`. Run it by hand the same way locally:
 
 ```bash
 python scripts/check_data_access.py           # -> results/health.json
