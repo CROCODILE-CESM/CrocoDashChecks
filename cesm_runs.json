@@ -1,0 +1,198 @@
+{
+ "date": "2026-11-10T01:38:51+00:00",
+ "cesm": {
+  "branch": "crocodash",
+  "commit": "8d654c3"
+ },
+ "crocodash": {
+  "branch": "bgc-fe-interior-source",
+  "commit": "0a66b7ee"
+ },
+ "tests": [
+  {
+   "name": "SMS_D_Ld2.USER_RES.CR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash",
+   "test": "SMS_D_Ld2",
+   "compset": "CR1850MARBL_JRA_GLOFAS",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL%MARBL-BIO_DROF%GLOFAS_SGLC_SWAV",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "PASS"
+    ],
+    [
+     "XML",
+     "PASS"
+    ],
+    [
+     "SETUP",
+     "PASS"
+    ],
+    [
+     "SHAREDLIB_BUILD",
+     "PASS"
+    ],
+    [
+     "MODEL_BUILD",
+     "PASS"
+    ],
+    [
+     "SUBMIT",
+     "PASS"
+    ],
+    [
+     "RUN",
+     "PASS"
+    ]
+   ],
+   "passed": true
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.CR_JRA_GLOFAS.derecho_intel.crocodash",
+   "test": "SMS_D_Ld2",
+   "compset": "CR_JRA_GLOFAS",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL_DROF%GLOFAS_SGLC_SWAV",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "PASS"
+    ],
+    [
+     "XML",
+     "PASS"
+    ],
+    [
+     "SETUP",
+     "PASS"
+    ],
+    [
+     "SHAREDLIB_BUILD",
+     "PASS"
+    ],
+    [
+     "MODEL_BUILD",
+     "PASS"
+    ],
+    [
+     "SUBMIT",
+     "PASS"
+    ],
+    [
+     "RUN",
+     "PASS"
+    ]
+   ],
+   "passed": true
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.CWR_JRA_GLOFAS.derecho_intel.crocodash",
+   "test": "SMS_D_Ld2",
+   "compset": "CWR_JRA_GLOFAS",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL_DROF%GLOFAS_SGLC_WW3",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "PASS"
+    ],
+    [
+     "XML",
+     "PASS"
+    ],
+    [
+     "SETUP",
+     "PASS"
+    ],
+    [
+     "SHAREDLIB_BUILD",
+     "PASS"
+    ],
+    [
+     "MODEL_BUILD",
+     "PASS"
+    ],
+    [
+     "SUBMIT",
+     "PASS"
+    ],
+    [
+     "RUN",
+     "PASS"
+    ]
+   ],
+   "passed": true
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.GR_JRA_GLOFAS.derecho_intel.crocodash",
+   "test": "SMS_D_Ld2",
+   "compset": "GR_JRA_GLOFAS",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_CICE_MOM6%REGIONAL_DROF%GLOFAS_SGLC_SWAV",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "PASS"
+    ],
+    [
+     "XML",
+     "PASS"
+    ],
+    [
+     "SETUP",
+     "PASS"
+    ],
+    [
+     "SHAREDLIB_BUILD",
+     "PASS"
+    ],
+    [
+     "MODEL_BUILD",
+     "PASS"
+    ],
+    [
+     "SUBMIT",
+     "PASS"
+    ],
+    [
+     "RUN",
+     "PASS"
+    ]
+   ],
+   "passed": true
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.GWR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash",
+   "test": "SMS_D_Ld2",
+   "compset": "GWR1850MARBL_JRA_GLOFAS",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_CICE_MOM6%REGIONAL%MARBL-BIO_DROF%GLOFAS_SGLC_WW3",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "PASS"
+    ],
+    [
+     "XML",
+     "PASS"
+    ],
+    [
+     "SETUP",
+     "PASS"
+    ],
+    [
+     "SHAREDLIB_BUILD",
+     "PASS"
+    ],
+    [
+     "MODEL_BUILD",
+     "PASS"
+    ],
+    [
+     "SUBMIT",
+     "PASS"
+    ],
+    [
+     "RUN",
+     "PASS"
+    ]
+   ],
+   "passed": true
+  }
+ ]
+}
