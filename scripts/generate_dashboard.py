@@ -102,6 +102,7 @@ DASH_CSS = """
             font-size: 0.78rem; margin: 0.8rem 0 0; align-items: center; }
   .legend .ph { margin-right: 0.3rem; vertical-align: -1px; }
   .note { color: var(--ink-2); font-size: 0.8rem; margin: 0.6rem 0 0; }
+  .why { color: var(--ink-2); font-size: 0.75rem; margin-top: 0.15rem; overflow-wrap: anywhere; }
   @media (max-width: 640px) { .wide-only { display: none; } .ph { width: 9px; }
                               table.dash th, table.dash td { padding: 0.4rem 0.3rem; } }
   .meter { display: flex; gap: 2px; height: 8px; margin: 0.2rem 0 1rem; }
@@ -324,7 +325,9 @@ def health_panel(health):
     validate = health.get("validate_checks", [])
     links = health.get("link_checks", [])
     rows = "".join(
-        f"<tr><td>{escape(r['product'])}</td><td class='mono'>{escape(r['method'])}</td>"
+        f"<tr><td>{escape(r['product'])}</td><td><span class='mono'>{escape(r['method'])}</span>"
+        + (f"<div class='why'>{escape(r['detail'])}</div>" if r.get("detail") else "")
+        + "</td>"
         f"<td>{chip('good', 'OK') if r['ok'] else chip('critical', 'Failing')}</td>"
         f"<td class='num'>{r['elapsed_s']:.1f} s</td></tr>"
         for r in sorted(validate, key=lambda r: (r["ok"], r["product"], r["method"]))

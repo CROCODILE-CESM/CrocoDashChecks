@@ -9,6 +9,7 @@ Output: report/health.html
 
 import json
 from datetime import datetime
+from html import escape
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -66,12 +67,13 @@ def make_validate_table(rows):
         return "<p>No validate_function checks recorded (CrocoDash not available when this ran).</p>"
     body = "".join(
         f"<tr><td>{r['product']}</td><td>{r['method']}</td>"
-        f"<td>{_status(r['ok'])}</td><td>{r['elapsed_s']:.1f}s</td></tr>"
+        f"<td>{_status(r['ok'])}</td><td>{r['elapsed_s']:.1f}s</td>"
+        f"<td>{escape(r.get('detail', ''))}</td></tr>"
         for r in sorted(rows, key=lambda r: (r["product"], r["method"]))
     )
     return (
         "<table class='health-table'><tr><th>Product</th><th>Method</th>"
-        f"<th>Working?</th><th>Elapsed</th></tr>{body}</table>"
+        f"<th>Working?</th><th>Elapsed</th><th>Why not</th></tr>{body}</table>"
     )
 
 
