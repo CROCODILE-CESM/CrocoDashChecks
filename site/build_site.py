@@ -120,10 +120,13 @@ CSS = """
   .how li + li { border-top: 1px solid var(--grid); }
   .how b { display: block; margin-bottom: 0.15rem; }
   .how span { color: var(--ink-2); }
-  .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  .charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
             gap: 1.25rem 2rem; margin: 1rem 0 0.5rem; }
   .chart { margin: 0; min-width: 0; }
-  .chart h4 { font-size: 0.85rem; margin: 0 0 0.2rem; font-weight: 600; }
+  .chart h4 { font-size: 0.9rem; margin: 0; font-weight: 600; }
+  .take { font-size: 0.8rem; color: var(--ink); margin: 0.1rem 0 0.3rem; }
+  details { margin-top: 0.75rem; }
+  summary { cursor: pointer; color: var(--ink-2); font-size: 0.85rem; }
   .key { display: flex; flex-wrap: wrap; gap: 0.15rem 0.9rem; font-size: 0.75rem;
          color: var(--ink-2); margin: 0 0 0.25rem; }
   .key i { display: inline-block; vertical-align: middle; margin-right: 0.3rem; background: var(--c); }
@@ -454,7 +457,9 @@ def tick_label(v, compact):
     return f"{v:,g}"
 
 
-def chart(title, xlab, ylab, series, xlog=False, ylog=False, xticks=None, ref=False):
+def chart(
+    title, xlab, ylab, series, xlog=False, ylog=False, xticks=None, ref=False, note=""
+):
     """series: [{name, points: [(x, y, value, [detail, ...])], fit: [(x, y)]}].
     ref draws fit = measured on a log-log square scale."""
     xy = [(p[0], p[1]) for s in series for p in s["points"]]
@@ -531,7 +536,8 @@ def chart(title, xlab, ylab, series, xlog=False, ylog=False, xticks=None, ref=Fa
             + "<span>dots measured, lines fit</span>"
         )
     return (
-        f"<figure class='chart'><h4>{title}</h4><div class='key'>{key}</div>"
+        f"<figure class='chart'><h4>{title}</h4><p class='take'>{note}</p>"
+        f"<div class='key'>{key}</div>"
         f"<svg viewBox='0 0 {CW} {CH}' role='img' aria-label='{escape(title)}'>"
         + "".join(svg)
         + "</svg></figure>"
@@ -583,6 +589,19 @@ def obc_terms(e):
     return time, memory
 
 
+def linspace(lo, hi, n=2):
+    return [lo + (hi - lo) * i / (n - 1) for i in range(n)]
+
+
+def tables(parts):
+    """The charts' numbers, folded away under them."""
+    return f"<details><summary>Tables</summary>{''.join(parts)}</details>"
+
+
+def formula(lines, legend):
+    return f"<p class='mono'>{'<br>'.join(lines)}</p><p class='sub'>{legend}</p>"
+
+
 def obc_section(benchmarks):
     terms = [obc_terms(b["extra_info"]) for b in benchmarks]
     times = [b["stats"]["mean"] for b in benchmarks]
@@ -604,12 +623,8 @@ def obc_section(benchmarks):
 
     def time_pt(x, b):
         e = b["extra_info"]
-        return (
-            x,
-            b["stats"]["mean"],
-            fmt_s(b["stats"]["mean"]),
-            case(e) + [f"fit {fmt_s(fit(e)[0])}"],
-        )
+        y = b["stats"]["mean"]
+        return (x, y, fmt_s(y), case(e) + [f"fit {fmt_s(fit(e)[0])}"])
 
     def mem_pt(x, b):
         e = b["extra_info"]
@@ -620,14 +635,20 @@ def obc_section(benchmarks):
             case(e) + [f"fit {fmt_mb(fit(e)[1] * 1024)}"],
         )
 
+    def one(points, fit_line):
+        return [{"name": "", "points": points, "fit": fit_line}]
+
+    def ei(b, k):
+        return b["extra_info"][k]
+
     sweep = {
         test: sorted(
             bench_rows({"benchmarks": benchmarks}, test),
             key=lambda b: (
-                b["extra_info"]["n_src"],
-                b["extra_info"]["n_cells"],
-                b["extra_info"]["days"],
-                b["extra_info"]["workers"],
+                ei(b, "n_src"),
+                ei(b, "n_cells"),
+                ei(b, "days"),
+                ei(b, "workers"),
             ),
         )
         for test in (
@@ -641,206 +662,175 @@ def obc_section(benchmarks):
     rows = sweep["test_by_source_resolution"]
     if rows:
         e0 = rows[0]["extra_info"]
-        span = logspace(rows[0]["extra_info"]["n_src"], rows[-1]["extra_info"]["n_src"])
         charts.append(
             chart(
-                "Time by source points: 10&deg; box, 30 days, 1 worker",
-                "Source points (log scale)",
+                "Time by source points",
+                "Source points",
                 "Time (s)",
-                [
-                    {
-                        "name": "",
-                        "points": [time_pt(b["extra_info"]["n_src"], b) for b in rows],
-                        "fit": [(p, fit({**e0, "n_src": p})[0]) for p in span],
-                    }
-                ],
-                xlog=True,
+                one(
+                    [time_pt(ei(b, "n_src"), b) for b in rows],
+                    [
+                        (p, fit({**e0, "n_src": p})[0])
+                        for p in linspace(0, ei(rows[-1], "n_src"))
+                    ],
+                ),
+                note=f"Linear: {t[4]:.0f} s more per million source points per 30 days. "
+                "10&deg; box, 1 worker.",
             )
         )
     rows = sweep["test_by_domain_size"]
     if rows:
         charts.append(
             chart(
-                "Time by domain size: 0.25&deg; source, 30 days, 1 worker",
-                "Domain cells (log scale)",
+                "Time by domain size",
+                "Domain cells",
                 "Time (s)",
-                [
-                    {
-                        "name": "",
-                        "points": [
-                            time_pt(b["extra_info"]["n_cells"], b) for b in rows
-                        ],
-                        "fit": [
-                            (b["extra_info"]["n_cells"], fit(b["extra_info"])[0])
-                            for b in rows
-                        ],
-                    }
-                ],
-                xlog=True,
+                one(
+                    [time_pt(ei(b, "n_cells"), b) for b in rows],
+                    [(ei(b, "n_cells"), fit(b["extra_info"])[0]) for b in rows],
+                ),
+                note=f"Linear too: {t[2] + t[5]:.0f} s more per million domain cells per 30 days. "
+                "0.25&deg; source, 1 worker.",
             )
         )
     rows = sweep["test_by_days"]
     if rows:
+        e0 = rows[0]["extra_info"]
+        per_slice = fit({**e0, "days": 60, "slices": 2})[0] - fit(e0)[0]
         charts.append(
             chart(
-                "Time by days: 10&deg; box, 0.25&deg; source, 1 worker",
+                "Time by days",
                 "Days",
                 "Time (s)",
-                [
-                    {
-                        "name": "",
-                        "points": [time_pt(b["extra_info"]["days"], b) for b in rows],
-                        "fit": [
-                            (b["extra_info"]["days"], fit(b["extra_info"])[0])
-                            for b in rows
-                        ],
-                    }
-                ],
+                one(
+                    [time_pt(ei(b, "days"), b) for b in rows],
+                    [(ei(b, "days"), fit(b["extra_info"])[0]) for b in rows],
+                ),
                 xticks=[0, 90, 180, 270, 360],
+                note=f"Linear: {per_slice:.1f} s per 30 days. 10&deg; box, 1 worker.",
             )
         )
     rows = sweep["test_by_workers"]
-    configs = sorted(
-        {
-            (b["extra_info"]["size_deg"], b["extra_info"]["source_res_deg"])
-            for b in rows
-        },
-        key=lambda c: (c[0], -c[1]),
-    )
     if rows:
+        configs = sorted(
+            {(ei(b, "size_deg"), ei(b, "source_res_deg")) for b in rows},
+            key=lambda c: (c[0], -c[1]),
+        )
+        own = {
+            c: sorted(
+                (b for b in rows if (ei(b, "size_deg"), ei(b, "source_res_deg")) == c),
+                key=lambda b: ei(b, "workers"),
+            )
+            for c in configs
+        }
 
         def by_workers(point, value):
-            out = []
-            for size, src in configs:
-                own = sorted(
-                    (
-                        b
-                        for b in rows
-                        if (
-                            b["extra_info"]["size_deg"],
-                            b["extra_info"]["source_res_deg"],
+            return [
+                {
+                    "name": f"{size:g}&deg; box, {src:g}&deg; source",
+                    "points": [point(ei(b, "workers"), b) for b in own[(size, src)]],
+                    "fit": [
+                        (
+                            w,
+                            value(
+                                fit({**own[(size, src)][0]["extra_info"], "workers": w})
+                            ),
                         )
-                        == (size, src)
-                    ),
-                    key=lambda b: b["extra_info"]["workers"],
-                )
-                e0 = own[0]["extra_info"]
-                out.append(
-                    {
-                        "name": f"{size:g}&deg; box, {src:g}&deg; source",
-                        "points": [point(b["extra_info"]["workers"], b) for b in own],
-                        "fit": [
-                            (w, value(fit({**e0, "workers": w})))
-                            for w in range(
-                                1, max(b["extra_info"]["workers"] for b in own) + 1
-                            )
-                        ],
-                    }
-                )
-            return out
+                        for w in range(1, ei(own[(size, src)][-1], "workers") + 1)
+                    ],
+                }
+                for size, src in configs
+            ]
 
+        speedups = [
+            own[c][0]["stats"]["mean"] / own[c][-1]["stats"]["mean"] for c in configs
+        ]
         charts.append(
             chart(
-                "Time by workers: 360 days (12 slices)",
+                "Time by workers",
                 "Workers",
                 "Time (s)",
                 by_workers(time_pt, lambda f: f[0]),
                 xticks=[0, 2, 4, 6, 8, 10, 12],
+                note=f"Falls as 1/workers toward a floor: {min(speedups):.1f}&ndash;"
+                f"{max(speedups):.1f}&times; faster at {ei(rows[-1], 'workers')}. "
+                "Flat from 6 to 11, so use a count that divides the 12 slices.",
             )
         )
         charts.append(
             chart(
-                "Peak memory by workers: 360 days",
+                "Peak memory by workers",
                 "Workers",
                 "Peak memory (GB)",
                 by_workers(mem_pt, lambda f: f[1]),
                 xticks=[0, 2, 4, 6, 8, 10, 12],
+                note=f"Linear: {m[3]:.2f} GB per worker, plus {m[4]:.2f} GB per worker per "
+                "million domain cells.",
             )
         )
     rows = sweep["test_by_domain_size"]
     if rows:
         charts.append(
             chart(
-                "Peak memory by domain size: 0.25&deg; source, 30 days, 1 worker",
-                "Domain cells (log scale)",
+                "Peak memory by domain size",
+                "Domain cells",
                 "Peak memory (GB)",
+                one(
+                    [mem_pt(ei(b, "n_cells"), b) for b in rows],
+                    [(ei(b, "n_cells"), fit(b["extra_info"])[1]) for b in rows],
+                ),
+                note=f"Linear: {m[2]:.1f} GB per million domain cells. 1 worker.",
+            )
+        )
+    predicted = [fit(b["extra_info"]) for b in benchmarks]
+    for i, what, unit, pt in (
+        (0, "time", "s", time_pt),
+        (1, "peak memory", "GB", mem_pt),
+    ):
+        charts.append(
+            chart(
+                f"Fit against measurement: {what}",
+                f"Fit ({unit}, log scale)",
+                f"Measured ({unit})",
                 [
                     {
                         "name": "",
-                        "points": [mem_pt(b["extra_info"]["n_cells"], b) for b in rows],
-                        "fit": [
-                            (b["extra_info"]["n_cells"], fit(b["extra_info"])[1])
-                            for b in rows
+                        "points": [
+                            (p[i],) + pt(0, b)[1:]
+                            for p, b in zip(predicted, benchmarks)
                         ],
                     }
                 ],
-                xlog=True,
+                ref=True,
+                note=f"All {len(benchmarks)} cases: "
+                + fit_error([p[i] for p in predicted], times if i == 0 else mems),
             )
         )
-    charts.append(
-        chart(
-            f"Fit against measurement: time, all {len(benchmarks)} cases",
-            "Fit (s, log scale)",
-            "Measured (s)",
-            [
-                {
-                    "name": "",
-                    "points": [
-                        (fit(b["extra_info"])[0],) + time_pt(0, b)[1:]
-                        for b in benchmarks
-                    ],
-                }
-            ],
-            ref=True,
-        )
-    )
-    charts.append(
-        chart(
-            f"Fit against measurement: peak memory, all {len(benchmarks)} cases",
-            "Fit (GB, log scale)",
-            "Measured (GB)",
-            [
-                {
-                    "name": "",
-                    "points": [
-                        (fit(b["extra_info"])[1],) + mem_pt(0, b)[1:]
-                        for b in benchmarks
-                    ],
-                }
-            ],
-            ref=True,
-        )
-    )
 
-    tables = []
+    table_parts = []
     for test, title, axis_name, label in (
         (
             "test_by_source_resolution",
-            "By source resolution: a 10&deg; box, 30 days, 1 worker",
+            "By source resolution",
             "Source",
             lambda e: f"{e['source_res_deg']:g}&deg;",
         ),
         (
             "test_by_domain_size",
-            "By domain size: a 0.25&deg; source, 30 days, 1 worker",
+            "By domain size",
             "Domain",
             lambda e: f"{e['size_deg']:g}&deg; square",
         ),
-        (
-            "test_by_days",
-            "By days: a 10&deg; box, a 0.25&deg; source, 1 worker",
-            "Days",
-            lambda e: e["days"],
-        ),
+        ("test_by_days", "By days", "Days", lambda e: e["days"]),
         (
             "test_by_workers",
-            "By worker count: 360 days (12 slices), CROCODASH_MAX_WORKERS",
+            "By workers (360 days)",
             "Box, source, workers",
             lambda e: f"{e['size_deg']:g}&deg;, {e['source_res_deg']:g}&deg;, {e['workers']}",
         ),
     ):
         if sweep[test]:
-            tables.append(
+            table_parts.append(
                 f"<h3>{title}</h3>"
                 + table(
                     [
@@ -855,42 +845,33 @@ def obc_section(benchmarks):
                     [
                         (
                             label(b["extra_info"]),
-                            f"{b['extra_info']['n_src']:,}",
-                            f"{b['extra_info']['n_cells']:,}",
+                            f"{ei(b, 'n_src'):,}",
+                            f"{ei(b, 'n_cells'):,}",
                             fmt_s(b["stats"]["mean"]),
                             fmt_s(fit(b["extra_info"])[0]),
-                            fmt_mb(b["extra_info"]["peak_mb"]),
+                            fmt_mb(ei(b, "peak_mb")),
                             fmt_mb(fit(b["extra_info"])[1] * 1024),
                         )
                         for b in sweep[test]
                     ],
                 )
             )
-    predicted = [fit(b["extra_info"]) for b in benchmarks]
     return (
         "<div class='panel' id='obc'><h2>Open boundaries</h2>"
-        "<p class='sub'>CrocoDash's <span class='mono'>ConditionsConfigurator.process_bc</span> "
-        "on the synthetic <span class='mono'>reference_ocean</span> product: daily data with "
-        "10 levels, four boundaries of a 0.1&deg; box. Each case runs twice; the second run "
-        "reuses the raw data, so it times REGRID and MERGE alone, CrocoDash's own cost "
-        "whatever the product (a real product adds its download). REGRID splits the dates "
-        "into 30-day slices and gives each worker an equal run of them; the boundaries go "
-        "one after another. Memory is the whole process tree's PSS.</p>"
-        "<p class='mono'>time (s) &asymp; "
-        f"{t[0]:.2g} + S&times;({t[1]:.2g} + {t[2]:.2g}&middot;C) + "
-        f"k&times;({t[3]:.2g} + {t[4]:.2g}&middot;P + {t[5]:.2g}&middot;C)<br>"
-        "memory (GB) &asymp; "
-        f"{m[0]:.2g} + {m[1]:.2g}&middot;P + {m[2]:.2g}&middot;C + "
-        f"w&times;({m[3]:.2g} + {m[4]:.2g}&middot;C)</p>"
-        "<p class='sub'>S: 30-day slices; k: slices per worker, S &divide; workers "
-        "rounded up; w: workers (none for one, which runs in-process); P: million source "
-        "points (each boundary's source grid, with a 1&deg; margin); C: million domain "
-        f"cells. Fitted to all {len(benchmarks)} cases: time "
-        f"{fit_error([p[0] for p in predicted], times)}, memory "
-        f"{fit_error([p[1] for p in predicted], mems)}. Pick a worker count that divides "
-        "the slices evenly: with 12 slices the fit is flat from 6 to 11 workers, which "
-        "only add memory.</p>"
-        f"<div class='charts'>{''.join(charts)}</div>{''.join(tables)}</div>"
+        + formula(
+            [
+                f"time (s) &asymp; {t[0]:.2g} + S&times;({t[1]:.2g} + {t[2]:.2g}&middot;C) + "
+                f"k&times;({t[3]:.2g} + {t[4]:.2g}&middot;P + {t[5]:.2g}&middot;C)",
+                f"memory (GB) &asymp; {m[0]:.2g} + {m[1]:.2g}&middot;P + {m[2]:.2g}&middot;C + "
+                f"w&times;({m[3]:.2g} + {m[4]:.2g}&middot;C)",
+            ],
+            "S 30-day slices, k slices per worker, w workers, P million source points, "
+            "C million domain cells. REGRID + MERGE on synthetic data "
+            f"(<a href='{REPO_URL}/blob/main/performance/test_obc.py'>test_obc.py</a>).",
+        )
+        + f"<div class='charts'>{''.join(charts)}</div>"
+        + tables(table_parts)
+        + "</div>"
     )
 
 
@@ -918,17 +899,13 @@ def bathymetry_section(topo):
             a,
             y,
             value,
-            [
-                f"{b['params']['domain_deg']}° square at 0.1°",
-                f"{a:,} square degrees",
-                f"fit {fitted}",
-            ],
+            [f"{b['params']['domain_deg']}° square at 0.1°", f"fit {fitted}"],
         )
 
     charts = [
         chart(
             "Time by domain area",
-            "Area, square degrees (log scale)",
+            "Square degrees (log scale)",
             "Time (s, log scale)",
             [
                 {
@@ -948,10 +925,12 @@ def bathymetry_section(topo):
             ],
             xlog=True,
             ylog=True,
+            note=f"Close to linear in area (A<sup>{tp:.2f}</sup>): "
+            f"{fmt_s(ta * 1600**tp)} for a 40&deg; square.",
         ),
         chart(
-            "Memory added by domain area",
-            "Area, square degrees (log scale)",
+            "Memory by domain area",
+            "Square degrees (log scale)",
             "Memory added (GB, log scale)",
             [
                 {
@@ -965,38 +944,45 @@ def bathymetry_section(topo):
             ],
             xlog=True,
             ylog=True,
+            note=f"A bit faster than area (A<sup>{mp:.2f}</sup>): "
+            f"{fmt_mb(ma * 1600**mp * 1024)} for a 40&deg; square.",
         ),
     ]
     return (
         "<div class='panel' id='bathymetry'><h2>Bathymetry</h2>"
-        "<p class='sub'>GEBCO to the model grid: mom6_forge <span class='mono'>Topo.set_from_dataset</span> "
-        "on square domains at 0.1&deg;, from GEBCO's 15&Prime; grid.</p>"
-        f"<p class='mono'>time (s) &asymp; {ta:.2g}&middot;A<sup>{tp:.2f}</sup><br>"
-        f"memory added (GB) &asymp; {ma:.2g}&middot;A<sup>{mp:.2f}</sup></p>"
-        "<p class='sub'>A: domain area in square degrees. A power law, fitted to "
-        f"{len(rows)} cases: time {fit_error([ta * a**tp for a in area], times)}, memory "
-        f"{fit_error([ma * a**mp for a in area], mems)}.</p>"
-        f"<div class='charts'>{''.join(charts)}</div>"
-        + table(
+        + formula(
             [
-                ("Domain", 0),
-                ("Area", 1),
-                ("Time", 1),
-                ("Fit", 1),
-                ("Memory added", 1),
-                ("Fit", 1),
+                f"time (s) &asymp; {ta:.2g}&middot;A<sup>{tp:.2f}</sup>",
+                f"memory added (GB) &asymp; {ma:.2g}&middot;A<sup>{mp:.2f}</sup>",
             ],
+            f"A square degrees. GEBCO to a 0.1&deg; grid (mom6_forge "
+            f"<span class='mono'>Topo.set_from_dataset</span>); {len(rows)} cases: time "
+            f"{fit_error([ta * a**tp for a in area], times)}, memory "
+            f"{fit_error([ma * a**mp for a in area], mems)}.",
+        )
+        + f"<div class='charts'>{''.join(charts)}</div>"
+        + tables(
             [
-                (
-                    f"{b['params']['domain_deg']}&deg; square at 0.1&deg;",
-                    f"{a:,} deg&sup2;",
-                    fmt_s(b["stats"]["mean"]),
-                    fmt_s(ta * a**tp),
-                    fmt_mb(b["extra_info"]["rss_mb"]),
-                    fmt_mb(ma * a**mp * 1024),
+                table(
+                    [
+                        ("Domain", 0),
+                        ("Time", 1),
+                        ("Fit", 1),
+                        ("Memory added", 1),
+                        ("Fit", 1),
+                    ],
+                    [
+                        (
+                            f"{b['params']['domain_deg']}&deg; square",
+                            fmt_s(b["stats"]["mean"]),
+                            fmt_s(ta * a**tp),
+                            fmt_mb(b["extra_info"]["rss_mb"]),
+                            fmt_mb(ma * a**mp * 1024),
+                        )
+                        for a, b in zip(area, rows)
+                    ],
                 )
-                for a, b in zip(area, rows)
-            ],
+            ]
         )
         + "</div>"
     )
@@ -1035,33 +1021,32 @@ def runoff_section(rof):
     def fm(b):
         return m[0] + m[1] * b["extra_info"]["n_dst"] / 1e6
 
-    lo, hi = min(b["extra_info"]["n_dst"] for b in allrows), max(
-        b["extra_info"]["n_dst"] for b in allrows
+    span = logspace(
+        min(b["extra_info"]["n_dst"] for b in allrows),
+        max(b["extra_info"]["n_dst"] for b in allrows),
     )
-    span = logspace(lo, hi)
 
     def series(y, value, fitted, coef):
-        out = []
-        for test, name, label in sets:
-            if rows[test]:
-                out.append(
-                    {
-                        "name": name,
-                        "points": [
-                            (
-                                b["extra_info"]["n_dst"],
-                                y(b),
-                                value(b),
-                                [
-                                    label(b["extra_info"]),
-                                    f"{b['extra_info']['n_dst']:,} ocean cells",
-                                    f"fit {fitted(b)}",
-                                ],
-                            )
-                            for b in rows[test]
+        out = [
+            {
+                "name": name,
+                "points": [
+                    (
+                        b["extra_info"]["n_dst"],
+                        y(b),
+                        value(b),
+                        [
+                            label(b["extra_info"]),
+                            f"{b['extra_info']['n_dst']:,} ocean cells",
+                            f"fit {fitted(b)}",
                         ],
-                    }
-                )
+                    )
+                    for b in rows[test]
+                ],
+            }
+            for test, name, label in sets
+            if rows[test]
+        ]
         out[0]["fit"] = [(c, coef[0] + coef[1] * c / 1e6) for c in span]
         return out
 
@@ -1077,6 +1062,8 @@ def runoff_section(rof):
                 t,
             ),
             xlog=True,
+            note=f"Flat at {t[0]:.0f} s, set by the global GLOFAS mesh, then "
+            f"{t[1]:.0f} s more per million ocean cells.",
         ),
         chart(
             "Peak memory by ocean cells",
@@ -1089,45 +1076,52 @@ def runoff_section(rof):
                 m,
             ),
             xlog=True,
+            note=f"Flat at {m[0]:.1f} GB whatever the domain, then {m[1]:.1f} GB more "
+            "per million ocean cells.",
         ),
     ]
-    tables = "".join(
-        f"<h3>{name}</h3>"
-        + table(
-            [
-                ("Domain" if "domain" in test else "Resolution", 0),
-                ("Ocean cells", 1),
-                ("Time", 1),
-                ("Fit", 1),
-                ("Peak memory", 1),
-                ("Fit", 1),
-            ],
-            [
-                (
-                    escape(label(b["extra_info"])),
-                    f"{b['extra_info']['n_dst']:,}",
-                    fmt_s(b["stats"]["mean"]),
-                    fmt_s(ft(b)),
-                    fmt_mb(b["extra_info"]["peak_rss_mb"]),
-                    fmt_mb(fm(b) * 1024),
-                )
-                for b in rows[test]
-            ],
-        )
-        for test, name, label in sets
-        if rows[test]
-    )
     return (
         "<div class='panel' id='runoff'><h2>Runoff mapping</h2>"
-        "<p class='sub'>GLOFAS to the ocean grid: mom6_forge <span class='mono'>gen_rof_maps</span>. "
-        "The global GLOFAS mesh (21.6 million cells) sets the floor whatever the domain.</p>"
-        f"<p class='mono'>time (s) &asymp; {t[0]:.3g} + {t[1]:.3g}&middot;C<br>"
-        f"memory (GB) &asymp; {m[0]:.3g} + {m[1]:.2g}&middot;C</p>"
-        f"<p class='sub'>C: million ocean cells. A line through the {len(allrows)} cases: time "
-        f"{fit_error([ft(b) for b in allrows], [b['stats']['mean'] for b in allrows])}, memory "
-        f"{fit_error([fm(b) for b in allrows], [b['extra_info']['peak_rss_mb'] / 1024 for b in allrows])}. "
-        "The line in the charts is the fit to both sets.</p>"
-        f"<div class='charts'>{''.join(charts)}</div>{tables}</div>"
+        + formula(
+            [
+                f"time (s) &asymp; {t[0]:.3g} + {t[1]:.3g}&middot;C",
+                f"memory (GB) &asymp; {m[0]:.3g} + {m[1]:.2g}&middot;C",
+            ],
+            f"C million ocean cells. GLOFAS to the ocean grid (mom6_forge "
+            f"<span class='mono'>gen_rof_maps</span>, rmax 20 km); {len(allrows)} cases: time "
+            f"{fit_error([ft(b) for b in allrows], [b['stats']['mean'] for b in allrows])}, memory "
+            f"{fit_error([fm(b) for b in allrows], [b['extra_info']['peak_rss_mb'] / 1024 for b in allrows])}.",
+        )
+        + f"<div class='charts'>{''.join(charts)}</div>"
+        + tables(
+            [
+                f"<h3>{name}</h3>"
+                + table(
+                    [
+                        ("Domain" if "domain" in test else "Resolution", 0),
+                        ("Ocean cells", 1),
+                        ("Time", 1),
+                        ("Fit", 1),
+                        ("Peak memory", 1),
+                        ("Fit", 1),
+                    ],
+                    [
+                        (
+                            escape(label(b["extra_info"])),
+                            f"{b['extra_info']['n_dst']:,}",
+                            fmt_s(b["stats"]["mean"]),
+                            fmt_s(ft(b)),
+                            fmt_mb(b["extra_info"]["peak_rss_mb"]),
+                            fmt_mb(fm(b) * 1024),
+                        )
+                        for b in rows[test]
+                    ],
+                )
+                for test, name, label in sets
+                if rows[test]
+            ]
+        )
+        + "</div>"
     )
 
 
@@ -1156,7 +1150,8 @@ def mom6_section(scaling):
                     fmt_s(p["tot_run_time_s"]),
                     [
                         d["name"],
-                        f"{p['ntasks_ocn']} tasks, {p['throughput_sim_years_per_day']:.1f} simulated years/day",
+                        f"{p['ntasks_ocn']} tasks, "
+                        f"{p['throughput_sim_years_per_day']:.1f} simulated years/day",
                         f"fit {fmt_s(fitted(p['ntasks_ocn']))}",
                     ],
                 )
@@ -1167,16 +1162,18 @@ def mom6_section(scaling):
         for name, runs in groups
     ]
     series[0]["fit"] = [(n, fitted(n)) for n in logspace(min(ns), max(ns))]
+    sweep = sorted(scaling["reference_sweep"]["points"], key=lambda p: p["ntasks_ocn"])
+    first, last = sweep[0], sweep[-1]
     return (
         "<div class='panel' id='mom6-scaling'><h2>MOM6 speed vs. NTASKS_OCN</h2>"
-        f"<p class='sub'>A month on Derecho, compset <span class='mono'>{escape(scaling['compset'])}</span>, "
-        f"{escape(scaling['queue'])} queue; every grid is 100&times;100 with 10 levels (each one is in the raw "
-        f"<a href='{REPO_URL}/blob/main/performance/mom6_scaling.json'>JSON</a>).</p>"
-        f"<p class='mono'>run time (s) &asymp; {a:.3g} + {b:.4g} &divide; N</p>"
-        "<p class='sub'>N: NTASKS_OCN. Amdahl's law fitted to all "
-        f"{len(pts)} runs: {fit_error([fitted(p['ntasks_ocn']) for _, p in pts], [p['tot_run_time_s'] for _, p in pts])}. "
-        f"The {a:.2g} s that more tasks can't shorten is about {a / fitted(40):.0%} of a 40-task run.</p>"
-        "<div class='charts'>"
+        + formula(
+            [f"run time (s) &asymp; {a:.3g} + {b:.4g} &divide; N"],
+            "N NTASKS_OCN. A month on Derecho, 100&times;100&times;10 grids "
+            f"(<a href='{REPO_URL}/blob/main/performance/mom6_scaling.json'>JSON</a>); "
+            f"{len(pts)} runs: "
+            f"{fit_error([fitted(p['ntasks_ocn']) for _, p in pts], [p['tot_run_time_s'] for _, p in pts])}.",
+        )
+        + "<div class='charts'>"
         + chart(
             "Run time by tasks",
             "NTASKS_OCN (log scale)",
@@ -1184,26 +1181,33 @@ def mom6_section(scaling):
             series,
             xlog=True,
             ylog=True,
+            note=f"Falls as 1/N toward a {a:.0f} s floor: "
+            f"{first['tot_run_time_s'] / last['tot_run_time_s']:.0f}&times; faster on "
+            f"{last['ntasks_ocn']} tasks than on {first['ntasks_ocn']}.",
         )
         + "</div>"
-        + table(
+        + tables(
             [
-                ("Domain", 0),
-                ("NTASKS_OCN", 1),
-                ("Simulated years/day", 1),
-                ("Run time", 1),
-                ("Fit", 1),
-            ],
-            [
-                (
-                    escape(d["name"]),
-                    p["ntasks_ocn"],
-                    f"{p['throughput_sim_years_per_day']:.1f}",
-                    fmt_s(p["tot_run_time_s"]),
-                    fmt_s(fitted(p["ntasks_ocn"])),
+                table(
+                    [
+                        ("Domain", 0),
+                        ("NTASKS_OCN", 1),
+                        ("Simulated years/day", 1),
+                        ("Run time", 1),
+                        ("Fit", 1),
+                    ],
+                    [
+                        (
+                            escape(d["name"]),
+                            p["ntasks_ocn"],
+                            f"{p['throughput_sim_years_per_day']:.1f}",
+                            fmt_s(p["tot_run_time_s"]),
+                            fmt_s(fitted(p["ntasks_ocn"])),
+                        )
+                        for d, p in pts
+                    ],
                 )
-                for d, p in pts
-            ],
+            ]
         )
         + "</div>"
     )
@@ -1316,10 +1320,8 @@ def main():
     )
     perf = html_page(
         "CrocoDashChecks performance",
-        "<h1>CrocoDashChecks performance</h1><p>How long CrocoDash's expensive steps take "
-        "and how much memory they need, with fits for sizing jobs. Measured by hand on "
-        f"GLADE (<a href='{REPO_URL}/tree/main/performance'>performance/</a>). "
-        "<a href='./'>Checks</a></p>",
+        "<h1>CrocoDashChecks performance</h1><p>What CrocoDash's expensive steps cost, with fits "
+        "for sizing jobs. <a href='./'>Checks</a></p>",
         performance_body() + "<div id='tip' role='status'></div>"
         f"<script>{TOOLTIP_JS}</script>",
     )
