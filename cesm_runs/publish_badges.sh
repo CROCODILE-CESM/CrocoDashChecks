@@ -4,13 +4,17 @@
 #
 #   publish_badges.sh <badge-dir>
 #
+# BRANCH, DEST and MSG push other files the same way, e.g. the daily data-access
+# snapshot: BRANCH=main DEST=results MSG="..." publish_badges.sh <dir-with-health.json>
+#
 # Authenticates with the token that `gh auth login` stored in
 # ~/.config/gh/hosts.yml; Derecho has no gh module, so gh itself isn't needed.
 set -euo pipefail
 
 BADGE_DIR=$(cd "$1" && pwd)
 REPO=https://github.com/CROCODILE-CESM/CrocoDashChecks
-BRANCH=test-results
+BRANCH=${BRANCH:-test-results}
+DEST=${DEST:-.}
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 # The helper reads the token when git asks, so it never shows up in `ps`.
@@ -24,10 +28,11 @@ else
   git_ remote add origin "$REPO"
 fi
 
-cp "$BADGE_DIR"/*.json "$WORK"/
+mkdir -p "$WORK/$DEST"
+cp "$BADGE_DIR"/*.json "$WORK/$DEST"/
 git_ add -A
 git_ diff --cached --quiet && exit 0
-git_ commit -q -m "Test results $(date +%F)"
+git_ commit -q -m "${MSG:-Test results $(date +%F)}"
 
 # Several test jobs may finish at once: rebase onto whatever landed first.
 for _ in 1 2 3 4 5; do

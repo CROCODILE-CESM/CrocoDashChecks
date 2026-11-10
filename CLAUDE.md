@@ -79,14 +79,15 @@ CrocoDashChecks/
 │   ├── generate_report.py                # results/latest.json -> report/{regridding,crocodash,mom6_forge,index}.html
 │   ├── generate_runoff_report.py         # results/latest.json -> report/runoff_mapping.html
 │   ├── check_data_access.py              # link + validate_function checks -> results/health.json
+│   ├── data_access.pbs                   # daily Casper job: check, push health.json + badge
+│   ├── data_access_cron.sh               # cron entry point: qsubs data_access.pbs
 │   ├── generate_health_report.py         # results/health.json -> report/health.html
 │   ├── generate_scaling_report.py        # results/mom6_scaling.json -> report/mom6_scaling.html
 │   └── pbs_submit.sh                     # PBS job for the full perf suite on Derecho/Casper
 ├── docs/
 │   ├── how_benchmarking_works.md
 │   └── adding_benchmarks.md
-└── .github/workflows/publish.yml         # push to main + manual dispatch + daily schedule:
-                                           # data-health job (crocontainer) + rebuild all report pages, deploy Pages
+└── .github/workflows/publish.yml         # push to main + manual dispatch: rebuild all report pages, deploy Pages
 ```
 
 ## Running Benchmarks
@@ -195,9 +196,10 @@ run against the production mesh takes ~36 min and peaks near 13 GB, and on pre-f
 The test detects this and skips rather than burning hours — so a `CrocoDash`-env run reports
 the suite as skipped, not as fast.
 
-Data access health runs separately, daily — via `.github/workflows/publish.yml`'s
-`data-health` job (inside the `crocontainer` image, which has `CrocoDash` pre-installed).
-Run it by hand the same way locally:
+Data access health runs separately, daily on GLADE: a crontab line on `cron.hpc.ucar.edu`
+runs `scripts/data_access_cron.sh`, which qsubs `scripts/data_access.pbs` to Casper. The job
+pushes `results/health.json` to `main` and a `data_access.json` badge to `test-results`,
+both through `cesm_runs/publish_badges.sh`. Run it by hand the same way locally:
 
 ```bash
 python scripts/check_data_access.py           # -> results/health.json
@@ -312,20 +314,10 @@ each `NAV_PAGES` tuple in `scripts/report_common.py`.
 
 ## CI
 
-`.github/workflows/publish.yml` triggers on push to `main`, `workflow_dispatch`, and a daily
-`schedule`.
+`.github/workflows/publish.yml` triggers on push to `main` (including the daily health push
+from GLADE) and `workflow_dispatch`.
 
-- **`data-health`** (schedule + manual dispatch only): runs inside the
-  [`crocontainer`](https://github.com/CROCODILE-CESM/crocontainer) image on GitHub-hosted
-  `ubuntu-latest` — that image already has the `CrocoDash` conda env built in (see its
-  `Dockerfile`/`environment.yml`), so `scripts/check_data_access.py` can really import
-  `CrocoDash` and call `ProductRegistry.validate_function()` for real, not just skip
-  gracefully. It commits and pushes the refreshed `results/health.json`. Checks that read
-  hardcoded `/glade/...` paths (GLORYS via RDA, CESM ocean output) always report unhealthy
-  from CI — that's expected, they're GLADE-only by design. Checks needing Copernicus
-  Marine/CDS credentials need `COPERNICUSMARINE_SERVICE_USERNAME`/`_PASSWORD` and
-  `CDSAPI_URL`/`CDSAPI_KEY` set as repo secrets to pass.
-- **`publish`** (always runs): regenerates all report pages from whatever is currently
+- **`publish`**: regenerates all report pages from whatever is currently
   committed under `results/` and deploys to GitHub Pages. It never runs the perf
   benchmarks — those need real HPC-scale GEBCO/GLORYS data and stay a manual/PBS thing.
 

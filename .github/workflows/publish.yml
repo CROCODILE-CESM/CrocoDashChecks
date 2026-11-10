@@ -4,12 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    # 06:00 UTC daily — runs the data-access health check, then rebuilds both pages.
-    - cron: "0 6 * * *"
+  # The data-access check runs daily on GLADE (scripts/data_access_cron.sh) and
+  # pushes results/health.json to main, which rebuilds the pages from here.
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -18,53 +17,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  data-health:
-    # Only on the daily cron / manual dispatch — a real network+CrocoDash check,
-    # not something to re-run on every push.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/crocodile-cesm/crocontainer:latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run data-access health check
-        working-directory: ${{ github.workspace }}
-        shell: bash
-        env:
-          CDSAPI_URL: ${{ secrets.CDSAPI_URL }}
-          CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
-          COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
-          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
-        run: |
-          micromamba run -n CrocoDash python scripts/check_data_access.py || true
-
-      - name: Commit health snapshot
-        working-directory: ${{ github.workspace }}
-        shell: bash
-        run: |
-          # actions/checkout registers this repo as a safe.directory, but only
-          # under a temporary $HOME it swaps back afterward — later steps run
-          # with the container's real $HOME (/github/home), where checkout's
-          # exception was never saved. Root (the container user) checking out
-          # a directory owned by a different uid (the runner host's user, via
-          # the bind mount) trips git's dubious-ownership check without it.
-          git config --global --add safe.directory "$(pwd)"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
-          git add results/health.json
-          git diff --cached --quiet || git commit -m "ci: daily data-access health $(date -u +%Y-%m-%d)"
-          git push
-
   publish:
-    needs: [data-health]
-    if: always()
     runs-on: ubuntu-latest
     steps:
-      # ref: main (not the default github.sha) — data-health may have just
-      # pushed a new commit (the health snapshot); without this, checkout
-      # pins to the commit that triggered the run and misses it, so the
-      # published health page is permanently a day stale.
+      # ref: main, so a run dispatched from another branch still publishes
+      # main's results.
       - uses: actions/checkout@v4
         with:
           ref: main
