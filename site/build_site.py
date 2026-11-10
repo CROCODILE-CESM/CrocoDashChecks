@@ -451,7 +451,7 @@ def axis(values, log, ticks=None):
 
 def tick_label(v, compact):
     if compact:
-        for div, unit in ((1e6, "M"), (1e3, "K")):
+        for div, unit in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
             if v >= div:
                 return f"{v / div:g}{unit}"
     return f"{v:,g}"
@@ -988,109 +988,226 @@ def bathymetry_section(topo):
     )
 
 
+# What CESM's coupler holds for the smoothed runoff map: two route handles (liquid
+# and ice) of ~167 bytes a weight, measured on CrocIndoPacific_DROF_112 (4.0e8
+# weights, 133 GB on the mediator node).
+COUPLER_BYTES_PER_WEIGHT = 2 * 167
+
+
 def runoff_section(rof):
+    """gen_rof_maps cost, fitted over every case (see performance/test_mapping.py):
+    the smoothed map's weight count n_s from geometry, then time and memory from
+    ocean cells and n_s."""
     sets = [
         (
             "test_gen_rof_maps_domain",
-            "By domain",
+            "By domain, rmax 20 km",
             lambda e: e["domain"].replace("_", " "),
         ),
         (
             "test_gen_rof_maps_resolution",
-            "By resolution, Gulf of Mexico",
+            "By resolution, Gulf of Mexico, rmax 20 km",
             lambda e: f"{e['resolution_deg']:.3g}°",
+        ),
+        (
+            "test_gen_rof_maps_rmax",
+            "By rmax, 1/12°",
+            lambda e: f"{e['domain'].replace('_', ' ')}, rmax {e['rmax_km']} km",
         ),
     ]
     rows = {
-        test: sorted(bench_rows(rof, test), key=lambda b: b["extra_info"]["n_dst"])
+        test: sorted(
+            bench_rows(rof, test),
+            key=lambda b: (b["extra_info"]["n_ocn"], b["extra_info"]["rmax_km"]),
+        )
         for test, *_ in sets
     }
     allrows = [b for r in rows.values() for b in r]
-    if not allrows:
+    if not allrows or "ocn_cell_km2" not in allrows[0]["extra_info"]:
         return ""
-    cells = [b["extra_info"]["n_dst"] / 1e6 for b in allrows]
-    t = lstsq([[1, c] for c in cells], [b["stats"]["mean"] for b in allrows])
-    m = lstsq(
-        [[1, c] for c in cells],
-        [b["extra_info"]["peak_rss_mb"] / 1024 for b in allrows],
+
+    def e(b):
+        return b["extra_info"]
+
+    def spread(x):  # pi rmax^2 / a: ocean cells within rmax of a coastal cell
+        return math.pi * x["rmax_km"] ** 2 / x["ocn_cell_km2"]
+
+    # n_s / N - 1 = k * spread, through the origin. An rmax narrower than a cell
+    # spreads nowhere (n_s = N), so those cases stay out of the fit.
+    wide = [b for b in allrows if e(b)["rmax_km"] ** 2 > e(b)["ocn_cell_km2"]]
+    (k,) = lstsq(
+        [[spread(e(b))] for b in wide],
+        [e(b)["nnsm_n_s"] / e(b)["nn_n_s"] - 1 for b in wide],
     )
+
+    def fw(x, rmax=None):
+        r = x["rmax_km"] if rmax is None else rmax
+        return x["nn_n_s"] * (1 + k * math.pi * r**2 / x["ocn_cell_km2"])
+
+    def cw(b):  # (million ocean cells, billion weights)
+        return e(b)["n_ocn"] / 1e6, e(b)["nnsm_n_s"] / 1e9
+
+    times = [b["stats"]["mean"] for b in allrows]
+    mems = [e(b)["peak_rss_mb"] / 1024 for b in allrows]
+    t = lstsq([[1, *cw(b)] for b in allrows], times)
+    m = lstsq([[1, cw(b)[1]] for b in allrows], mems)
 
     def ft(b):
-        return t[0] + t[1] * b["extra_info"]["n_dst"] / 1e6
+        c, w = cw(b)
+        return t[0] + t[1] * c + t[2] * w
 
     def fm(b):
-        return m[0] + m[1] * b["extra_info"]["n_dst"] / 1e6
+        return m[0] + m[1] * cw(b)[1]
 
-    span = logspace(
-        min(b["extra_info"]["n_dst"] for b in allrows),
-        max(b["extra_info"]["n_dst"] for b in allrows),
+    # Weights against rmax, one exponent shared by the domains.
+    domains = list(
+        dict.fromkeys(e(b)["domain"] for b in rows["test_gen_rof_maps_rmax"])
     )
+    rmax_rows = rows["test_gen_rof_maps_rmax"]
+    if rmax_rows:
+        *_, p = lstsq(
+            [
+                [float(e(b)["domain"] == d) for d in domains]
+                + [math.log(e(b)["rmax_km"])]
+                for b in rmax_rows
+            ],
+            [math.log(e(b)["nnsm_n_s"]) for b in rmax_rows],
+        )
 
-    def series(y, value, fitted, coef):
-        out = [
-            {
-                "name": name,
-                "points": [
-                    (
-                        b["extra_info"]["n_dst"],
-                        y(b),
-                        value(b),
-                        [
-                            label(b["extra_info"]),
-                            f"{b['extra_info']['n_dst']:,} ocean cells",
-                            f"fit {fitted(b)}",
-                        ],
-                    )
-                    for b in rows[test]
-                ],
-            }
-            for test, name, label in sets
-            if rows[test]
-        ]
-        out[0]["fit"] = [(c, coef[0] + coef[1] * c / 1e6) for c in span]
-        return out
+    def weights(n):
+        return f"{n / 1e9:.2f} billion" if n >= 1e8 else f"{n / 1e6:.1f} million"
+
+    def coupler_gb(n):
+        return n * COUPLER_BYTES_PER_WEIGHT / 1024**3
 
     charts = [
         chart(
             "Time by ocean cells",
             "Ocean cells (log scale)",
             "Time (s)",
-            series(
-                lambda b: b["stats"]["mean"],
-                lambda b: fmt_s(b["stats"]["mean"]),
-                lambda b: fmt_s(ft(b)),
-                t,
-            ),
+            [
+                {
+                    "name": name,
+                    "points": [
+                        (
+                            e(b)["n_ocn"],
+                            b["stats"]["mean"],
+                            fmt_s(b["stats"]["mean"]),
+                            [
+                                label(e(b)),
+                                f"{e(b)['n_ocn']:,} ocean cells",
+                                f"fit {fmt_s(ft(b))}",
+                            ],
+                        )
+                        for b in rows[test]
+                    ],
+                    "fit": [(e(b)["n_ocn"], ft(b)) for b in rows[test]],
+                }
+                for test, name, label in sets[:2]
+                if rows[test]
+            ],
             xlog=True,
             note=f"Flat at {t[0]:.0f} s, set by the global GLOFAS mesh, then "
             f"{t[1]:.0f} s more per million ocean cells.",
         ),
-        chart(
-            "Peak memory by ocean cells",
-            "Ocean cells (log scale)",
-            "Peak memory (GB)",
-            series(
-                lambda b: b["extra_info"]["peak_rss_mb"] / 1024,
-                lambda b: fmt_mb(b["extra_info"]["peak_rss_mb"]),
-                lambda b: fmt_mb(fm(b) * 1024),
-                m,
-            ),
-            xlog=True,
-            note=f"Flat at {m[0]:.1f} GB whatever the domain, then {m[1]:.1f} GB more "
-            "per million ocean cells.",
-        ),
     ]
+    if rows["test_gen_rof_maps_rmax"]:
+        r_span = logspace(
+            min(e(b)["rmax_km"] for b in rows["test_gen_rof_maps_rmax"]),
+            max(e(b)["rmax_km"] for b in rows["test_gen_rof_maps_rmax"]),
+        )
+        charts.append(
+            chart(
+                "Weights by rmax",
+                "rmax (km, log scale)",
+                "Smoothed-map weights (log scale)",
+                [
+                    {
+                        "name": d.replace("_", " "),
+                        "points": [
+                            (
+                                e(b)["rmax_km"],
+                                e(b)["nnsm_n_s"],
+                                weights(e(b)["nnsm_n_s"]),
+                                [
+                                    f"rmax {e(b)['rmax_km']} km",
+                                    f"fit {weights(fw(e(b)))}",
+                                    f"coupler ~{fmt_mb(coupler_gb(e(b)['nnsm_n_s']) * 1024)}",
+                                ],
+                            )
+                            for b in pts
+                        ],
+                        "fit": [(r, fw(e(pts[0]), r)) for r in r_span],
+                    }
+                    for d in domains
+                    for pts in [
+                        [
+                            b
+                            for b in rows["test_gen_rof_maps_rmax"]
+                            if e(b)["domain"] == d
+                        ]
+                    ]
+                ],
+                xlog=True,
+                ylog=True,
+                xticks=[10, 20, 40, 80],
+                note=f"About rmax<sup>{p:.1f}</sup>: doubling rmax multiplies the "
+                f"weights by {2**p:.1f}, and the coupler's memory with them.",
+            )
+        )
+    n_all = [e(b)["nnsm_n_s"] for b in allrows]
+    charts.append(
+        chart(
+            "Peak memory by weights",
+            "Smoothed-map weights (log scale)",
+            "Peak memory (GB)",
+            [
+                {
+                    "name": "",
+                    "points": [
+                        (
+                            w,
+                            y,
+                            fmt_mb(y * 1024),
+                            [
+                                label(e(b)),
+                                f"{weights(e(b)['nnsm_n_s'])} weights",
+                                f"fit {fmt_mb(fm(b) * 1024)}",
+                            ],
+                        )
+                        for test, _, label in sets
+                        for b in rows[test]
+                        for w, y in [(e(b)["nnsm_n_s"], e(b)["peak_rss_mb"] / 1024)]
+                    ],
+                    "fit": [
+                        (n, m[0] + m[1] * n / 1e9)
+                        for n in logspace(min(n_all), max(n_all))
+                    ],
+                }
+            ],
+            xlog=True,
+            note=f"Flat at {m[0]:.0f} GB, set by the global GLOFAS mesh, then "
+            f"{m[1]:.0f} GB more per billion weights.",
+        )
+    )
     return (
         "<div class='panel' id='runoff'><h2>Runoff mapping</h2>"
         + formula(
             [
-                f"time (s) &asymp; {t[0]:.3g} + {t[1]:.3g}&middot;C",
-                f"memory (GB) &asymp; {m[0]:.3g} + {m[1]:.2g}&middot;C",
+                f"time (s) &asymp; {t[0]:.3g} + {t[1]:.3g}&middot;C + {t[2]:.3g}&middot;W",
+                f"memory (GB) &asymp; {m[0]:.3g} + {m[1]:.3g}&middot;W",
+                f"weights &asymp; N&middot;(1 + {k:.2f}&middot;&pi;r<sup>2</sup>/a)",
+                f"coupler (GB) &asymp; {coupler_gb(1e9):.0f}&middot;W",
             ],
-            f"C million ocean cells. GLOFAS to the ocean grid (mom6_forge "
-            f"<span class='mono'>gen_rof_maps</span>, rmax 20 km); {len(allrows)} cases: time "
-            f"{fit_error([ft(b) for b in allrows], [b['stats']['mean'] for b in allrows])}, memory "
-            f"{fit_error([fm(b) for b in allrows], [b['extra_info']['peak_rss_mb'] / 1024 for b in allrows])}.",
+            "C million ocean cells, W billion weights in the smoothed map, N GLOFAS cells "
+            "in the domain's box (its area / 0.0025 deg&sup2;), r rmax (km), a ocean cell "
+            "area (km&sup2;). GLOFAS to the ocean grid (mom6_forge "
+            f"<span class='mono'>gen_rof_maps</span>, fold = rmax); {len(allrows)} cases: "
+            f"time {fit_error([ft(b) for b in allrows], times)}, memory "
+            f"{fit_error([fm(b) for b in allrows], mems)}, weights "
+            f"{fit_error([fw(e(b)) for b in wide], [e(b)['nnsm_n_s'] for b in wide])} "
+            "(rmax wider than a cell). The coupler line is CESM's two route handles, "
+            f"{COUPLER_BYTES_PER_WEIGHT // 2} bytes a weight each, measured in a run.",
         )
         + f"<div class='charts'>{''.join(charts)}</div>"
         + tables(
@@ -1098,21 +1215,27 @@ def runoff_section(rof):
                 f"<h3>{name}</h3>"
                 + table(
                     [
-                        ("Domain" if "domain" in test else "Resolution", 0),
+                        ("Case", 0),
                         ("Ocean cells", 1),
+                        ("Weights", 1),
+                        ("Fit", 1),
                         ("Time", 1),
                         ("Fit", 1),
                         ("Peak memory", 1),
                         ("Fit", 1),
+                        ("Coupler", 1),
                     ],
                     [
                         (
-                            escape(label(b["extra_info"])),
-                            f"{b['extra_info']['n_dst']:,}",
+                            escape(label(e(b))),
+                            f"{e(b)['n_ocn']:,}",
+                            weights(e(b)["nnsm_n_s"]),
+                            weights(fw(e(b))),
                             fmt_s(b["stats"]["mean"]),
                             fmt_s(ft(b)),
-                            fmt_mb(b["extra_info"]["peak_rss_mb"]),
+                            fmt_mb(e(b)["peak_rss_mb"]),
                             fmt_mb(fm(b) * 1024),
+                            fmt_mb(coupler_gb(e(b)["nnsm_n_s"]) * 1024),
                         )
                         for b in rows[test]
                     ],

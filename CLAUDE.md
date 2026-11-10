@@ -27,5 +27,6 @@ turns their JSON into two pages on GitHub Pages: the checks, and performance wit
 - **The weekly job pushes `cesm_runs.json` to `test-results`, not `main`,** so the site only picks it
   up on its next rebuild, at the latest after the next daily data-access push.
 - **`performance/test_mapping.py` needs the `mom6_forge` env:** CrocoDash's nested mom6_forge lacks the
-  runoff-mapping write-path fix (mom6_forge #125). Keep its boxes clear of the 0/360 seam.
+  runoff-mapping write-path fix (mom6_forge #125). Keep its boxes clear of the 0/360 seam. Its rmax
+  sweep peaks at ~85 GB (Indo-Pacific at rmax 80), so run it in a PBS job with 100 GB or more.
 - **MOM6 truncates `INPUTDIR` at 128 characters,** so keep `cesm_runs/` test paths short.
