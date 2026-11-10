@@ -1,6 +1,6 @@
 # CrocoDashChecks
 
-Checks that CrocoDash works end to end, beyond its own unit tests: real CESM runs on Derecho, performance benchmarks, and a daily check that the data sources CrocoDash reads are reachable. Reports: <https://crocodile-cesm.github.io/CrocoDashChecks/>
+Checks that CrocoDash works end to end, beyond its own unit tests: real CESM runs on Derecho, performance benchmarks, and a daily check that the data sources CrocoDash reads are reachable. Dashboard: <https://crocodile-cesm.github.io/CrocoDashChecks/>
 
 ## Weekly CESM runs on Derecho
 
@@ -58,8 +58,9 @@ suite (including the GEBCO/GLORYS-dependent ones) as a PBS job.
 Build the report pages:
 
 ```bash
-python scripts/generate_report.py         # suite pages + landing page
+python scripts/generate_report.py         # suite pages
 python scripts/generate_runoff_report.py  # runoff mapping page
+python scripts/generate_dashboard.py      # the landing dashboard
 open report/index.html
 ```
 

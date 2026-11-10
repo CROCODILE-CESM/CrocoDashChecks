@@ -253,7 +253,7 @@ generator shares one page shell — CSS, header, cross-page nav bar — from
 in one place rather than five nav bars by hand.
 
 `scripts/generate_report.py` groups `results/latest.json`'s benchmarks by suite (parsed from
-`fullname`) then by test function, and writes three suite pages plus a landing page:
+`fullname`) then by test function, and writes three suite pages:
 - `report/regridding.html` — the six xESMF/ESMF weight-generation/apply benchmarks
   consolidated into one heatmap section (source size × destination size → time, inline HTML
   table + a shared log-scale color legend, sequential-blue ramp from the dataviz palette),
@@ -263,9 +263,15 @@ in one place rather than five nav bars by hand.
   natural sweep.
 - `report/crocodash.html` — `test_obc`'s `test_regrid_and_merge` gets the same style of
   line chart (time vs. regrid_step).
-- `report/index.html` — no benchmark content of its own; one card per report page
-  (regridding, CrocoDash, mom6_forge, runoff mapping, data access health, MOM6 scaling)
-  linking out to it.
+
+`scripts/generate_dashboard.py` writes the landing page, `report/index.html`: a dashboard
+of where each check stands. Status tiles for the weekly CESM runs, data access and the
+performance snapshot; the CESM runs' per-phase table from `results/cesm_runs.json` (which
+`cesm_runs/run_mom_tests.py` writes to the `test-results` branch, and `publish.yml` fetches
+before building); data access grouped by product from `results/health.json`; and cards
+linking the performance pages. Status colors (good/warning/critical) mark state only, always
+beside a text label. A check older than `STALE_DAYS` gets a "Stale" chip, since a schedule
+that stops running fails silently otherwise. Every number on it comes from the JSON.
 
 `test_mapping`'s two sweeps are *not* on the mom6_forge page — they have their own page
 (below). `TESTS_ON_OTHER_PAGES` in `generate_report.py` is what keeps them from also

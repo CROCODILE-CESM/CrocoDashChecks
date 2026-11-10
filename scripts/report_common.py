@@ -12,48 +12,65 @@ Pages URL instead of only living in the git repo.
 
 import shutil
 
-# (href, label, source results/*.json filename or None) for every page in
-# report/, in the order they should appear in the nav bar and on the
-# index.html landing page. The json name is what gets linked as "raw data"
-# on that page, and is the file publish_results_json() copies into report/.
+# (href, label, source results/*.json filename or None, nav group) for every
+# page in report/, in nav-bar order. The json name is what gets linked as "raw
+# data" on that page, and is the file publish_results_json() copies into report/.
 NAV_PAGES = [
-    ("index.html", "Overview", None),
-    ("regridding.html", "Regridding", "latest.json"),
-    ("crocodash.html", "CrocoDash", "latest.json"),
-    ("mom6_forge.html", "mom6_forge", "latest.json"),
-    ("runoff_mapping.html", "Runoff mapping", "latest.json"),
-    ("health.html", "Data access health", "health.json"),
-    ("mom6_scaling.html", "MOM6 scaling", "mom6_scaling.json"),
+    ("index.html", "Dashboard", None, None),
+    ("health.html", "Data access", "health.json", "Checks"),
+    ("mom6_scaling.html", "MOM6 scaling", "mom6_scaling.json", "Performance"),
+    ("runoff_mapping.html", "Runoff mapping", "latest.json", "Performance"),
+    ("regridding.html", "Regridding", "latest.json", "Performance"),
+    ("crocodash.html", "CrocoDash OBC", "latest.json", "Performance"),
+    ("mom6_forge.html", "mom6_forge bathymetry", "latest.json", "Performance"),
 ]
 
+# Colors are the dataviz reference palette's ink, surface and status roles.
+# Status colors (good/warning/critical) only ever mark state, always beside a
+# text label, never a data series.
 BASE_CSS = """
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         margin: 0; padding: 0; background: #f5f6fa; color: #222; }
-  header { background: #1a3a5c; color: #fff; padding: 1.5rem 2rem; }
-  header h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
-  header p { margin: 0 0 0.5rem; }
-  header nav { font-size: 0.82rem; }
-  header nav a { color: #9fc3e8; margin-right: 0.9rem; }
-  section { padding: 1.5rem 2rem 0.5rem; }
-  section h2 { font-size: 1.2rem; border-bottom: 2px solid #c8d6e5;
-                padding-bottom: 0.4rem; margin-bottom: 1rem; color: #1a3a5c; }
-  .card { background: #fff; border-radius: 8px; padding: 1rem 1.25rem;
-           box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 1.25rem; overflow-x: auto; }
-  .card h3 { margin: 0 0 0.6rem; font-size: 0.95rem; color: #333;
-              font-family: 'SFMono-Regular', Consolas, monospace; }
-  .card p { margin: 0; color: #555; font-size: 0.88rem; }
+  :root { color-scheme: light;
+          --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+          --muted: #898781; --grid: #e1e0d9; --axis: #c3c2b7;
+          --border: rgba(11,11,11,0.10); --accent: #2a78d6;
+          --good: #0ca30c; --good-text: #006300; --warning: #fab219; --critical: #d03b3b; }
+  body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+         margin: 0; padding: 0; background: var(--page); color: var(--ink); }
+  a { color: var(--accent); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; box-sizing: border-box; }
+  header { background: var(--surface); border-bottom: 1px solid var(--grid); }
+  header .wrap { padding-top: 1.25rem; padding-bottom: 0.6rem; }
+  header h1 { margin: 0 0 0.2rem; font-size: 1.5rem; }
+  header p { margin: 0 0 0.8rem; color: var(--ink-2); font-size: 0.92rem; }
+  header nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 1.1rem;
+               font-size: 0.85rem; }
+  header nav .group { color: var(--muted); font-size: 0.7rem; text-transform: uppercase;
+                      letter-spacing: 0.05em; margin-left: 0.4rem; }
+  header nav a { color: var(--ink-2); text-decoration: none; padding: 0.15rem 0;
+                 border-bottom: 2px solid transparent; }
+  header nav a:hover { color: var(--ink); }
+  header nav a[aria-current="page"] { color: var(--ink); font-weight: 600;
+                                      border-bottom-color: var(--accent); }
+  section { padding: 1.25rem 0 0.25rem; }
+  section h2 { font-size: 1.1rem; margin: 0 0 0.8rem; color: var(--ink); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+          padding: 1rem 1.25rem; margin-bottom: 1.25rem; overflow-x: auto; }
+  .card h3 { margin: 0 0 0.6rem; font-size: 0.95rem; color: var(--ink);
+             font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  .card p { margin: 0; color: var(--ink-2); font-size: 0.88rem; }
   table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
-  th, td { text-align: right; padding: 0.3rem 0.6rem; }
+  th, td { text-align: right; padding: 0.35rem 0.6rem; }
   th:first-child, td:first-child { text-align: left; }
-  thead th { border-bottom: 2px solid #c8d6e5; color: #555; }
-  tbody tr:nth-child(even) { background: #f7f9fc; }
-  .ok { color: #1a7a3e; font-weight: 600; }
-  .fail { color: #b30000; font-weight: 600; }
-  footer { padding: 1.5rem 2rem; font-size: 0.8rem; color: #888; }
+  thead th, tr:first-child th { border-bottom: 1px solid var(--axis); color: var(--ink-2);
+                                font-weight: 600; }
+  tbody tr + tr td, tr + tr td { border-top: 1px solid var(--grid); }
+  .ok { color: var(--good-text); font-weight: 600; }
+  .fail { color: var(--critical); font-weight: 600; }
+  footer { padding: 1.5rem 0 2rem; font-size: 0.8rem; color: var(--muted); }
 """
 
 HEATMAP_CSS = """
-  #regrid-cost { background: #fff; border-bottom: 1px solid #dde4ee; }
+  #regrid-cost { }
   .hm-legend-label { display: flex; align-items: center; gap: 0.5rem;
                        font-size: 0.78rem; color: #555; margin: 0 0 1.25rem; }
   .hm-legend-bar { display: inline-block; width: 140px; height: 10px;
@@ -63,8 +80,8 @@ HEATMAP_CSS = """
   .hm-group-sub { font-size: 0.75rem; color: #777; margin: 0 0 0.75rem; }
   .hm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
               gap: 1.25rem; }
-  .hm-panel { background: #fff; border-radius: 8px; padding: 0.9rem 1rem;
-               box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+  .hm-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+               padding: 0.9rem 1rem; }
   .hm-panel h4 { margin: 0 0 0.6rem; font-size: 0.82rem; color: #333;
                   font-family: 'SFMono-Regular', Consolas, monospace; font-weight: 600; }
   table.heatmap { border-collapse: separate; border-spacing: 3px; width: 100%; }
@@ -89,26 +106,29 @@ LINECHART_CSS = """
 
 
 def render_nav(current):
-    """Nav links to every report page except the one being rendered."""
-    links = [
-        f'<a href="{href}">{label}</a>'
-        for href, label, _ in NAV_PAGES
-        if href != current
-    ]
-    return "".join(links)
+    """Nav links to every report page, under their group labels, with the
+    page being rendered marked as current."""
+    parts, group = [], None
+    for href, label, _, page_group in NAV_PAGES:
+        if page_group and page_group != group:
+            parts.append(f'<span class="group">{page_group}</span>')
+        group = page_group
+        mark = ' aria-current="page"' if href == current else ""
+        parts.append(f'<a href="{href}"{mark}>{label}</a>')
+    return "".join(parts)
 
 
 def json_link_for(current):
     """The raw results/*.json filename this page is built from, or None."""
     return next(
-        (json_name for href, _, json_name in NAV_PAGES if href == current), None
+        (json_name for href, _, json_name, _ in NAV_PAGES if href == current), None
     )
 
 
 def page_shell(current, title, subtitle_html, body_html, footer_text, extra_css=""):
     """Wrap body_html in the common doctype/head/header/footer. `current` is
     the page's own filename (e.g. "regridding.html"), used to build the nav
-    bar, exclude the self-link, and link the raw JSON this page renders."""
+    bar, mark the current page, and link the raw JSON this page renders."""
     json_name = json_link_for(current)
     json_link = (
         f' &middot; <a href="{json_name}">Raw data (JSON)</a>' if json_name else ""
@@ -117,18 +137,21 @@ def page_shell(current, title, subtitle_html, body_html, footer_text, extra_css=
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <style>
 {BASE_CSS}{extra_css}</style>
 </head>
 <body>
-<header>
+<header><div class="wrap">
   <h1>{title}</h1>
   <p>{subtitle_html}{json_link}</p>
   <nav>{render_nav(current)}</nav>
-</header>
+</div></header>
+<main class="wrap">
 {body_html}
-<footer>{footer_text}</footer>
+</main>
+<footer class="wrap">{footer_text}</footer>
 </body>
 </html>
 """

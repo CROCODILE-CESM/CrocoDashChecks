@@ -19,6 +19,7 @@ import argparse
 import copy
 import datetime
 import json
+import os
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -50,7 +51,7 @@ def parse_args():
                    help="MPI tasks for the data atmosphere, data runoff and mediator (default: --ntasks)")
     p.add_argument("--dry-run", action="store_true", help="list the tests and exit")
     p.add_argument("--badge-dir", type=Path,
-                   help="also write a shields.io endpoint badge (JSON) per test here")
+                   help="also write a shields.io endpoint badge (JSON) per test, and cesm_runs.json, here")
     return p.parse_args()
 
 
@@ -144,13 +145,19 @@ def run_succeeded(caseroot):
     return status.exists() and "case.run success" in status.read_text()
 
 
-def write_badge(testdir, name, badge_dir):
-    """shields.io endpoint JSON: passing, or the first phase that failed."""
+def read_phases(testdir):
+    """(phase, status) for each phase recorded in the test's TestStatus file."""
     ts_file = testdir / "TestStatus"
     lines = ts_file.read_text().splitlines() if ts_file.exists() else []
-    statuses = [line.split()[:3] for line in lines if len(line.split()) >= 3]
-    failed = [phase for status, _, phase in statuses if status == TEST_FAIL_STATUS]
-    passed = any(phase == RUN_PHASE and status == TEST_PASS_STATUS for status, _, phase in statuses)
+    fields = [line.split() for line in lines]
+    return [(f[2], f[0]) for f in fields if len(f) >= 3]
+
+
+def write_badge(testdir, name, badge_dir):
+    """shields.io endpoint JSON: passing, or the first phase that failed."""
+    statuses = read_phases(testdir)
+    failed = [phase for phase, status in statuses if status == TEST_FAIL_STATUS]
+    passed = (RUN_PHASE, TEST_PASS_STATUS) in statuses
     message = "passing" if passed else f"failing: {failed[0]}" if failed else "incomplete"
     # Keyed without machine/compiler/test id, so each run overwrites last run's badge.
     testname, grid, compset, *_ = name.split(".")
@@ -162,6 +169,37 @@ def write_badge(testdir, name, badge_dir):
     }
     badge_dir.mkdir(parents=True, exist_ok=True)
     (badge_dir / f"{testname}.{compset}.json").write_text(json.dumps(badge) + "\n")
+
+
+def git_ref(path):
+    """{"branch", "commit"} of a checkout, or None outside one."""
+    def git(*a):
+        r = subprocess.run(["git", "-C", str(path), *a], capture_output=True, text=True)
+        return r.stdout.strip() if r.returncode == 0 else None
+    commit = git("rev-parse", "--short", "HEAD") if path else None
+    return {"branch": git("rev-parse", "--abbrev-ref", "HEAD"), "commit": commit} if commit else None
+
+
+def write_summary(tests, args, badge_dir):
+    """cesm_runs.json next to the badges: what was tested and every test's
+    phases, for the dashboard."""
+    summary = {
+        "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+        "cesm": git_ref(args.cesmroot),
+        "crocodash": git_ref(os.environ.get("CROCODASH_SRC")),
+        "tests": [],
+    }
+    for name, compset, *_ in tests:
+        phases = read_phases(args.test_root / f"{name}.{args.test_id}")
+        summary["tests"].append({
+            "name": name,
+            "test": name.split(".")[0],
+            "compset": compset,
+            "longname": compset_longname(args.cesmroot, compset),
+            "phases": phases,
+            "passed": (RUN_PHASE, TEST_PASS_STATUS) in phases,
+        })
+    (badge_dir / "cesm_runs.json").write_text(json.dumps(summary, indent=1) + "\n")
 
 
 def run_test(test, cfg, args):
@@ -237,6 +275,7 @@ def main():
     if args.badge_dir:
         for name, *_ in tests:
             write_badge(args.test_root / f"{name}.{args.test_id}", name, args.badge_dir)
+        write_summary(tests, args, args.badge_dir)
 
 
 if __name__ == "__main__":
