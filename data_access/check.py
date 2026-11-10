@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Daily data-access check: calls every access method CrocoDash registers
-(ProductRegistry.validate_function) for real, and writes health.json next to
-this file, a snapshot overwritten each run.
+(validate_method) for real, and writes health.json next to this file, a
+snapshot overwritten each run. Methods that read the user's own files get real
+ones from METHOD_ARGS.
 
 Each method runs in its own process, VALIDATE_WORKERS at a time. One still
 running after VALIDATE_TIMEOUT is killed with everything it started, and
@@ -13,6 +14,7 @@ Usage (in the CrocoDash env, on GLADE; check.pbs runs it daily on Casper):
 """
 
 import concurrent.futures
+import inspect
 import json
 import os
 import shutil
@@ -27,6 +29,39 @@ from pathlib import Path
 OUTPUT_FILE = Path(__file__).resolve().parent / "health.json"
 VALIDATE_TIMEOUT = 900  # seconds per validate_function call (15 min)
 VALIDATE_WORKERS = 8  # access methods checked at once
+
+# Inputs for the methods that read files the user points them at, which have
+# nothing to read otherwise. Each method gets only the arguments it takes, so
+# one table works across CrocoDash branches (freq is newer than main).
+HAWAII = (
+    "/glade/campaign/cgd/oce/projects/CROCODILE/workshops/2026/dart/hawaii_pmo/ocn/hist"
+)
+IN_HAWAII = {
+    "dates": ["2023-06-15", "2023-06-18"],
+    "lat_min": 22.0,
+    "lat_max": 23.0,
+    "lon_min": 201.0,
+    "lon_max": 202.0,
+}
+METHOD_ARGS = {
+    ("cesm_mom_output", "get_mom6_output_data"): {
+        **IN_HAWAII,
+        "dataset_path": HAWAII,
+        "file_glob": "hawaii_pmo.mom6.h.[sz]*.2023-06.nc",  # z-space + surface
+        "freq": "D",
+    },
+    # The same run split one variable per file; see the README there.
+    ("cesm_mom_output", "get_mom6_single_variable_data"): {
+        **IN_HAWAII,
+        "dataset_path": "/glade/work/manishrv/croc_ci/inputs/mom6_tseries",
+        "freq": "MS",
+    },
+    # The gallery's CESM3 restart, on tx2_3v3, and that grid from inputdata.
+    ("cice_restart", "get_cice_restart_subset"): {
+        "restart_path": "/glade/u/home/dbailey/b.e30_alpha09b.B1850C_MTso.ne30_t233_wgx3.360.cice.r.0201-01-01-00000.nc",
+        "grid_path": "/glade/campaign/cesm/cesmdata/inputdata/ocn/mom/tx2_3v3/cice_grid_tx2_3v3_260305_cdf5.nc",
+    },
+}
 
 
 def _try_import_crocodash():
@@ -49,11 +84,14 @@ def _validate_one(product, method):
     returns False rather than raising, so the return value is what counts.
     """
     registry = _try_import_crocodash()
-    ok = (
-        registry is not None
-        and registry.validate_function(product, method) is not False
-    )
-    sys.exit(0 if ok else 1)
+    if registry is None:
+        sys.exit(1)
+    cls = registry.get_product(product)
+    takes = inspect.signature(cls._access_methods[method].__func__).parameters
+    args = {
+        k: v for k, v in METHOD_ARGS.get((product, method), {}).items() if k in takes
+    }
+    sys.exit(0 if cls.validate_method(method, **args) is not False else 1)
 
 
 def _failure_detail(output):
