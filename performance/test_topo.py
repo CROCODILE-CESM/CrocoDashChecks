@@ -1,20 +1,9 @@
-"""
-Benchmarks: Topo.set_from_dataset() (mom6_forge).
+"""How long Topo.set_from_dataset() (mom6_forge's GEBCO bathymetry) takes, and its
+peak memory, as the domain grows from 5 to 40 degrees at 0.1 degree.
 
-Full bathymetry processing pipeline: read GEBCO, regrid to the model grid,
-apply depth filters and fill algorithms.
-
-The primary cost driver is domain extent, not destination resolution.
-set_from_dataset() slices GEBCO to the model bounding box before regridding,
-so a larger geographic domain means more source data to load and interpolate.
-Destination resolution (nx/ny) has a secondary effect on the regrid step but
-is far less important than how much of GEBCO is being read.
-
-Parameters vary domain size in degrees at fixed 0.1° resolution, so both the
-GEBCO slice and the destination grid grow together.
-
-Requires: GEBCO_2024.nc at the path in data_config.json (gebco_path).
-HPC only — skipped gracefully on machines without the file.
+Needs GEBCO on GLADE (GEBCO_PATH); the 40 degree case needs ~60 GB. In the
+CrocoDash env:
+    pytest performance/test_topo.py --benchmark-json=performance/topo.json
 """
 
 from pathlib import Path
@@ -22,10 +11,9 @@ from pathlib import Path
 import psutil
 import pytest
 
-from benchmarks.common.config import get_path
-from benchmarks.common.memtrack import measure_rss
+from memtrack import measure_rss
 
-GEBCO_PATH = get_path("gebco_path")
+GEBCO_PATH = "/glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/gebco/GEBCO_2024.nc"
 GEBCO_AVAILABLE = bool(GEBCO_PATH) and Path(GEBCO_PATH).exists()
 
 
@@ -47,8 +35,9 @@ def _has_enough_memory_for(domain_deg):
     return psutil.virtual_memory().total / 1024**3 >= 90
 
 
-@pytest.mark.heavy  # needs real GEBCO data + a meaningful regrid even at the smallest size
-@pytest.mark.skipif(not GEBCO_AVAILABLE, reason="GEBCO_2024.nc not configured — GLADE only")
+@pytest.mark.skipif(
+    not GEBCO_AVAILABLE, reason="GEBCO_2024.nc not configured — GLADE only"
+)
 @pytest.mark.parametrize("domain_deg", [5, 10, 20, 40])
 def test_set_from_dataset(benchmark, domain_deg, tmp_path):
     """Topo.set_from_dataset() across domain extents at fixed 0.1° resolution.
@@ -59,7 +48,9 @@ def test_set_from_dataset(benchmark, domain_deg, tmp_path):
     resolution.
     """
     if not _has_enough_memory_for(domain_deg):
-        pytest.skip(f"domain_deg={domain_deg} needs ~60 GB RAM — request a high-memory node")
+        pytest.skip(
+            f"domain_deg={domain_deg} needs ~60 GB RAM — request a high-memory node"
+        )
 
     from mom6_forge.grid import Grid
     from mom6_forge.topo import Topo

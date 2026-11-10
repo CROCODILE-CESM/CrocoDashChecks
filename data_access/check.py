@@ -1,26 +1,15 @@
 #!/usr/bin/env python3
-"""
-check_data_access.py — Data-access health check: HTTP link reachability
-and raw-function validation (validate_function) for every registered
-CrocoDash product.
+"""Daily data-access check: calls every access method CrocoDash registers
+(ProductRegistry.validate_function) for real, and writes health.json next to
+this file, a snapshot overwritten each run.
 
-Always runs:
-  • Link checks — HTTP HEAD/GET on URLs in benchmarks/link_config.json
+Each method runs in its own process, VALIDATE_WORKERS at a time. One still
+running after VALIDATE_TIMEOUT is killed with everything it started, and
+whatever it downloaded goes with its temp dir. A failing method records its
+last error line as `detail`.
 
-Also runs when CrocoDash is importable (i.e. on GLADE/Derecho with the
-CrocoDash conda env active):
-  • validate_function — toy-calls every registered access method via
-    ProductRegistry.validate_function(), each in its own process,
-    VALIDATE_WORKERS at a time. A call still running after VALIDATE_TIMEOUT
-    is killed with everything it started, and whatever it downloaded goes
-    with its temp dir.
-
-Writes a single results/health.json, always overwritten — this is a
-snapshot of current status, not a history.
-
-Usage
------
-    conda run -n CrocoDash python scripts/check_data_access.py
+Usage (in the CrocoDash env, on GLADE; check.pbs runs it daily on Casper):
+    python data_access/check.py
 """
 
 import concurrent.futures
@@ -35,46 +24,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-import requests
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
-CONFIG_FILE = REPO_ROOT / "benchmarks" / "link_config.json"
-OUTPUT_FILE = REPO_ROOT / "results" / "health.json"
-
-LINK_TIMEOUT = 20
+OUTPUT_FILE = Path(__file__).resolve().parent / "health.json"
 VALIDATE_TIMEOUT = 900  # seconds per validate_function call (15 min)
 VALIDATE_WORKERS = 8  # access methods checked at once
-
-
-def _check_link(url):
-    """HEAD with GET fallback. Returns (ok: bool, elapsed_seconds)."""
-    t0 = time.monotonic()
-    try:
-        r = requests.head(url, allow_redirects=True, timeout=LINK_TIMEOUT)
-        if r.status_code == 200:
-            return True, time.monotonic() - t0
-    except Exception:
-        pass
-    t0 = time.monotonic()
-    try:
-        r = requests.get(url, stream=True, allow_redirects=True, timeout=LINK_TIMEOUT)
-        next(r.iter_content(chunk_size=1), None)
-        return r.status_code == 200, time.monotonic() - t0
-    except Exception:
-        return False, time.monotonic() - t0
-
-
-def run_link_checks(products):
-    rows = []
-    for product, url in sorted(products.items()):
-        ok, elapsed = _check_link(url)
-        rows.append(
-            {"product": product, "url": url, "ok": ok, "elapsed_s": round(elapsed, 2)}
-        )
-        print(
-            f"  link  [{'OK  ' if ok else 'FAIL'}] {product}: {url}  ({elapsed:.1f}s)"
-        )
-    return rows
 
 
 def _try_import_crocodash():
@@ -105,11 +57,16 @@ def _validate_one(product, method):
 
 
 def _failure_detail(output):
-    """The line most likely to say why a check failed: its last error line,
-    else its last line."""
+    """Why a check failed: its last error line, else its last line, without
+    the logger's timestamp/name prefix or validate_method's "Validation failed
+    for ...:" preamble."""
     lines = [line.strip() for line in output.splitlines() if line.strip()]
     errors = [line for line in lines if "error" in line.lower()]
-    return (errors or lines or [""])[-1][:300]
+    line = (errors or lines or [""])[-1]
+    line = line.split(" - ERROR - ", 1)[-1]
+    if line.startswith("Validation failed for ") and ": " in line:
+        line = line.split(": ", 1)[1]
+    return line[:300]
 
 
 def _check_access_method(product, method):
@@ -166,39 +123,16 @@ def run_validate_checks(registry):
 def main():
     # Line-buffered, so a PBS log shows each check as it finishes.
     sys.stdout.reconfigure(line_buffering=True)
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    cfg = json.loads(CONFIG_FILE.read_text())
-    products = cfg.get("products", {})
-
-    print("=== Link checks ===")
-    link_checks = run_link_checks(products)
-    link_ok = sum(1 for r in link_checks if r["ok"])
-
-    print("\n=== validate_function checks ===")
-    validate_checks = []
     registry = _try_import_crocodash()
-    if registry is not None:
-        validate_checks = run_validate_checks(registry)
-    val_ok = sum(1 for r in validate_checks if r["ok"])
-
+    checks = run_validate_checks(registry) if registry is not None else []
     data = {
         "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "link_checks": link_checks,
-        "validate_checks": validate_checks,
+        "validate_checks": checks,
     }
     OUTPUT_FILE.write_text(json.dumps(data, indent=2))
-    print(f"\nResults written to {OUTPUT_FILE}")
-
-    print(f"\nLinks:    {link_ok}/{len(link_checks)} OK")
-    if validate_checks:
-        print(f"Functions:{val_ok}/{len(validate_checks)} OK")
-    else:
-        print("Functions: skipped (CrocoDash not available)")
-
-    any_fail = link_ok < len(link_checks) or (
-        validate_checks and val_ok < len(validate_checks)
-    )
-    if any_fail:
+    ok = sum(1 for r in checks if r["ok"])
+    print(f"\n{ok}/{len(checks)} access methods OK; written to {OUTPUT_FILE}")
+    if not checks or ok < len(checks):
         sys.exit(1)
 
 

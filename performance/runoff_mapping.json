@@ -1,0 +1,273 @@
+{
+ "datetime": "2026-07-06T20:35:44.348793+00:00",
+ "benchmarks": [
+  {
+   "name": "test_gen_rof_maps_domain[box_1deg]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[box_1deg]",
+   "params": {
+    "domain": "box_1deg"
+   },
+   "extra_info": {
+    "peak_rss_mb": 12538.4453125,
+    "domain": "box_1deg",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 144,
+    "run_datetime": "2026-08-19T21:41:08.491586",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 77.73195501416922,
+    "min": 77.73195501416922,
+    "max": 77.73195501416922,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_domain[box_2deg]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[box_2deg]",
+   "params": {
+    "domain": "box_2deg"
+   },
+   "extra_info": {
+    "peak_rss_mb": 12954.5078125,
+    "domain": "box_2deg",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 576,
+    "run_datetime": "2026-08-19T21:41:08.491586",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 73.74785046000034,
+    "min": 73.74785046000034,
+    "max": 73.74785046000034,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_domain[box_4deg]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[box_4deg]",
+   "params": {
+    "domain": "box_4deg"
+   },
+   "extra_info": {
+    "peak_rss_mb": 13368.85546875,
+    "domain": "box_4deg",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 2304,
+    "run_datetime": "2026-08-19T21:41:08.491586",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 76.52949086762965,
+    "min": 76.52949086762965,
+    "max": 76.52949086762965,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_domain[box_8deg]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[box_8deg]",
+   "params": {
+    "domain": "box_8deg"
+   },
+   "extra_info": {
+    "peak_rss_mb": 13378.94921875,
+    "domain": "box_8deg",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 9216,
+    "run_datetime": "2026-08-19T21:41:08.491586",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 74.17595423106104,
+    "min": 74.17595423106104,
+    "max": 74.17595423106104,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_domain[caribbean]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[caribbean]",
+   "params": {
+    "domain": "caribbean"
+   },
+   "extra_info": {
+    "peak_rss_mb": 12650.35546875,
+    "domain": "caribbean",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 115920,
+    "run_datetime": "2026-08-19T21:41:08.491586",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 78.89920397661626,
+    "min": 78.89920397661626,
+    "max": 78.89920397661626,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_domain[gulf_of_mexico]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[gulf_of_mexico]",
+   "params": {
+    "domain": "gulf_of_mexico"
+   },
+   "extra_info": {
+    "peak_rss_mb": 12588.41796875,
+    "domain": "gulf_of_mexico",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 33696,
+    "run_datetime": "2026-08-19T21:41:08.491586",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 80.70080440305173,
+    "min": 80.70080440305173,
+    "max": 80.70080440305173,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_domain[indo_pacific]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[indo_pacific]",
+   "params": {
+    "domain": "indo_pacific"
+   },
+   "extra_info": {
+    "peak_rss_mb": 15801.6015625,
+    "domain": "indo_pacific",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 2419200,
+    "run_datetime": "2026-08-19T22:14:53.574319",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 187.15010187681764,
+    "min": 187.15010187681764,
+    "max": 187.15010187681764,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_domain[north_atlantic]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_domain[north_atlantic]",
+   "params": {
+    "domain": "north_atlantic"
+   },
+   "extra_info": {
+    "peak_rss_mb": 13235.7890625,
+    "domain": "north_atlantic",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 576000,
+    "run_datetime": "2026-08-19T22:14:53.574319",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 105.70233133994043,
+    "min": 105.70233133994043,
+    "max": 105.70233133994043,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_resolution[0.04]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_resolution[0.04]",
+   "params": {
+    "resolution_deg": 0.04
+   },
+   "extra_info": {
+    "peak_rss_mb": 12605.9921875,
+    "source_mesh": "global",
+    "domain": "gulf_of_mexico",
+    "resolution_deg": 0.04,
+    "n_src": 21600000,
+    "n_dst": 146250,
+    "run_datetime": "2026-08-19T18:19:14.662332",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 81.21482882462442,
+    "min": 81.21482882462442,
+    "max": 81.21482882462442,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_resolution[0.08333333333333333]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_resolution[0.08333333333333333]",
+   "params": {
+    "resolution_deg": 0.08333333333333333
+   },
+   "extra_info": {
+    "peak_rss_mb": 12591.87109375,
+    "source_mesh": "global",
+    "domain": "gulf_of_mexico",
+    "resolution_deg": 0.08333333333333333,
+    "n_src": 21600000,
+    "n_dst": 33696,
+    "run_datetime": "2026-08-19T18:19:14.662332",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 72.6788077019155,
+    "min": 72.6788077019155,
+    "max": 72.6788077019155,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_resolution[0.125]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_resolution[0.125]",
+   "params": {
+    "resolution_deg": 0.125
+   },
+   "extra_info": {
+    "peak_rss_mb": 12589.01171875,
+    "source_mesh": "global",
+    "domain": "gulf_of_mexico",
+    "resolution_deg": 0.125,
+    "n_src": 21600000,
+    "n_dst": 14976,
+    "run_datetime": "2026-08-19T18:19:14.662332",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 71.94974895194173,
+    "min": 71.94974895194173,
+    "max": 71.94974895194173,
+    "rounds": 1
+   }
+  },
+  {
+   "name": "test_gen_rof_maps_resolution[0.25]",
+   "fullname": "benchmarks/mom6_forge/test_mapping.py::test_gen_rof_maps_resolution[0.25]",
+   "params": {
+    "resolution_deg": 0.25
+   },
+   "extra_info": {
+    "peak_rss_mb": 12563.0078125,
+    "source_mesh": "global",
+    "domain": "gulf_of_mexico",
+    "resolution_deg": 0.25,
+    "n_src": 21600000,
+    "n_dst": 3744,
+    "run_datetime": "2026-08-19T18:19:14.662332",
+    "run_node": "crhtc75"
+   },
+   "stats": {
+    "mean": 79.69026706647128,
+    "min": 79.69026706647128,
+    "max": 79.69026706647128,
+    "rounds": 1
+   }
+  }
+ ]
+}

@@ -1,110 +1,39 @@
 # CrocoDashChecks
 
-[![weekly CESM runs](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/cesm_runs.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#cesm) [![data access](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/data_access.json)](https://crocodile-cesm.github.io/CrocoDashChecks/health.html)
+[![weekly CESM runs](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/cesm_runs.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#cesm) [![data access](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/data_access.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#data-access)
 
-Checks that CrocoDash works end to end, beyond its own unit tests: real CESM runs on Derecho, performance benchmarks, and a daily check that the data sources CrocoDash reads are reachable. Dashboard: <https://crocodile-cesm.github.io/CrocoDashChecks/>
+Checks that CrocoDash works end to end on NCAR's systems. Results: <https://crocodile-cesm.github.io/CrocoDashChecks/>
 
-## Weekly CESM runs on Derecho
-
-Every Monday, MOM_interface's regional smoke tests are built with the latest CrocoDash `main` and CESM `crocodash`, then run on a Derecho node (see [`cesm_runs/`](cesm_runs/README.md)). The job pushes its summary, `cesm_runs.json`, to the `test-results` branch, and the [dashboard](https://crocodile-cesm.github.io/CrocoDashChecks/#cesm) shows each test's phases from it.
-
-## Benchmarks
-
-A one-time performance snapshot for parts of the CROC ocean modeling ecosystem that don't
-change commit-to-commit: xESMF/ESMF regridding (external libraries), the mom6_forge
-bathymetry pipeline, and the CrocoDash OBC regrid+merge pipeline. Commit-by-commit
-performance tracking for CrocoDash/mom6_forge code itself lives in those repos' own
-pytest-benchmark suites, not here.
-
-### What's benchmarked
-
-| Suite | File(s) | Data needed | What it measures |
-|---|---|---|---|
-| xESMF weight generation | `xesmf/test_weights_generate.py` | None (synthetic) | `xe.Regridder()` construction time + RSS, grid→grid and grid→locstream |
-| xESMF regrid application | `xesmf/test_regrid_apply.py` | None (synthetic) | `regridder(ds)` time across grid sizes, time depths, methods |
-| ESMF weight generation | `esmf/test_weights_generate.py` | None (synthetic) | `esmpy.Regrid()` construction — raw ESMF, same sizes as xESMF suite |
-| ESMF regrid application | `esmf/test_regrid_apply.py` | None (synthetic) | `esmpy.Regrid()(src, dst)` time — raw ESMF |
-| Bathymetry pipeline | `mom6_forge/test_topo.py` | GEBCO (GLADE) | `Topo.set_from_dataset()` — GEBCO regrid + fill across domain sizes |
-| OBC forcing pipeline | `crocodash/test_obc.py` | Cached GLORYS (GLADE) | REGRID + MERGE phases of `process_obc_conditions()`, varying `regrid_step` |
-
-The xESMF/ESMF suites are pure-synthetic and marked `light`/`heavy` — the smallest
-grid-size combination in each sweep is `light` (a fast smoke test), everything else is
-`heavy`. `test_topo.py` and `test_obc.py` are always `heavy` — they need real GEBCO/GLORYS
-data and take meaningful time even at their smallest parameter value.
-
-Data-source health (are GLORYS/GEBCO/GLOFAS/etc. reachable?) is a separate concern —
-see [Data access health](#data-access-health) below.
-
-### Running the perf benchmarks
-
-```bash
-conda activate CrocoDash
-bash scripts/configure.sh          # sanity-check the environment
-
-bash scripts/run_benchmarks.sh                 # everything
-bash scripts/run_benchmarks.sh -m light        # fast smoke test (synthetic suites only)
-bash scripts/run_benchmarks.sh -k xesmf        # one suite
-```
-
-This writes `results/latest.json`. On Derecho, `qsub scripts/pbs_submit.sh` runs the full
-suite (including the GEBCO/GLORYS-dependent ones) as a PBS job.
-
-Build the report pages:
-
-```bash
-python scripts/generate_report.py         # suite pages
-python scripts/generate_runoff_report.py  # runoff mapping page
-python scripts/generate_dashboard.py      # the landing dashboard
-open report/index.html
-```
-
-## Data access health
-
-Whether GLORYS/GEBCO/GLOFAS/etc. are reachable and CrocoDash's access methods still work
-is checked **daily on GLADE**, so the checks that read GLADE (GLORYS from RDA, CESM output,
-the CICE restart) can pass too. A daily crontab line on `cron.hpc.ucar.edu` runs
-[`scripts/data_access_cron.sh`](scripts/data_access_cron.sh), which submits
-[`scripts/data_access.pbs`](scripts/data_access.pbs) to Casper. The job runs the check in the
-`CrocoDash` env with your credentials (`~/.cdsapirc`, `~/.copernicusmarine`), pushes
-`results/health.json` to `main`, which rebuilds the site. Its log goes to
-`/glade/work/$USER/croc_ci/logs/`.
-
-```bash
-# Crontab line (daily, 05:00 MT), next to the weekly CESM runs':
-0 5 * * * /glade/work/$USER/croc_ci/CrocoDashChecks/scripts/data_access_cron.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
-
-# By hand, in the CrocoDash env:
-python scripts/check_data_access.py     # writes results/health.json
-python scripts/generate_health_report.py
-open report/health.html
-```
-
-### HPC data-dependent benchmarks
-
-Fill in paths in `benchmarks/data_config.json` to enable the tests that need real data:
-
-| Key | Benchmark | What to put |
+| Folder | What it checks | When |
 |---|---|---|
-| `gebco_path` | `test_topo.py` | Path to `GEBCO_2024.nc` |
-| `obc_hgrid_path` / `obc_bathymetry_path` / `obc_vgrid_path` | `test_obc.py` | Grid + bathymetry from an existing CrocoDash case |
-| `obc_raw_data_dir` | `test_obc.py` | Pre-downloaded GLORYS OBC files, one per boundary, ISO-dated filenames |
-| `obc_dates_start` / `obc_dates_end` | `test_obc.py` | Date range those raw files cover |
+| [`cesm_runs/`](cesm_runs/README.md) | MOM_interface's regional SMS tests, each built with CrocoDash and run in CESM on Derecho | Mondays 02:00 MT |
+| [`data_access/`](data_access/) | Every way CrocoDash fetches data (`ProductRegistry.validate_function`), called for real on Casper | Daily 05:00 MT |
+| [`performance/`](performance/) | How long the expensive steps take (GEBCO bathymetry, GLOFAS runoff mapping) and MOM6's speed vs. tasks | By hand |
+| [`site/`](site/build_site.py) | Builds the results page from the three folders' JSON | On every push to `main` |
 
-Tests skip gracefully (`pytest.mark.skipif` / `pytest.skip`) when the required data isn't
-configured.
+## How it runs
 
-## CI
+The crontab on `cron.hpc.ucar.edu` submits both scheduled checks; the cron host has no software, so each script only runs `qsub`:
 
-`.github/workflows/publish.yml` runs on push to `main` (including the daily health push from
-GLADE) and on manual dispatch. It regenerates every report page from whatever is committed
-under `results/`, plus `cesm_runs.json` from the `test-results` branch, and deploys them to
-GitHub Pages. The two badges at the top are written with the site
-(`report/badges/*.json`), from the same counts as the dashboard's tiles. It never runs the benchmarks or the
-data-access check; those need GLADE.
+```
+0 2 * * 1 /glade/work/$USER/croc_ci/CrocoDashChecks/cesm_runs/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
+0 5 * * * /glade/work/$USER/croc_ci/CrocoDashChecks/data_access/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
+```
 
-> **First-time GitHub Pages setup:** Settings → Pages → Source → GitHub Actions.
+- **Clones:** both jobs run from the CI clones in `/glade/work/$USER/croc_ci` (this repo, CESM `crocodash`, CrocoDash). Each resets its clones to their branch tips first, so test another CrocoDash branch by checking it out there.
+- **Logs:** job logs go to `/glade/work/$USER/croc_ci/logs/`.
+- **Credentials:** the data-access job uses your own (`~/.cdsapirc`, `~/.copernicusmarine`).
+- **Publishing:** both jobs push their results with `cesm_runs/push_results.sh`, using the token from your `gh` login:
+  - the weekly runs push `cesm_runs.json` to the `test-results` branch;
+  - the daily check pushes `data_access/health.json` to `main`, which rebuilds the site.
 
-## Documentation
+## By hand
 
-- [How benchmarking works](docs/how_benchmarking_works.md)
-- [Adding new benchmarks](docs/adding_benchmarks.md)
+```bash
+python data_access/check.py                       # in the CrocoDash env, on GLADE
+pytest performance/test_topo.py --benchmark-json=performance/topo.json            # CrocoDash env, ~60 GB node
+pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json   # mom6_forge env
+python site/build_site.py                          # -> site/_build/index.html
+```
+
+`performance/mom6_scaling.json` holds a hand-run NTASKS_OCN sweep (the scripts are in the CROC monorepo's `dev/scaling_test/`).

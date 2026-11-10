@@ -1,11 +1,11 @@
-name: Publish Report
+name: Publish site
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
-  # The data-access check runs daily on GLADE (scripts/data_access_cron.sh) and
-  # pushes results/health.json to main, which rebuilds the pages from here.
+  # The data-access check runs daily on GLADE (data_access/cron_submit.sh) and
+  # pushes data_access/health.json to main, which rebuilds the site.
 
 permissions:
   contents: read
@@ -31,31 +31,19 @@ jobs:
           python-version: "3.11"
 
       # The weekly CESM-run job pushes its summary to the test-results
-      # branch, not main; the dashboard shows nothing for it if it's missing.
+      # branch, not main; the page says "no results yet" if it's missing.
       - name: Fetch the weekly CESM-run results
         run: |
           git fetch --depth 1 origin test-results
-          git show FETCH_HEAD:cesm_runs.json > results/cesm_runs.json || rm -f results/cesm_runs.json
+          git show FETCH_HEAD:cesm_runs.json > cesm_runs/cesm_runs.json || rm -f cesm_runs/cesm_runs.json
 
-      - name: Generate benchmark report
-        run: python scripts/generate_report.py
-
-      - name: Generate runoff mapping report
-        run: python scripts/generate_runoff_report.py
-
-      - name: Generate data access health report
-        run: python scripts/generate_health_report.py
-
-      - name: Generate MOM6 scaling report
-        run: python scripts/generate_scaling_report.py
-
-      - name: Generate dashboard
-        run: python scripts/generate_dashboard.py
+      - name: Build the site
+        run: python site/build_site.py
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: report
+          path: site/_build
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4

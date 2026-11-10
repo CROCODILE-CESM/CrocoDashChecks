@@ -1,40 +1,11 @@
-# Generated report pages — rebuilt from committed results/*.json
-report/
+# The built site (site/build_site.py)
+site/_build/
 
-# .pytest_cache and pytest-benchmark's own history dir
+# Fetched from the test-results branch by publish.yml at build time
+cesm_runs/cesm_runs.json
+
+# pytest, pytest-benchmark, and the TopoLibrary mom6_forge writes while benchmarking
 .pytest_cache/
 .benchmarks/
-
-# NetCDF and large data files
-*.nc
-*.nc4
-*.grb
-*.grb2
-
-# Python
+TopoLibrary/
 __pycache__/
-*.py[cod]
-*.egg-info/
-*.egg
-dist/
-build/
-.eggs/
-
-# ESMF weight files
-*.nc.nc
-esm_weights_*.nc
-weights_*.nc
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Editor
-.vscode/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-
-# Fetched from the test-results branch by publish.yml at build time.
-results/cesm_runs.json

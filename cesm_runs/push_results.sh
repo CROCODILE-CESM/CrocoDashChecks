@@ -6,7 +6,7 @@
 #   push_results.sh <results-dir>
 #
 # BRANCH, DEST and MSG push to elsewhere, e.g. the daily data-access snapshot:
-#   BRANCH=main DEST=results MSG="..." push_results.sh <dir-with-health.json>
+#   BRANCH=main DEST=data_access MSG="..." push_results.sh <dir-with-health.json>
 #
 # Authenticates with the token that `gh auth login` stored in
 # ~/.config/gh/hosts.yml; Derecho has no gh module, so gh itself isn't needed.

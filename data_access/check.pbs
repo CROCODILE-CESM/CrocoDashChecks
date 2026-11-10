@@ -5,20 +5,20 @@
 #PBS -l walltime=01:30:00
 #PBS -j oe
 #
-# Daily data-access check on GLADE: check_data_access.py with the CrocoDash env
+# Daily data-access check on GLADE: check.py with the CrocoDash env
 # and your credentials (~/.cdsapirc, ~/.copernicusmarine), so the checks that
 # read GLADE (GLORYS from RDA, CESM output, the CICE restart) can pass too.
 #
-#   qsub -q casper@casper-pbs scripts/data_access.pbs
+#   qsub -q casper@casper-pbs data_access/check.pbs
 #
-# data_access_cron.sh submits this daily; see README.md.
+# cron_submit.sh submits this daily; see README.md.
 #
 # CONDA_ENV     : conda env with CrocoDash installed (default: CrocoDash)
 # CROCODASH_SRC : optional CrocoDash checkout (with submodules) to check instead of
 #                 the one installed in CONDA_ENV. It is not updated here; the weekly
 #                 CESM-run job keeps it at its branch tip.
 # UPDATE        : if set, reset this repo to its branch tip first
-# PUBLISH       : if set, push results/health.json to main, which rebuilds the site
+# PUBLISH       : if set, push data_access/health.json to main, which rebuilds the site
 set -euo pipefail
 
 CONDA_ENV=${CONDA_ENV:-CrocoDash}
@@ -40,11 +40,11 @@ fi
 python -c "import CrocoDash; print('CrocoDash from', CrocoDash.__file__)"
 
 cd "$REPO_ROOT"
-python scripts/check_data_access.py || true
+python data_access/check.py || true
 
 if [ -n "${PUBLISH:-}" ]; then
   OUT=$(mktemp -d)
-  cp results/health.json "$OUT/"
-  BRANCH=main DEST=results MSG="Daily data-access health $(date +%F)" \
+  cp data_access/health.json "$OUT/"
+  BRANCH=main DEST=data_access MSG="Daily data-access health $(date +%F)" \
     bash cesm_runs/push_results.sh "$OUT"
 fi
