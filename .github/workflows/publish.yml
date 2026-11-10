@@ -37,9 +37,7 @@ jobs:
           COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
           COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
         run: |
-          source /opt/conda/etc/profile.d/conda.sh
-          conda activate CrocoDash
-          python scripts/check_data_access.py || true
+          micromamba run -n CrocoDash python scripts/check_data_access.py || true
 
       - name: Commit health snapshot
         working-directory: ${{ github.workspace }}
