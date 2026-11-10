@@ -65,20 +65,26 @@ open report/index.html
 
 ## Data access health
 
+![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/CROCODILE-CESM/CrocoDashChecks/test-results/data_access.json)
+
 Whether GLORYS/GEBCO/GLOFAS/etc. are reachable and CrocoDash's access methods still work
-is checked **daily**, independent of the perf benchmarks above. This runs entirely in
-`.github/workflows/publish.yml`'s daily schedule — no HPC job to babysit:
+is checked **daily on GLADE**, so the checks that read GLADE (GLORYS from RDA, CESM output,
+the CICE restart) can pass too. A daily crontab line on `cron.hpc.ucar.edu` runs
+[`scripts/data_access_cron.sh`](scripts/data_access_cron.sh), which submits
+[`scripts/data_access.pbs`](scripts/data_access.pbs) to Casper. The job runs the check in the
+`CrocoDash` env with your credentials (`~/.cdsapirc`, `~/.copernicusmarine`), pushes
+`results/health.json` to `main` (which rebuilds the report) and the badge above to
+`test-results`. Its log goes to `/glade/work/$USER/croc_ci/logs/`.
 
 ```bash
-# By hand; the daily CI job runs the same check in the crocontainer image:
-conda activate CrocoDash
+# Crontab line (daily, 05:00 MT), next to the weekly CESM runs':
+0 5 * * * /glade/work/$USER/croc_ci/CrocoDashChecks/scripts/data_access_cron.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
+
+# By hand, in the CrocoDash env:
 python scripts/check_data_access.py     # writes results/health.json
 python scripts/generate_health_report.py
 open report/health.html
 ```
-
-You can also run this by hand (locally, in the `CrocoDash` env) to check status without
-waiting for the schedule.
 
 ### HPC data-dependent benchmarks
 
@@ -96,23 +102,10 @@ configured.
 
 ## CI
 
-`.github/workflows/publish.yml` runs on push to `main`, manual dispatch, and a daily
-schedule.
-
-- On the daily schedule and manual dispatch, a `data-health` job runs inside the
-  [crocontainer](https://github.com/CROCODILE-CESM/crocontainer) image (which already has
-  the `CrocoDash` conda env baked in), executes `scripts/check_data_access.py` for real,
-  and commits/pushes the refreshed `results/health.json`. It never runs the perf
-  benchmarks themselves — those need real HPC-scale data and are run by hand (see above).
-- A `publish` job then regenerates both report pages from whatever is currently committed
-  under `results/` and deploys them to GitHub Pages. It always runs (even on a plain push,
-  where `data-health` is skipped).
-
-Some `validate_function` checks need credentials (Copernicus Marine, CDS) to succeed —
-configure them as repo secrets (`COPERNICUSMARINE_SERVICE_USERNAME`/`_PASSWORD`,
-`CDSAPI_URL`/`CDSAPI_KEY`) or those specific checks will correctly report `ok: false`.
-A few others (GLORYS via RDA, CESM ocean output) read hardcoded `/glade/...` paths and can
-only ever pass on GLADE — expect those to always show unhealthy from CI.
+`.github/workflows/publish.yml` runs on push to `main` (including the daily health push from
+GLADE) and on manual dispatch. It regenerates every report page from whatever is committed
+under `results/` and deploys them to GitHub Pages. It never runs the benchmarks or the
+data-access check; those need GLADE.
 
 > **First-time GitHub Pages setup:** Settings → Pages → Source → GitHub Actions.
 

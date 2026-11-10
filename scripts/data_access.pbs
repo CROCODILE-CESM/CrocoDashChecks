@@ -1,0 +1,63 @@
+#!/bin/bash
+#PBS -N croc_data_access
+#PBS -A NCGD0011
+#PBS -l select=1:ncpus=4:mem=32GB
+#PBS -l walltime=03:00:00
+#PBS -j oe
+#
+# Daily data-access check on GLADE: check_data_access.py with the CrocoDash env
+# and your credentials (~/.cdsapirc, ~/.copernicusmarine), so the checks that
+# read GLADE (GLORYS from RDA, CESM output, the CICE restart) can pass too.
+#
+#   qsub -q casper@casper-pbs scripts/data_access.pbs
+#
+# data_access_cron.sh submits this daily; see README.md.
+#
+# CONDA_ENV     : conda env with CrocoDash installed (default: CrocoDash)
+# CROCODASH_SRC : optional CrocoDash checkout (with submodules) to check instead of
+#                 the one installed in CONDA_ENV. It is not updated here; the weekly
+#                 CESM-run job keeps it at its branch tip.
+# UPDATE        : if set, reset this repo to its branch tip first
+# PUBLISH       : if set, push results/health.json to main and a badge to test-results
+set -euo pipefail
+
+CONDA_ENV=${CONDA_ENV:-CrocoDash}
+REPO_ROOT=$(git -C "$PBS_O_WORKDIR" rev-parse --show-toplevel)
+
+module load conda
+conda activate "$CONDA_ENV"
+# ESMF ships with the conda env; don't mix in a system ESMF module.
+export ESMFMKFILE=$CONDA_PREFIX/lib/esmf.mk
+
+if [ -n "${UPDATE:-}" ]; then
+  git -C "$REPO_ROOT" fetch -q && git -C "$REPO_ROOT" reset -q --hard '@{u}'
+fi
+
+if [ -n "${CROCODASH_SRC:-}" ]; then
+  S=$CROCODASH_SRC/CrocoDash
+  export PYTHONPATH=$CROCODASH_SRC:$S/rm6:$S/visualCaseGen:$S/visualCaseGen/ProConPy:$S/visualCaseGen/external/mom6_forge:$S/visualCaseGen/external/ipyfilechooser:$CROCODASH_SRC/gallery${PYTHONPATH:+:$PYTHONPATH}
+fi
+python -c "import CrocoDash; print('CrocoDash from', CrocoDash.__file__)"
+
+cd "$REPO_ROOT"
+python scripts/check_data_access.py || true
+
+if [ -n "${PUBLISH:-}" ]; then
+  OUT=$(mktemp -d)
+  cp results/health.json "$OUT/"
+  BRANCH=main DEST=results MSG="Daily data-access health $(date +%F)" \
+    bash cesm_runs/publish_badges.sh "$OUT"
+
+  BADGE=$(mktemp -d)
+  python - "$BADGE/data_access.json" <<'EOF'
+import json, sys
+h = json.load(open("results/health.json"))
+checks = h["validate_checks"] + h["link_checks"]
+ok = sum(1 for c in checks if c.get("ok"))
+color = "brightgreen" if ok == len(checks) else "orange" if ok >= 0.8 * len(checks) else "red"
+badge = {"schemaVersion": 1, "label": "data access",
+         "message": f"{ok}/{len(checks)} ok ({h['date'][:10]})", "color": color}
+open(sys.argv[1], "w").write(json.dumps(badge) + "\n")
+EOF
+  bash cesm_runs/publish_badges.sh "$BADGE"
+fi
