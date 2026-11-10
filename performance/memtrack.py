@@ -41,9 +41,10 @@ def measure_peak_rss(fn, *args, include_children=False, **kwargs):
     holding, so it is an upper bound on the call's own footprint rather than an
     attribution of it.
 
-    include_children=True sums the RSS of the process and all its descendants,
-    for calls that fork workers (CrocoDash's OBC pool). Forked workers share
-    pages copy-on-write, so the sum is again an upper bound.
+    include_children=True sums the process and all its descendants, for calls
+    that fork workers (CrocoDash's OBC pool), and uses PSS instead of RSS: a
+    forked worker shares its parent's pages copy-on-write, and RSS would count
+    each shared page once per worker. PSS splits it between them.
     """
     proc = psutil.Process(os.getpid())
 
@@ -52,7 +53,11 @@ def measure_peak_rss(fn, *args, include_children=False, **kwargs):
         total = 0
         for p in procs:
             try:
-                total += p.memory_info().rss
+                total += (
+                    p.memory_full_info().pss
+                    if include_children
+                    else p.memory_info().rss
+                )
             except psutil.Error:  # a worker can exit between listing and reading
                 pass
         return total

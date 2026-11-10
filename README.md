@@ -37,7 +37,7 @@ python site/build_site.py                          # -> site/_build/index.html
 The performance tests use [pytest-benchmark](https://pytest-benchmark.readthedocs.io/) (`pip install pytest-benchmark`); each case is timed once, with its peak memory, and the page reads the JSON they write. Run them on a compute node:
 
 ```bash
-pytest performance/test_obc.py --benchmark-json=performance/obc.json                  # CrocoDash env
+pytest performance/test_obc.py --benchmark-json=performance/obc.json                  # CrocoDash env, ~1 h, ~80 GB
 pytest performance/test_topo.py --benchmark-json=performance/topo.json                # CrocoDash env, ~60 GB
 pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json   # mom6_forge env
 ```

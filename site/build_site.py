@@ -15,6 +15,7 @@ Every number on the page comes from those files.
 """
 
 import json
+import math
 import shutil
 from datetime import datetime, timezone
 from html import escape
@@ -360,6 +361,138 @@ def table(headers, rows):
     return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
 
 
+def lstsq(rows, ys):
+    """Least-squares coefficients for ys ~ rows (one list of terms per row),
+    from the normal equations: the fits here have a handful of terms."""
+    n = len(rows[0])
+    a = [
+        [sum(r[i] * r[j] for r in rows) for j in range(n)]
+        + [sum(r[i] * y for r, y in zip(rows, ys))]
+        for i in range(n)
+    ]
+    for c in range(n):
+        pivot = max(range(c, n), key=lambda r: abs(a[r][c]))
+        a[c], a[pivot] = a[pivot], a[c]
+        for r in range(n):
+            if r != c:
+                f = a[r][c] / a[c][c]
+                a[r] = [x - f * y for x, y in zip(a[r], a[c])]
+    return [a[i][n] / a[i][i] for i in range(n)]
+
+
+# The open-boundary cost model (see performance/test_obc.py). REGRID gives each
+# of min(workers, slices) forked workers an equal run of 30-day slices, so the
+# terms are per run, per slice (serial) and per slice a worker does (parallel).
+# One worker runs in-process, so it adds no worker memory.
+def obc_terms(e):
+    per_worker = math.ceil(e["slices"] / e["workers"])
+    src, cells = e["n_src"] / 1e6, e["n_cells"] / 1e6
+    pool = min(e["workers"], e["slices"]) if e["workers"] > 1 else 0
+    time = [1, e["slices"], e["slices"] * cells, per_worker]
+    time += [per_worker * src, per_worker * cells]
+    memory = [1, src, cells, pool, pool * cells]
+    return time, memory
+
+
+def obc_part(benchmarks):
+    terms = [obc_terms(b["extra_info"]) for b in benchmarks]
+    times = [b["stats"]["mean"] for b in benchmarks]
+    mems = [b["extra_info"]["peak_mb"] / 1024 for b in benchmarks]
+    t = lstsq([tt for tt, _ in terms], times)
+    m = lstsq([mm for _, mm in terms], mems)
+
+    def fit(b):
+        tt, mm = obc_terms(b["extra_info"])
+        return (
+            sum(c * x for c, x in zip(t, tt)),
+            sum(c * x for c, x in zip(m, mm)) * 1024,
+        )
+
+    def err(i, measured):
+        errors = sorted(abs(fit(b)[i] - y) / y for b, y in zip(benchmarks, measured))
+        return f"median {errors[len(errors) // 2]:.0%}, worst {errors[-1]:.0%}"
+
+    mb = [y * 1024 for y in mems]
+    out = [
+        "<h3>Open boundaries</h3>"
+        "<p class='sub'>CrocoDash's <span class='mono'>ConditionsConfigurator.process_bc</span> "
+        "on the synthetic <span class='mono'>reference_ocean</span> product: daily data with "
+        "10 levels, four boundaries of a 0.1&deg; box. Each case runs twice; the second run "
+        "reuses the raw data, so it times REGRID and MERGE alone, CrocoDash's own cost "
+        "whatever the product (a real product adds its download). REGRID splits the dates "
+        "into 30-day slices and gives each worker an equal run of them; the boundaries go "
+        "one after another. Memory is the whole process tree's PSS.</p>",
+        "<p class='mono'>time (s) &asymp; "
+        f"{t[0]:.2g} + S&times;({t[1]:.2g} + {t[2]:.2g}&middot;C) + "
+        f"k&times;({t[3]:.2g} + {t[4]:.2g}&middot;P + {t[5]:.2g}&middot;C)<br>"
+        "memory (GB) &asymp; "
+        f"{m[0]:.2g} + {m[1]:.2g}&middot;P + {m[2]:.2g}&middot;C + "
+        f"w&times;({m[3]:.2g} + {m[4]:.2g}&middot;C)</p>"
+        "<p class='sub'>S: 30-day slices; k: slices per worker, S &divide; workers "
+        "rounded up; w: workers (none for one, which runs in-process); P: million source "
+        "points (each boundary's source grid, with a 1&deg; margin); C: million domain "
+        f"cells. Fitted to the {len(benchmarks)} cases below: time {err(0, times)}, "
+        f"memory {err(1, mb)}.</p>",
+    ]
+    for test, sweep, axis, label in (
+        (
+            "test_by_source_resolution",
+            "by source resolution: a 10&deg; box, 30 days, 1 worker",
+            "Source",
+            lambda e: f"{e['source_res_deg']:g}&deg;",
+        ),
+        (
+            "test_by_domain_size",
+            "by domain size: a 0.25&deg; source, 30 days, 1 worker",
+            "Domain",
+            lambda e: f"{e['size_deg']:g}&deg; square",
+        ),
+        (
+            "test_by_days",
+            "by days: a 10&deg; box, a 0.25&deg; source, 1 worker",
+            "Days",
+            lambda e: e["days"],
+        ),
+        (
+            "test_by_workers",
+            "by worker count: 360 days (12 slices), CROCODASH_MAX_WORKERS",
+            "Box, source, workers",
+            lambda e: f"{e['size_deg']:g}&deg;, {e['source_res_deg']:g}&deg;, "
+            f"{e['workers']}",
+        ),
+    ):
+        rows = bench_rows({"benchmarks": benchmarks}, test)
+        if not rows:
+            continue
+        out.append(
+            f"<h3>Open boundaries, {sweep}</h3>"
+            + table(
+                [
+                    (axis, 0),
+                    ("Source points", 1),
+                    ("Domain cells", 1),
+                    ("Time", 1),
+                    ("Fit", 1),
+                    ("Peak memory", 1),
+                    ("Fit", 1),
+                ],
+                [
+                    (
+                        label(b["extra_info"]),
+                        f"{b['extra_info']['n_src']:,}",
+                        f"{b['extra_info']['n_cells']:,}",
+                        fmt_s(b["stats"]["mean"]),
+                        fmt_s(fit(b)[0]),
+                        fmt_mb(b["extra_info"]["peak_mb"]),
+                        fmt_mb(fit(b)[1]),
+                    )
+                    for b in rows
+                ],
+            )
+        )
+    return "".join(out)
+
+
 def performance_section():
     topo, rof, scaling = (
         load(PERF / f)
@@ -372,81 +505,7 @@ def performance_section():
     ]
     obc = load(PERF / "obc.json")
     if obc and obc.get("benchmarks"):
-        parts.append(
-            "<p class='sub'>Open boundaries: CrocoDash's <span class='mono'>"
-            "ConditionsConfigurator.process_bc</span> on the synthetic "
-            "<span class='mono'>reference_ocean</span> product (daily data, four "
-            "boundaries, 0.1&deg; model grid). REGRID does the boundaries one after "
-            "another, each over its 30-day slices with min(cores, slices) workers, so a "
-            "month uses at most two. Memory counts the forked workers, so it is an "
-            "upper bound.</p>"
-        )
-    for test, sweep, axis, label in (
-        (
-            "test_by_source_resolution",
-            "by source resolution, a month on a 10&deg; box",
-            "Source resolution",
-            lambda e: f"{e['source_res_deg']:g}&deg;",
-        ),
-        (
-            "test_by_domain_size",
-            "by domain size, a month at a 0.25&deg; source",
-            "Domain",
-            lambda e: f"{e['size_deg']:g}&deg; square",
-        ),
-    ):
-        rows = sorted(bench_rows(obc, test), key=lambda b: b["extra_info"]["n_src"])
-        if rows:
-            parts.append(
-                f"<h3>Open boundaries, {sweep}</h3>"
-                + table(
-                    [
-                        (axis, 0),
-                        ("Source points", 1),
-                        ("Boundary cells", 1),
-                        ("Time", 1),
-                        ("Peak memory", 1),
-                    ],
-                    [
-                        (
-                            label(b["extra_info"]),
-                            f"{b['extra_info']['n_src']:,}",
-                            f"{b['extra_info']['n_dst']:,}",
-                            fmt_s(b["stats"]["mean"]),
-                            fmt_mb(b["extra_info"]["peak_rss_mb"]),
-                        )
-                        for b in rows
-                    ],
-                )
-            )
-    rows = sorted(
-        bench_rows(obc, "test_by_workers"), key=lambda b: b["extra_info"]["workers"]
-    )
-    if rows:
-        serial = next(
-            (b["stats"]["mean"] for b in rows if b["extra_info"]["workers"] == 1), None
-        )
-        parts.append(
-            "<h3>Open boundaries, by worker count, a year on a 10&deg; box at a "
-            "0.25&deg; source (<span class='mono'>CROCODASH_MAX_WORKERS</span>)</h3>"
-            + table(
-                [
-                    ("Workers", 1),
-                    ("Time", 1),
-                    ("Speed-up vs. 1", 1),
-                    ("Peak memory", 1),
-                ],
-                [
-                    (
-                        b["extra_info"]["regrid_workers"],
-                        fmt_s(b["stats"]["mean"]),
-                        f"{serial / b['stats']['mean']:.1f}&times;" if serial else "",
-                        fmt_mb(b["extra_info"]["peak_rss_mb"]),
-                    )
-                    for b in rows
-                ],
-            )
-        )
+        parts.append(obc_part(obc["benchmarks"]))
     rows = sorted(
         bench_rows(topo, "test_set_from_dataset"),
         key=lambda b: b["params"]["domain_deg"],
