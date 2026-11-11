@@ -44,8 +44,9 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
 - **Keep it small.** One script per job; no packages, frameworks or config layers. MOM_interface's
   `testlist_mom.xml` decides which CESM tests run; don't add test lists here.
 - **The site is Markdown and notebooks, never hand-written HTML, CSS or JS** (the owner can't read
-  them). Charts are matplotlib cell outputs; Sphinx runs the notebooks on every build and hides their
-  code. Commit notebooks without outputs. Shared helpers go in `site/checks.py`, page logic stays in
+  them). Charts are matplotlib cell outputs; Sphinx runs the notebooks on every build and shows
+  their code above each output. Commit notebooks without outputs; edit them as notebooks (no
+  generator scripts). Shared helpers go in `site/checks.py`, page logic stays in
   the page's notebook. `site/requirements.txt` is pinned; bump it on purpose.
 - **Status marks are an icon beside a word** (✅ Pass, ❌ Failed: …), never color alone. Every number
   on the site comes from the JSON. A check older than `STALE_DAYS` in `site/checks.py` shows as
