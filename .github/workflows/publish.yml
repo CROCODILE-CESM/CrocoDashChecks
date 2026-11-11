@@ -29,6 +29,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: site/requirements.txt
+
+      - name: Install the site's packages
+        run: pip install -r site/requirements.txt
 
       # The weekly CESM-run job pushes its summary to the test-results
       # branch, not main; the page says "no results yet" if it's missing.
@@ -37,13 +42,18 @@ jobs:
           git fetch --depth 1 origin test-results
           git show FETCH_HEAD:cesm_runs.json > cesm_runs/cesm_runs.json || rm -f cesm_runs/cesm_runs.json
 
+      # Runs the page notebooks, which read the results JSON and draw the
+      # tables and charts.
       - name: Build the site
-        run: python site/build_site.py
+        run: sphinx-build --fail-on-warning site site/_build/html
+
+      - name: Write the README badges
+        run: python site/write_badges.py
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/_build
+          path: site/_build/html
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4

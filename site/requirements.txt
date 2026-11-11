@@ -1,0 +1,8 @@
+# What the site build needs (publish.yml installs these). Pinned, so a new
+# release can't break the build unannounced; bump them on purpose.
+sphinx==9.0.4
+myst-nb==1.4.0
+sphinx-book-theme==1.4.0
+ipykernel==7.4.0
+matplotlib==3.11.2
+numpy==2.4.6

@@ -1,21 +1,44 @@
 # CLAUDE.md
 
 CrocoDashChecks checks CrocoDash end to end: weekly CESM runs (`cesm_runs/`), a daily
-data-access check (`data_access/`), and performance snapshots (`performance/`). `site/build_site.py`
-turns their JSON into two pages on GitHub Pages: the checks, and performance with its charts and fits. See README.md for what runs where.
+data-access check (`data_access/`), and performance snapshots (`performance/`). `site/` is a Sphinx
+site on GitHub Pages; its Status and Performance pages are notebooks that read that JSON. How it all
+runs: `site/how_it_works.md`.
+
+## Where things live
+
+| What | Where |
+|---|---|
+| Dev checkout (edit here, or in a worktree) | `dev/CrocoDashChecks/` in the CROC monorepo |
+| CI clones the scheduled jobs run from | `/glade/work/$USER/croc_ci/` (this repo, CESM `crocodash`); hard-reset every run, never edit |
+| The CrocoDash tested | a fresh clone of `main` per job (`CROCODASH_BRANCH` overrides), deleted when the job ends |
+| Crontab | `cron.hpc.ucar.edu`; read it with `ssh cron.hpc.ucar.edu crontab -l`; only the user edits it |
+| Cron and job logs | `/glade/work/$USER/croc_ci/cron.log`, `/glade/work/$USER/croc_ci/logs/` |
+| Weekly CESM-run summary | `cesm_runs.json` on the `test-results` branch |
+| Published site | <https://crocodile-cesm.github.io/CrocoDashChecks/>, built by `.github/workflows/publish.yml` |
+
+Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `cesm_runs.json` and
+`health.json`), and the Status page shows them.
 
 ## Rules
 
 - **Keep it small.** One script per job; no packages, frameworks or config layers. MOM_interface's
   `testlist_mom.xml` decides which CESM tests run; don't add test lists here.
-- **Status colors mark state only, always beside a text label.** Every number on the page comes from
-  the JSON. A check older than `STALE_DAYS` in `site/build_site.py` shows as stale, because a
-  schedule that stops running fails silently otherwise.
+- **The site is Markdown and notebooks, never hand-written HTML, CSS or JS** (the owner can't read
+  them). Charts are matplotlib cell outputs; Sphinx runs the notebooks on every build and hides their
+  code. Commit notebooks without outputs. Shared helpers go in `site/checks.py`, page logic stays in
+  the page's notebook. `site/requirements.txt` is pinned; bump it on purpose.
+- **Status marks are an icon beside a word** (✅ Pass, ❌ Failed: …), never color alone. Every number
+  on the site comes from the JSON. A check older than `STALE_DAYS` in `site/checks.py` shows as
+  stale, because a schedule that stops running fails silently otherwise.
+- **Keep the anchors other pages link to:** `#cesm` and `#data-access` (README badges) and
+  `#mom6-scaling` (the gallery's `ocean_only` notebook) on the Status page.
 - **The jobs run from the CI clones in `/glade/work/$USER/croc_ci`** and reset them to their branch
   tips (`UPDATE=1`). PBS copies a job script when it's submitted, so a change to a `.pbs` file takes
   effect only once the clone has it: pull there after merging.
 - **Keep `cron_submit.sh` scripts executable in git (100755):** the reset restores git's mode.
-- Use black on Python before committing.
+- Use black on Python and the notebooks (`black[jupyter]`) before committing. Build the site with
+  `sphinx-build --fail-on-warning site site/_build/html`, as CI does.
 
 ## Gotchas
 
