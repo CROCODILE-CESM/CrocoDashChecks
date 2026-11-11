@@ -1,25 +1,18 @@
-# Our domain + forcing for run_mom_tests.py. Each regional SMS test in
-# MOM_interface's testlist_mom.xml is rebuilt with CrocoDash on this config,
-# keeping only the test's compset and options (_D, _Ld2, ...).
+# Our bathymetry, vertical grid and forcing for run_mom_tests.py. Each regional
+# SMS test in MOM_interface's testlist_mom.xml is rebuilt with CrocoDash on
+# this config, at each location matrix.yaml turns on for cesm_runs (the grid
+# comes from there), keeping only the test's compset and options (_D, _Ld2, ...).
 #
-# Small box over the Labrador coast (20x16 at 1/4 deg): CICE has ice to work
-# with, and the coastline gives the GLOFAS runoff map rivers to map.
 # Ocean/ice/wave forcing is synthetic (no downloads); bathymetry, runoff,
 # river nutrients and the MARBL IC are real files on GLADE.
 
-grid:
-  resolution: 0.25
-  xstart: 299.0
-  lenx: 5.0
-  ystart: 54.0
-  leny: 4.0
-  name: labsea_test
-
+# GEBCO coarsened 8x (1/30 deg): plenty for these grids, and a polar cap fits
+# in memory, which the full 15-arcsecond GEBCO doesn't.
 topo:
   min_depth: 10.0
   source:
     type: dataset
-    bathymetry_path: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/gebco/GEBCO_2024.nc
+    bathymetry_path: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/gebco/GEBCO_2024_coarse_x8.nc
     longitude_coordinate_name: lon
     latitude_coordinate_name: lat
     vertical_coordinate_name: elevation

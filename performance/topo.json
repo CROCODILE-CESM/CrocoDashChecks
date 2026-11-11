@@ -1,69 +1,564 @@
 {
- "datetime": "2026-07-06T20:35:44.348793+00:00",
- "benchmarks": [
-  {
-   "name": "test_set_from_dataset[10]",
-   "fullname": "benchmarks/mom6_forge/test_topo.py::test_set_from_dataset[10]",
-   "params": {
-    "domain_deg": 10
-   },
-   "extra_info": {
-    "rss_mb": 2191.00390625
-   },
-   "stats": {
-    "mean": 44.47968005994335,
-    "min": 44.47968005994335,
-    "max": 44.47968005994335,
-    "rounds": 1
-   }
-  },
-  {
-   "name": "test_set_from_dataset[20]",
-   "fullname": "benchmarks/mom6_forge/test_topo.py::test_set_from_dataset[20]",
-   "params": {
-    "domain_deg": 20
-   },
-   "extra_info": {
-    "rss_mb": 11063.484375
-   },
-   "stats": {
-    "mean": 206.86189592210576,
-    "min": 206.86189592210576,
-    "max": 206.86189592210576,
-    "rounds": 1
-   }
-  },
-  {
-   "name": "test_set_from_dataset[40]",
-   "fullname": "benchmarks/mom6_forge/test_topo.py::test_set_from_dataset[40]",
-   "params": {
-    "domain_deg": 40
-   },
-   "extra_info": {
-    "rss_mb": 43062.5
-   },
-   "stats": {
-    "mean": 960.0401122178882,
-    "min": 960.0401122178882,
-    "max": 960.0401122178882,
-    "rounds": 1
-   }
-  },
-  {
-   "name": "test_set_from_dataset[5]",
-   "fullname": "benchmarks/mom6_forge/test_topo.py::test_set_from_dataset[5]",
-   "params": {
-    "domain_deg": 5
-   },
-   "extra_info": {
-    "rss_mb": 275.3125
-   },
-   "stats": {
-    "mean": 18.323632784187794,
-    "min": 18.323632784187794,
-    "max": 18.323632784187794,
-    "rounds": 1
-   }
-  }
- ]
+    "machine_info": {
+        "node": "crhtc70",
+        "processor": "x86_64",
+        "machine": "x86_64",
+        "python_compiler": "GCC 15.3.0",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.11.16",
+        "python_version": "3.11.16",
+        "python_build": [
+            "main",
+            "Sep  2 2026 23:39:52"
+        ],
+        "release": "6.4.0-150600.23.103-default",
+        "system": "Linux",
+        "cpu": {
+            "python_version": "3.11.16.final.0 (64 bit)",
+            "cpuinfo_version": [
+                10,
+                1,
+                1
+            ],
+            "cpuinfo_version_string": "10.1.1",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 128,
+            "arch_string_raw": "x86_64",
+            "vendor_id_raw": "AuthenticAMD",
+            "brand_raw": "AMD EPYC 9554 64-Core Processor",
+            "hz_advertised_friendly": "1.4996 GHz",
+            "hz_actual_friendly": "1.4996 GHz",
+            "hz_advertised": [
+                1499585000,
+                0
+            ],
+            "hz_actual": [
+                1499585000,
+                0
+            ],
+            "stepping": 1,
+            "model": 17,
+            "family": 25,
+            "flags": [
+                "3dnowext",
+                "3dnowprefetch",
+                "abm",
+                "adx",
+                "aes",
+                "amd_ibpb_ret",
+                "amd_lbr_v2",
+                "amd_ppin",
+                "aperfmperf",
+                "apic",
+                "arat",
+                "avic",
+                "avx",
+                "avx2",
+                "avx512_bf16",
+                "avx512_bitalg",
+                "avx512_vbmi2",
+                "avx512_vnni",
+                "avx512_vpopcntdq",
+                "avx512bitalg",
+                "avx512bw",
+                "avx512cd",
+                "avx512dq",
+                "avx512f",
+                "avx512ifma",
+                "avx512vbmi",
+                "avx512vbmi2",
+                "avx512vl",
+                "avx512vnni",
+                "avx512vpopcntdq",
+                "bmi1",
+                "bmi2",
+                "bpext",
+                "cat_l3",
+                "cdp_l3",
+                "clear_cpu_buf_vm",
+                "clflush",
+                "clflushopt",
+                "clwb",
+                "clzero",
+                "cmov",
+                "cmp_legacy",
+                "constant_tsc",
+                "cpb",
+                "cppc",
+                "cpuid",
+                "cqm",
+                "cqm_llc",
+                "cqm_mbm_local",
+                "cqm_mbm_total",
+                "cqm_occup_llc",
+                "cr8_legacy",
+                "cx16",
+                "cx8",
+                "dbx",
+                "de",
+                "debug_swap",
+                "decodeassists",
+                "erms",
+                "extapic",
+                "extd_apicid",
+                "f16c",
+                "flush_l1d",
+                "flushbyasid",
+                "fma",
+                "fpu",
+                "fsgsbase",
+                "fsrm",
+                "fxsr",
+                "fxsr_opt",
+                "gfni",
+                "ht",
+                "hw_pstate",
+                "ibpb",
+                "ibpb_exit_to_user",
+                "ibrs",
+                "ibrs_enhanced",
+                "ibs",
+                "invpcid",
+                "irperf",
+                "la57",
+                "lahf_lm",
+                "lbrv",
+                "lm",
+                "mba",
+                "mca",
+                "mce",
+                "misalignsse",
+                "mmx",
+                "mmxext",
+                "monitor",
+                "movbe",
+                "msr",
+                "mtrr",
+                "mwaitx",
+                "nonstop_tsc",
+                "nopl",
+                "npt",
+                "nrip_save",
+                "nx",
+                "ospke",
+                "osvw",
+                "osxsave",
+                "overflow_recov",
+                "pae",
+                "pat",
+                "pausefilter",
+                "pci_l2i",
+                "pcid",
+                "pclmulqdq",
+                "pdpe1gb",
+                "perfctr_core",
+                "perfctr_llc",
+                "perfctr_nb",
+                "perfmon_v2",
+                "pfthreshold",
+                "pge",
+                "pku",
+                "pni",
+                "popcnt",
+                "pqe",
+                "pqm",
+                "pse",
+                "pse36",
+                "rapl",
+                "rdpid",
+                "rdpru",
+                "rdrand",
+                "rdrnd",
+                "rdseed",
+                "rdt_a",
+                "rdtscp",
+                "rep_good",
+                "sep",
+                "sha",
+                "sha_ni",
+                "skinit",
+                "smap",
+                "smca",
+                "smep",
+                "ssbd",
+                "sse",
+                "sse2",
+                "sse4_1",
+                "sse4_2",
+                "sse4a",
+                "ssse3",
+                "stibp",
+                "succor",
+                "svm",
+                "svm_lock",
+                "syscall",
+                "tce",
+                "topoext",
+                "tsc",
+                "tsc_scale",
+                "umip",
+                "user_shstk",
+                "v_spec_ctrl",
+                "v_vmsave_vmload",
+                "vaes",
+                "verw_clear",
+                "vgif",
+                "vmcb_clean",
+                "vme",
+                "vmmcall",
+                "vnmi",
+                "vpclmulqdq",
+                "wbnoinvd",
+                "wdt",
+                "x2apic",
+                "x2avic",
+                "xgetbv1",
+                "xsave",
+                "xsavec",
+                "xsaveerptr",
+                "xsaveopt",
+                "xsaves"
+            ],
+            "l3_cache_size": 1048576,
+            "l2_cache_size": 67108864,
+            "l1_data_cache_size": 2097152,
+            "l1_instruction_cache_size": 2097152,
+            "l2_cache_line_size": 1024,
+            "l2_cache_associativity": 6
+        }
+    },
+    "commit_info": {
+        "id": "b83801160016db0782b99dbc04f288ad6ce44331",
+        "time": "2026-11-11T09:58:50-07:00",
+        "author_time": "2026-11-11T09:58:49-07:00",
+        "dirty": true,
+        "project": "CrocoDashChecks",
+        "branch": "main"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_set_from_dataset[5]",
+            "fullname": "performance/test_topo.py::test_set_from_dataset[5]",
+            "params": {
+                "domain_deg": 5
+            },
+            "param": "5",
+            "extra_info": {
+                "rss_mb": 1704.296875,
+                "n_cells": 2500
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 18.252204771968536,
+                "max": 18.252204771968536,
+                "mean": 18.252204771968536,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 18.252204771968536,
+                "iqr": 0.0,
+                "q1": 18.252204771968536,
+                "q3": 18.252204771968536,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 18.252204771968536,
+                "hd15iqr": 18.252204771968536,
+                "ops": 0.05478790165316275,
+                "total": 18.252204771968536,
+                "data": [
+                    18.252204771968536
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_set_from_dataset[10]",
+            "fullname": "performance/test_topo.py::test_set_from_dataset[10]",
+            "params": {
+                "domain_deg": 10
+            },
+            "param": "10",
+            "extra_info": {
+                "rss_mb": 2971.62890625,
+                "n_cells": 10000
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 47.08674167795107,
+                "max": 47.08674167795107,
+                "mean": 47.08674167795107,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 47.08674167795107,
+                "iqr": 0.0,
+                "q1": 47.08674167795107,
+                "q3": 47.08674167795107,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 47.08674167795107,
+                "hd15iqr": 47.08674167795107,
+                "ops": 0.021237400685727676,
+                "total": 47.08674167795107,
+                "data": [
+                    47.08674167795107
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_set_from_dataset[20]",
+            "fullname": "performance/test_topo.py::test_set_from_dataset[20]",
+            "params": {
+                "domain_deg": 20
+            },
+            "param": "20",
+            "extra_info": {
+                "rss_mb": 10984.04296875,
+                "n_cells": 40000
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 213.13727683993056,
+                "max": 213.13727683993056,
+                "mean": 213.13727683993056,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 213.13727683993056,
+                "iqr": 0.0,
+                "q1": 213.13727683993056,
+                "q3": 213.13727683993056,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 213.13727683993056,
+                "hd15iqr": 213.13727683993056,
+                "ops": 0.004691811844584163,
+                "total": 213.13727683993056,
+                "data": [
+                    213.13727683993056
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_set_from_dataset[40]",
+            "fullname": "performance/test_topo.py::test_set_from_dataset[40]",
+            "params": {
+                "domain_deg": 40
+            },
+            "param": "40",
+            "extra_info": {
+                "rss_mb": 43125.8203125,
+                "n_cells": 160000
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 997.5105987860588,
+                "max": 997.5105987860588,
+                "mean": 997.5105987860588,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 997.5105987860588,
+                "iqr": 0.0,
+                "q1": 997.5105987860588,
+                "q3": 997.5105987860588,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 997.5105987860588,
+                "hd15iqr": 997.5105987860588,
+                "ops": 0.0010024956137979592,
+                "total": 997.5105987860588,
+                "data": [
+                    997.5105987860588
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_location[equator_0e]",
+            "fullname": "performance/test_topo.py::test_by_location[equator_0e]",
+            "params": {
+                "location": "equator_0e"
+            },
+            "param": "equator_0e",
+            "extra_info": {
+                "rss_mb": 7.265625,
+                "n_cells": 1600,
+                "location": "equator_0e",
+                "ocean_cells": 1598
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.7448572230059654,
+                "max": 0.7448572230059654,
+                "mean": 0.7448572230059654,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 0.7448572230059654,
+                "iqr": 0.0,
+                "q1": 0.7448572230059654,
+                "q3": 0.7448572230059654,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 0.7448572230059654,
+                "hd15iqr": 0.7448572230059654,
+                "ops": 1.3425391727616922,
+                "total": 0.7448572230059654,
+                "data": [
+                    0.7448572230059654
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_location[north_pole]",
+            "fullname": "performance/test_topo.py::test_by_location[north_pole]",
+            "params": {
+                "location": "north_pole"
+            },
+            "param": "north_pole",
+            "extra_info": {
+                "rss_mb": 48.8046875,
+                "n_cells": 4900,
+                "location": "north_pole",
+                "ocean_cells": 2299
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 98.6364548529964,
+                "max": 98.6364548529964,
+                "mean": 98.6364548529964,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 98.6364548529964,
+                "iqr": 0.0,
+                "q1": 98.6364548529964,
+                "q3": 98.6364548529964,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 98.6364548529964,
+                "hd15iqr": 98.6364548529964,
+                "ops": 0.010138239472316374,
+                "total": 98.6364548529964,
+                "data": [
+                    98.6364548529964
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_by_location[south_pole]",
+            "fullname": "performance/test_topo.py::test_by_location[south_pole]",
+            "params": {
+                "location": "south_pole"
+            },
+            "param": "south_pole",
+            "extra_info": {
+                "rss_mb": 0.0078125,
+                "n_cells": 4900,
+                "location": "south_pole",
+                "ocean_cells": 3528
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 96.9546051020734,
+                "max": 96.9546051020734,
+                "mean": 96.9546051020734,
+                "stddev": 0,
+                "rounds": 1,
+                "median": 96.9546051020734,
+                "iqr": 0.0,
+                "q1": 96.9546051020734,
+                "q3": 96.9546051020734,
+                "iqr_outliers": 0,
+                "stddev_outliers": 0,
+                "outliers": "0;0",
+                "ld15iqr": 96.9546051020734,
+                "hd15iqr": 96.9546051020734,
+                "ops": 0.0103141052345807,
+                "total": 96.9546051020734,
+                "data": [
+                    96.9546051020734
+                ],
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2026-11-11T19:16:52.113563+00:00",
+    "version": "5.3.1"
 }

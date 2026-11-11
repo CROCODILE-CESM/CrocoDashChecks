@@ -20,7 +20,10 @@ boundaries of a flat 1000 m box at 0.1 degrees, centred on 200E, 0N:
   - by days: a 10 degree box, 0.25 degree source, 1 worker (slices grow);
   - by workers: 360 days, so 12 slices that 1, 2, 3, 4, 6 and 12 workers split
     evenly, on a 10 degree box at a 0.25 and a 0.05 degree source, and on an
-    80 degree box (where the per-slice domain cost shows) at 0.25.
+    80 degree box (where the per-slice domain cost shows) at 0.25;
+  - by location: each location matrix.yaml turns on for open_boundaries, on that
+    location's own grid (across the seams, over the poles), 0.25 degree source,
+    30 days, 1 worker.
 
 In the CrocoDash env, on a compute node with at least 12 cores and ~100 GB:
     pytest performance/test_obc.py --benchmark-json=performance/obc.json
@@ -36,6 +39,7 @@ from datetime import datetime, timedelta
 import pytest
 import xarray as xr
 
+import matrix
 from memtrack import measure_peak_rss
 
 START = datetime(2000, 1, 1)
@@ -49,15 +53,11 @@ DAYS = [30, 90, 180, 360]
 WORKERS = [1, 2, 3, 4, 6, 12]  # each splits 360 days' 12 slices evenly
 
 
-def _conditions(tmp_path, monkeypatch, size_deg, source_res_deg, days):
-    """A configured ConditionsConfigurator and the WorkflowContext it runs in."""
+def _box(size_deg):
+    """The sweeps' domain: a square at MODEL_RES_DEG centred on 200E, 0N."""
     from mom6_forge.grid import Grid
-    from mom6_forge.topo import Topo
 
-    from CrocoDash.forcing.base import BaseConfigurator, WorkflowContext
-    from CrocoDash.forcing.mom6 import ConditionsConfigurator
-
-    grid = Grid(
+    return Grid(
         lenx=size_deg,
         leny=size_deg,
         resolution=MODEL_RES_DEG,
@@ -65,6 +65,15 @@ def _conditions(tmp_path, monkeypatch, size_deg, source_res_deg, days):
         ystart=-size_deg / 2,
         name="bench",
     )
+
+
+def _conditions(tmp_path, monkeypatch, grid, source_res_deg, days):
+    """A configured ConditionsConfigurator and the WorkflowContext it runs in."""
+    from mom6_forge.topo import Topo
+
+    from CrocoDash.forcing.base import BaseConfigurator, WorkflowContext
+    from CrocoDash.forcing.mom6 import ConditionsConfigurator
+
     topo = Topo(grid, min_depth=10.0, git=False)
     topo.set_flat(1000.0)
     ctx = WorkflowContext(
@@ -96,7 +105,7 @@ def _conditions(tmp_path, monkeypatch, size_deg, source_res_deg, days):
     # no case here, and processing only needs the parameters it sets first.
     monkeypatch.setattr(BaseConfigurator, "configure", lambda self: None)
     conditions.configure()
-    return conditions, ctx, grid
+    return conditions, ctx
 
 
 def _in_child(fn, *args):
@@ -118,11 +127,18 @@ def _in_child(fn, *args):
 
 
 def _bench(
-    benchmark, tmp_path, monkeypatch, size_deg, source_res_deg, days=30, workers=1
+    benchmark,
+    tmp_path,
+    monkeypatch,
+    size_deg,
+    source_res_deg,
+    days=30,
+    workers=1,
+    location=None,
 ):
-    conditions, ctx, grid = _conditions(
-        tmp_path, monkeypatch, size_deg, source_res_deg, days
-    )
+    """Time one case on a size_deg box, or on a matrix.yaml location's grid."""
+    grid = matrix.grid(location) if location else _box(size_deg)
+    conditions, ctx = _conditions(tmp_path, monkeypatch, grid, source_res_deg, days)
 
     # First run, on every core: makes the raw files the timed run reuses.
     monkeypatch.delenv("CROCODASH_MAX_WORKERS", raising=False)
@@ -149,9 +165,10 @@ def _bench(
             n_src += ds.sizes["latitude"] * ds.sizes["longitude"]
     slices = math.ceil(days / REGRID_STEP_DAYS)
     benchmark.extra_info.update(
+        location=location,
         size_deg=size_deg,
         source_res_deg=source_res_deg,
-        model_res_deg=MODEL_RES_DEG,
+        model_res_deg=None if location else MODEL_RES_DEG,
         n_src=n_src,
         n_dst=2 * (grid.nx + grid.ny),  # boundary cells
         n_cells=grid.nx * grid.ny,  # domain cells
@@ -187,3 +204,8 @@ def test_by_workers(
     _bench(
         benchmark, tmp_path, monkeypatch, size_deg, source_res_deg, 360, workers=workers
     )
+
+
+@pytest.mark.parametrize("location", matrix.locations("open_boundaries"))
+def test_by_location(benchmark, location, tmp_path, monkeypatch):
+    _bench(benchmark, tmp_path, monkeypatch, None, 0.25, location=location)

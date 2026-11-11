@@ -3,9 +3,10 @@
 
 MOM_interface's testlist_mom.xml decides *what* is tested. For every regional
 (grid=USER_RES) SMS test there, this script keeps only the compset and the
-test options (_D, _Ld2, ...), builds that compset with CrocoDash on our own
-domain (config.yaml), runs it, and records each phase in a CIME TestStatus
-file, so CIME's own cs.status reads the results.
+test options (_D, _Ld2, ...), builds that compset with CrocoDash at each
+location matrix.yaml turns on for cesm_runs (forcing from config.yaml), runs
+it, and records each phase in a CIME TestStatus file, so CIME's own cs.status
+reads the results.
 
 Testmods are not used: the case comes from CrocoDash instead. ERS and other
 multi-run test types are skipped; CESM's own create_test covers those with the
@@ -29,47 +30,100 @@ from pathlib import Path
 import yaml
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+import matrix  # noqa: E402  (matrix.py is at the repo root)
 
-STOP_OPTIONS = {"Ln": "nsteps", "Lh": "nhours", "Ld": "ndays", "Lm": "nmonths", "Ly": "nyears"}
+STOP_OPTIONS = {
+    "Ln": "nsteps",
+    "Lh": "nhours",
+    "Ld": "ndays",
+    "Lm": "nmonths",
+    "Ly": "nyears",
+}
 
 
 def parse_args():
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--cesmroot", required=True, type=Path)
     p.add_argument("--test-root", required=True, type=Path)
-    p.add_argument("--testlist", type=Path, help="default: MOM_interface testlist_mom.xml in cesmroot")
+    p.add_argument(
+        "--testlist",
+        type=Path,
+        help="default: MOM_interface testlist_mom.xml in cesmroot",
+    )
     p.add_argument("--config", type=Path, default=HERE / "config.yaml")
-    p.add_argument("--test-id", default=datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    p.add_argument(
+        "--test-id", default=datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    )
     p.add_argument("--machine", default="derecho")
     p.add_argument("--compiler", default="intel")
     p.add_argument("--project", default="NCGD0011")
-    p.add_argument("--only", nargs="*", default=[], help="keep tests whose name contains any of these")
+    p.add_argument(
+        "--only",
+        nargs="*",
+        default=[],
+        help="keep tests whose name contains any of these",
+    )
+    p.add_argument(
+        "--locations",
+        nargs="*",
+        help="locations to run at (default: matrix.yaml's cesm_runs)",
+    )
     p.add_argument("--parallel", type=int, default=1)
-    p.add_argument("--ntasks", type=int, default=4,
-                   help="MPI tasks per test unless the test sets _P<n>; keep parallel*ntasks <= cores")
-    p.add_argument("--data-ntasks", type=int,
-                   help="MPI tasks for the data atmosphere, data runoff and mediator (default: --ntasks)")
+    p.add_argument(
+        "--ntasks",
+        type=int,
+        default=4,
+        help="MPI tasks per test unless the test sets _P<n>; keep parallel*ntasks <= cores",
+    )
+    p.add_argument(
+        "--data-ntasks",
+        type=int,
+        help="MPI tasks for the data atmosphere, data runoff and mediator (default: --ntasks)",
+    )
     p.add_argument("--dry-run", action="store_true", help="list the tests and exit")
-    p.add_argument("--results-dir", type=Path,
-                   help="also write cesm_runs.json, the summary the dashboard reads, here")
+    p.add_argument(
+        "--results-dir",
+        type=Path,
+        help="also write cesm_runs.json, the summary the dashboard reads, here",
+    )
     return p.parse_args()
 
 
 def select_tests(args):
-    """Regional SMS tests for this machine/compiler, as (testname, compset, opts, options)."""
+    """Regional SMS tests for this machine/compiler, once per location, as
+    (name, compset, opts, options, location)."""
     testlist = args.testlist or (
         args.cesmroot / "components/mom/cime_config/testdefs/testlist_mom.xml"
     )
+    locations = (
+        args.locations if args.locations is not None else matrix.locations("cesm_runs")
+    )
     seen, tests = set(), []
-    for t in Testlist(str(testlist)).get_tests(machine=args.machine, compiler=args.compiler):
-        testcase, caseopts, grid, compset, *_ = parse_test_name(t["testname"] + "." + t["grid"] + "." + t["compset"])
+    for t in Testlist(str(testlist)).get_tests(
+        machine=args.machine, compiler=args.compiler
+    ):
+        testcase, caseopts, grid, compset, *_ = parse_test_name(
+            t["testname"] + "." + t["grid"] + "." + t["compset"]
+        )
         if grid != "USER_RES" or testcase != "SMS":
             continue
-        name = ".".join([t["testname"], grid, compset, f"{args.machine}_{args.compiler}", "crocodash"])
-        if name in seen or (args.only and not any(s in name for s in args.only)):
-            continue
-        seen.add(name)
-        tests.append((name, compset, caseopts or [], t.get("options", {})))
+        for location in locations:
+            name = ".".join(
+                [
+                    t["testname"],
+                    grid,
+                    compset,
+                    f"{args.machine}_{args.compiler}",
+                    f"crocodash-{location}",
+                ]
+            )
+            if name in seen or (args.only and not any(s in name for s in args.only)):
+                continue
+            seen.add(name)
+            tests.append(
+                (name, compset, caseopts or [], t.get("options", {}), location)
+            )
     return tests
 
 
@@ -81,17 +135,32 @@ def compset_longname(cesmroot, alias):
     return alias  # already a longname
 
 
-def crocodash_config(cfg, args, compset, testdir):
-    """config.yaml + this test's compset/paths, forcings filtered to its components."""
+def location_grid(location, testdir):
+    """The grid section of a CrocoDash config for a matrix.yaml location. A polar
+    grid is written as a supergrid file first: CrocoDash's config only builds
+    latitude/longitude boxes itself."""
+    if not matrix.is_polar(location):
+        return {**matrix.MATRIX["locations"][location]["grid"], "name": location}
+    path = testdir / "ocean_hgrid.nc"
+    matrix.grid(location).write_supergrid(str(path))
+    return {"supergrid_path": str(path), "name": location}
+
+
+def crocodash_config(cfg, args, compset, testdir, location):
+    """The location's grid + config.yaml + this test's compset/paths, forcings
+    filtered to its components."""
     lname = compset_longname(args.cesmroot, compset)
-    out = {k: copy.deepcopy(cfg[k]) for k in ("grid", "topo", "vgrid")}
+    out = {"grid": location_grid(location, testdir)}
+    out.update({k: copy.deepcopy(cfg[k]) for k in ("topo", "vgrid")})
     out["case"] = {
         **cfg.get("case", {}),
         "cesmroot": str(args.cesmroot),
         "caseroot": str(testdir / testdir.name),
         # Not under testdir: MOM6 holds INPUTDIR in 128 characters and silently
         # drops the slash it appends, so the long test names broke every path.
-        "inputdir": str(args.test_root / "inputdir" / f"{compset}.{args.test_id}"),
+        "inputdir": str(
+            args.test_root / "inputdir" / f"{compset}.{location}.{args.test_id}"
+        ),
         "compset": compset,
         "machine": args.machine,
         "project": args.project,
@@ -121,7 +190,9 @@ def xmlchanges(caseopts, options, ntasks, data_ntasks=None):
     # more, all from ROOTPE 0.
     data_ntasks = max(data_ntasks or ntasks, ntasks)
     changes.append(f"NTASKS={ntasks},ROOTPE=0")
-    changes.append(f"NTASKS_ATM={data_ntasks},NTASKS_ROF={data_ntasks},NTASKS_CPL={data_ntasks}")
+    changes.append(
+        f"NTASKS_ATM={data_ntasks},NTASKS_ROF={data_ntasks},NTASKS_CPL={data_ntasks}"
+    )
     # Derecho's default launcher (mpibind) takes every core in the PBS job,
     # which collides when several tests run at once, so launch exactly the
     # ranks the case needs.
@@ -135,7 +206,10 @@ def run(cmd, log, cwd=None):
     with open(log, "a") as f:
         f.write(f"\n$ {' '.join(map(str, cmd))}\n")
         f.flush()
-        return subprocess.run(cmd, cwd=cwd, stdout=f, stderr=subprocess.STDOUT).returncode == 0
+        return (
+            subprocess.run(cmd, cwd=cwd, stdout=f, stderr=subprocess.STDOUT).returncode
+            == 0
+        )
 
 
 def run_succeeded(caseroot):
@@ -155,38 +229,49 @@ def read_phases(testdir):
 
 def git_ref(path):
     """{"branch", "commit"} of a checkout, or None outside one."""
+
     def git(*a):
         r = subprocess.run(["git", "-C", str(path), *a], capture_output=True, text=True)
         return r.stdout.strip() if r.returncode == 0 else None
+
     commit = git("rev-parse", "--short", "HEAD") if path else None
-    return {"branch": git("rev-parse", "--abbrev-ref", "HEAD"), "commit": commit} if commit else None
+    return (
+        {"branch": git("rev-parse", "--abbrev-ref", "HEAD"), "commit": commit}
+        if commit
+        else None
+    )
 
 
 def write_summary(tests, args, results_dir):
     """cesm_runs.json: what was tested and every test's phases, for the
     dashboard (and its badge)."""
     summary = {
-        "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+        "date": datetime.datetime.now(datetime.timezone.utc).isoformat(
+            timespec="seconds"
+        ),
         "cesm": git_ref(args.cesmroot),
         "crocodash": git_ref(os.environ.get("CROCODASH_SRC")),
         "tests": [],
     }
-    for name, compset, *_ in tests:
+    for name, compset, _, _, location in tests:
         phases = read_phases(args.test_root / f"{name}.{args.test_id}")
-        summary["tests"].append({
-            "name": name,
-            "test": name.split(".")[0],
-            "compset": compset,
-            "longname": compset_longname(args.cesmroot, compset),
-            "phases": phases,
-            "passed": (RUN_PHASE, TEST_PASS_STATUS) in phases,
-        })
+        summary["tests"].append(
+            {
+                "name": name,
+                "test": name.split(".")[0],
+                "compset": compset,
+                "location": location,
+                "longname": compset_longname(args.cesmroot, compset),
+                "phases": phases,
+                "passed": (RUN_PHASE, TEST_PASS_STATUS) in phases,
+            }
+        )
     results_dir.mkdir(parents=True, exist_ok=True)
     (results_dir / "cesm_runs.json").write_text(json.dumps(summary, indent=1) + "\n")
 
 
 def run_test(test, cfg, args):
-    name, compset, caseopts, options = test
+    name, compset, caseopts, options, location = test
     testdir = args.test_root / f"{name}.{args.test_id}"
     # The case name sets the CIME build/run dir, so it must be unique per test.
     caseroot = testdir / testdir.name
@@ -196,29 +281,42 @@ def run_test(test, cfg, args):
     log = testdir / "croc_test.log"
 
     def phase(ts, phase_name, ok, comment=""):
-        ts.set_status(phase_name, TEST_PASS_STATUS if ok else TEST_FAIL_STATUS,
-                      comments="" if ok else (comment or f"see {log}"))
+        ts.set_status(
+            phase_name,
+            TEST_PASS_STATUS if ok else TEST_FAIL_STATUS,
+            comments="" if ok else (comment or f"see {log}"),
+        )
         return ok
 
     with TestStatus(test_dir=str(testdir), test_name=name) as ts:
         config_file = testdir / "crocodash_config.yaml"
-        config_file.write_text(yaml.safe_dump(crocodash_config(cfg, args, compset, testdir)))
-        if not phase(ts, CREATE_NEWCASE_PHASE,
-                     run(["crocodash", "create", "--config", config_file, "--override"], log)):
+        config_file.write_text(
+            yaml.safe_dump(crocodash_config(cfg, args, compset, testdir, location))
+        )
+        if not phase(
+            ts,
+            CREATE_NEWCASE_PHASE,
+            run(["crocodash", "create", "--config", config_file, "--override"], log),
+        ):
             return
         try:
             changes = xmlchanges(caseopts, options, args.ntasks, args.data_ntasks)
         except ValueError as e:
             phase(ts, XML_PHASE, False, str(e))
             return
-        if not phase(ts, XML_PHASE, all(run(["./xmlchange", c], log, caseroot) for c in changes)):
+        if not phase(
+            ts, XML_PHASE, all(run(["./xmlchange", c], log, caseroot) for c in changes)
+        ):
             return
         # crocodash create already ran case.setup, so redo it with the new PE layout.
         if not phase(ts, SETUP_PHASE, run(["./case.setup", "--reset"], log, caseroot)):
             return
         built = run(["./case.build"], log, caseroot)
         # CIME won't record a phase after a failed one, so stop at SHAREDLIB_BUILD.
-        if not (phase(ts, SHAREDLIB_BUILD_PHASE, built) and phase(ts, MODEL_BUILD_PHASE, built)):
+        if not (
+            phase(ts, SHAREDLIB_BUILD_PHASE, built)
+            and phase(ts, MODEL_BUILD_PHASE, built)
+        ):
             return
         submitted = run(["./case.submit", "--no-batch"], log, caseroot)
         if not phase(ts, SUBMIT_PHASE, submitted):
@@ -239,8 +337,16 @@ def main():
     from CIME.utils import parse_test_name
     from CIME.cs_status_creator import create_cs_status
     from CIME.test_status import (
-        TestStatus, CREATE_NEWCASE_PHASE, XML_PHASE, SETUP_PHASE, SHAREDLIB_BUILD_PHASE,
-        MODEL_BUILD_PHASE, SUBMIT_PHASE, RUN_PHASE, TEST_PASS_STATUS, TEST_FAIL_STATUS,
+        TestStatus,
+        CREATE_NEWCASE_PHASE,
+        XML_PHASE,
+        SETUP_PHASE,
+        SHAREDLIB_BUILD_PHASE,
+        MODEL_BUILD_PHASE,
+        SUBMIT_PHASE,
+        RUN_PHASE,
+        TEST_PASS_STATUS,
+        TEST_FAIL_STATUS,
     )
 
     tests = select_tests(args)

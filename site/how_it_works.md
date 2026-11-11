@@ -4,9 +4,32 @@ CrocoDashChecks runs three checks on NCAR's systems and publishes their results 
 
 | Check | What it does | Where | When | Results |
 |---|---|---|---|---|
-| [Weekly CESM runs](cesm_runs.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash on a small test domain, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
+| [Weekly CESM runs](cesm_runs.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash at each location the test matrix turns on for it, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
 | Data access | Calls every way CrocoDash fetches data (every product's access methods), for real | Casper | Daily 05:00 MT | `data_access/health.json` on `main` |
 | [Performance](performance.ipynb) | Times CrocoDash's expensive steps and records their peak memory | A compute node | By hand | `performance/*.json` on `main` |
+
+## The test matrix
+
+[`matrix.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/matrix.yaml)
+decides where each check builds its grid. It defines each location's grid once (a
+latitude/longitude box, or a polar stereographic square centred on a pole), then lists, for
+each check, the locations it runs at. To turn a combination on, add the location's name to that
+check's list; to turn it off, delete it. The [Status page](index.ipynb#matrix) shows the matrix
+as it stands.
+
+| Location | Grid | Why |
+|---|---|---|
+| `labrador` | 5° × 4° at 1/4° | The weekly CESM runs' first domain: a coast with sea ice and rivers |
+| `equator_0e` | 10° × 10° at 1/4° | All four hemispheres, across the prime meridian |
+| `equator_180e` | 10° × 10° at 1/4° | Across the antimeridian |
+| `north_pole`, `south_pole` | 7000 km square at 100 km, polar stereographic | Grids on a projection, over a pole; the South Pole one is wide enough to reach the open ocean past Antarctica |
+
+- **Benchmarks:** each adds one case per location, at its default settings, on that location's
+  grid. The Performance page shows those cases against the fits, not in them.
+- **Weekly CESM runs:** every compset runs at each of their locations. To try other locations
+  by hand, add `--locations`, e.g. `EXTRA="--locations north_pole"` on the `qsub`.
+- **Bathymetry at the locations** comes from GEBCO coarsened 8× (1/30°): full GEBCO over a polar
+  cap needs hundreds of GB.
 
 ## Which CrocoDash gets tested
 

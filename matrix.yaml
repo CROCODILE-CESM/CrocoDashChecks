@@ -1,0 +1,33 @@
+# The test matrix: which checks run at which locations.
+#
+# `locations` defines each place a check can build its grid, once, for every
+# check. `checks` lists, for each check, the locations it runs at: add a
+# location's name to a check's list to turn that combination on, delete it to
+# turn it off. The Status page shows the matrix as it stands.
+#
+# A grid is either a latitude/longitude box (mom6_forge Grid: xstart, lenx,
+# ystart, leny, resolution, in degrees) or a polar stereographic square centred
+# on a pole (crs, width_km, resolution_km).
+
+locations:
+  labrador:
+    about: The weekly CESM runs' first domain, a coast with sea ice and rivers
+    grid: {xstart: 299.0, lenx: 5.0, ystart: 54.0, leny: 4.0, resolution: 0.25}
+  equator_0e:
+    about: All four hemispheres, across the prime meridian
+    grid: {xstart: -5.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.25}
+  equator_180e:
+    about: Across the antimeridian, at 180°E
+    grid: {xstart: 175.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.25}
+  north_pole:
+    about: Polar stereographic, centred on the North Pole
+    grid: {crs: "EPSG:3995", width_km: 7000, resolution_km: 100}
+  south_pole:
+    about: Polar stereographic, centred on the South Pole, wide enough to reach the open ocean
+    grid: {crs: "EPSG:3031", width_km: 7000, resolution_km: 100}
+
+checks:
+  cesm_runs: [labrador, equator_180e]  # cesm_runs/: every compset at each location
+  open_boundaries: [equator_0e, equator_180e, north_pole, south_pole]  # performance/test_obc.py
+  bathymetry: [equator_0e, equator_180e, north_pole, south_pole]  # performance/test_topo.py
+  runoff_mapping: []  # performance/test_mapping.py

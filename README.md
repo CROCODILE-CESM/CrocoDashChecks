@@ -13,6 +13,9 @@ clone of CrocoDash `main`.
 | [`performance/`](performance/) | How long CrocoDash's expensive steps take, and MOM6's speed vs. tasks | By hand |
 | [`site/`](site/) | The website: Sphinx pages, two of them notebooks that read the folders' JSON and draw the tables and charts | On every push to `main` |
 
+[`matrix.yaml`](matrix.yaml) decides where each check runs: across the prime meridian and the
+antimeridian, over both poles, and more; turn each check × location combination on or off there.
+
 How it all runs, how to run a check yourself, and how to build the site:
 [How it works](https://crocodile-cesm.github.io/CrocoDashChecks/how_it_works.html)
 (source: [`site/how_it_works.md`](site/how_it_works.md)).

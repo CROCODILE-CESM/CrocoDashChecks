@@ -11,12 +11,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import yaml
 from IPython.display import Markdown, display
 
 ROOT = Path(__file__).resolve().parent.parent
 CESM_RUNS = ROOT / "cesm_runs" / "cesm_runs.json"  # fetched from test-results
 HEALTH = ROOT / "data_access" / "health.json"
 PERF = ROOT / "performance"
+MATRIX = ROOT / "matrix.yaml"  # which checks run at which locations
 REPO_URL = "https://github.com/CROCODILE-CESM/CrocoDashChecks"
 SITE_URL = "https://crocodile-cesm.github.io/CrocoDashChecks"
 
@@ -42,6 +44,11 @@ def load(path):
     """A results file's contents, or None if it isn't there."""
     path = Path(path)
     return json.loads(path.read_text()) if path.exists() else None
+
+
+def matrix():
+    """matrix.yaml: its locations, and the locations each check runs at."""
+    return yaml.safe_load(MATRIX.read_text())
 
 
 def _time(iso):

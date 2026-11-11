@@ -28,6 +28,9 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
 - **Always test a fresh pull:** CrocoDash `main` via `source crocodash_main.sh` (both jobs do; do it
   before any hand run too), and CESM's `crocodash` branch tip with its pinned MOM_interface regional
   tag (the weekly job's `UPDATE=1`).
+- **Where checks run is `matrix.yaml`** (read by `matrix.py`): locations are defined there once and
+  each check lists the locations it runs at. Add locations there, never inside a test. Location
+  cases stay out of the Performance page's fits; they're shown against them.
 - **Keep it small.** One script per job; no packages, frameworks or config layers. MOM_interface's
   `testlist_mom.xml` decides which CESM tests run; don't add test lists here.
 - **The site is Markdown and notebooks, never hand-written HTML, CSS or JS** (the owner can't read

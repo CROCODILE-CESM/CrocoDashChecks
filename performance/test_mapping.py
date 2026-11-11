@@ -2,7 +2,8 @@
 takes, and its peak memory, against the production ROF mesh: up a ladder of
 ocean domains (1 degree box to the Indo-Pacific), at fixed footprint over
 resolutions, and over the smoothing radius rmax. Each case also records how many
-weights (n_s) the two maps hold, which is what CESM's coupler pays for.
+weights (n_s) the two maps hold, which is what CESM's coupler pays for. It also
+runs at each location matrix.yaml turns on for runoff_mapping (none by default).
 
 Needs the ROF mesh and the coarsened GEBCO (for the land mask) on GLADE, and a
 mom6_forge with a fast mapping write path (see _has_write_path_fix; the one in
@@ -23,6 +24,7 @@ import pytest
 import xarray as xr
 from scipy import ndimage
 
+import matrix
 from memtrack import measure_peak_rss
 
 # Smoothing radii, in km. Matches the real CrocIndoPacific_112 production case,
@@ -185,9 +187,10 @@ def _ocean_mask(grid):
     return (labels == largest).astype(np.int32)
 
 
-def _write_ocean_mesh(domain, resolution_deg, path):
-    """Build an ocean ESMF mesh for a named domain, as mom6_forge's own tests do —
-    no real case files needed, just a Grid, its supergrid and a GEBCO land mask.
+def _write_ocean_mesh(domain, resolution_deg, path, grid=None):
+    """Build an ocean ESMF mesh for a named domain (or a given grid), as
+    mom6_forge's own tests do: no real case files needed, just a Grid, its
+    supergrid and a GEBCO land mask.
 
     Returns the path, the cell count, the ocean cell count, the coastal cell
     count (by gen_rof_maps' own definition: the cells runoff lands on), and the
@@ -196,15 +199,16 @@ def _write_ocean_mesh(domain, resolution_deg, path):
     from mom6_forge.grid import Grid
     from mom6_forge.mapping import extract_coastline_mask, grid_from_esmf_mesh
 
-    xstart, lenx, ystart, leny = DOMAINS[domain]["box"]
-    grid = Grid(
-        resolution=resolution_deg,
-        xstart=xstart,
-        lenx=lenx,
-        ystart=ystart,
-        leny=leny,
-        name=f"rof_bench_{domain}",
-    )
+    if grid is None:
+        xstart, lenx, ystart, leny = DOMAINS[domain]["box"]
+        grid = Grid(
+            resolution=resolution_deg,
+            xstart=xstart,
+            lenx=lenx,
+            ystart=ystart,
+            leny=leny,
+            name=f"rof_bench_{domain}",
+        )
     mask = _ocean_mask(grid)
     grid.supergrid.to_esmf_mesh(str(path), mask=mask)
     n_coast = int(extract_coastline_mask(grid_from_esmf_mesh(str(path))).sum())
@@ -213,7 +217,14 @@ def _write_ocean_mesh(domain, resolution_deg, path):
 
 
 def _run_gen_rof_maps(
-    benchmark, domain, resolution_deg, tmp_path, label, rmax=RMAX_KM, fold=FOLD_KM
+    benchmark,
+    domain,
+    resolution_deg,
+    tmp_path,
+    label,
+    rmax=RMAX_KM,
+    fold=FOLD_KM,
+    grid=None,
 ):
     """Shared body for all three sweeps: build the ocean mesh, time one
     gen_rof_maps() call over it, and record the parameters that make the number
@@ -235,7 +246,7 @@ def _run_gen_rof_maps(
     )
 
     ocn_mesh_path, n_dst, n_ocn, n_coast, cell_km2 = _write_ocean_mesh(
-        domain, resolution_deg, tmp_path / "ocn_mesh.nc"
+        domain, resolution_deg, tmp_path / "ocn_mesh.nc", grid=grid
     )
     if n_coast == 0:
         pytest.skip(
@@ -360,4 +371,18 @@ def test_gen_rof_maps_rmax(benchmark, domain, rmax, tmp_path):
         label=f"{domain}_r{rmax}",
         rmax=rmax,
         fold=rmax,
+    )
+
+
+@pytest.mark.parametrize("location", matrix.locations("runoff_mapping"))
+def test_gen_rof_maps_location(benchmark, location, tmp_path):
+    """gen_rof_maps() on each location matrix.yaml turns on for runoff_mapping,
+    on that location's own grid (across the seams, over the poles)."""
+    _run_gen_rof_maps(
+        benchmark,
+        location,
+        None,
+        tmp_path,
+        label=location,
+        grid=matrix.grid(location, name=f"rof_bench_{location}"),
     )

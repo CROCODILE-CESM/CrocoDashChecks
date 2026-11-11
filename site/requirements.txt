@@ -6,3 +6,4 @@ sphinx-book-theme==1.4.0
 ipykernel==7.4.0
 matplotlib==3.11.2
 numpy==2.4.6
+pyyaml==6.0.3
