@@ -1,33 +1,131 @@
-# The test matrix: which checks run at which locations.
+# The test matrix: one row per grid, and what runs on it.
 #
-# `locations` defines each place a check can build its grid, once, for every
-# check. `checks` lists, for each check, the locations it runs at: add a
-# location's name to a check's list to turn that combination on, delete it to
-# turn it off. The Status page shows the matrix as it stands.
+# Every row's grid is built once, with its bathymetry and vertical grid, from
+# case.yaml by CrocoDash's own builders (performance/test_workflow.py). Then
+# each forcing the row lists runs on it, and with `cesm_runs: true`, the weekly
+# CESM runs build a real case on it (cesm_runs/). To turn something on for a
+# grid, add it to the row; to turn it off, delete it; to stop building a grid,
+# delete its row. The Status page shows this table with the latest results.
 #
-# A grid is either a latitude/longitude box (mom6_forge Grid: xstart, lenx,
-# ystart, leny, resolution, in degrees) or a polar stereographic square centred
-# on a pole (crs, width_km, resolution_km).
+#   about:     what the grid is for
+#   grid:      a latitude/longitude box (xstart, lenx, ystart, leny and
+#              resolution, in degrees; a fraction like 1/12 works), or a polar
+#              stereographic square centred on a pole (crs, width_km,
+#              resolution_km)
+#   case:      changes to case.yaml for this row only
+#   forcings:  the forcings to run on it, by their `crocodash process` flag:
+#              bc (open boundaries) or runoff (runoff mapping)
+#   cesm_runs: true to run MOM_interface's regional tests on it in CESM
 
-locations:
+# Full-resolution GEBCO (15 arcseconds), for the bathymetry fit. A polar cap,
+# or a box past 40°, needs more memory than a node has.
+full_gebco: &full_gebco
+  topo: {source: {bathymetry_path: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/gebco/GEBCO_2024.nc}}
+
+grids:
+  # Places: a coast, both seams, both poles.
   labrador:
-    about: The weekly CESM runs' first domain, a coast with sea ice and rivers
+    about: A coast with sea ice and rivers
     grid: {xstart: 299.0, lenx: 5.0, ystart: 54.0, leny: 4.0, resolution: 0.25}
+    cesm_runs: true
   equator_0e:
     about: All four hemispheres, across the prime meridian
     grid: {xstart: -5.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.25}
+    forcings: [bc]
   equator_180e:
     about: Across the antimeridian, at 180°E
     grid: {xstart: 175.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.25}
+    forcings: [bc]
+    cesm_runs: true
   north_pole:
     about: Polar stereographic, centred on the North Pole
     grid: {crs: "EPSG:3995", width_km: 7000, resolution_km: 100}
+    forcings: [bc]
   south_pole:
     about: Polar stereographic, centred on the South Pole, wide enough to reach the open ocean
     grid: {crs: "EPSG:3031", width_km: 7000, resolution_km: 100}
+    forcings: [bc]
 
-checks:
-  cesm_runs: [labrador, equator_180e]  # cesm_runs/: every compset at each location
-  open_boundaries: [equator_0e, equator_180e, north_pole, south_pole]  # performance/test_obc.py
-  bathymetry: [equator_0e, equator_180e, north_pole, south_pole]  # performance/test_topo.py
-  runoff_mapping: []  # performance/test_mapping.py
+  # Sizes: squares of open ocean centred on 200°E, 0°N, at 0.1°, for the
+  # open-boundary and bathymetry fits.
+  pacific_2p5deg:
+    about: 2.5° square
+    grid: {xstart: 198.75, lenx: 2.5, ystart: -1.25, leny: 2.5, resolution: 0.1}
+    case: *full_gebco
+    forcings: [bc]
+  pacific_5deg:
+    about: 5° square
+    grid: {xstart: 197.5, lenx: 5.0, ystart: -2.5, leny: 5.0, resolution: 0.1}
+    case: *full_gebco
+    forcings: [bc]
+  pacific_10deg:
+    about: 10° square; the open-boundary sweeps run on it
+    grid: {xstart: 195.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.1}
+    case: *full_gebco
+    forcings: [bc]
+  pacific_20deg:
+    about: 20° square
+    grid: {xstart: 190.0, lenx: 20.0, ystart: -10.0, leny: 20.0, resolution: 0.1}
+    case: *full_gebco
+    forcings: [bc]
+  pacific_40deg:
+    about: 40° square; full GEBCO needs ~45 GB
+    grid: {xstart: 180.0, lenx: 40.0, ystart: -20.0, leny: 40.0, resolution: 0.1}
+    case: *full_gebco
+    forcings: [bc]
+  pacific_80deg:
+    about: 80° square; the open-boundary worker sweep also runs on it
+    grid: {xstart: 160.0, lenx: 80.0, ystart: -40.0, leny: 80.0, resolution: 0.1}
+    forcings: [bc]
+  pacific_160deg:
+    about: 160° square
+    grid: {xstart: 120.0, lenx: 160.0, ystart: -80.0, leny: 160.0, resolution: 0.1}
+    forcings: [bc]
+
+  # Coasts: from a 1° box on the Gulf of Mexico's southern coast (nested in
+  # the Gulf) to the Indo-Pacific, at 1/12° like CROC's real cases there, and the
+  # Gulf at other resolutions, for the runoff-mapping fits.
+  gulf_1deg:
+    about: 1° box on the Gulf of Mexico's southern coast, at Coatzacoalcos
+    grid: {xstart: 265.0, lenx: 1.0, ystart: 18.0, leny: 1.0, resolution: 1/12}
+    forcings: [runoff]
+  gulf_2deg:
+    about: 2° box, same corner
+    grid: {xstart: 265.0, lenx: 2.0, ystart: 18.0, leny: 2.0, resolution: 1/12}
+    forcings: [runoff]
+  gulf_4deg:
+    about: 4° box, same corner
+    grid: {xstart: 265.0, lenx: 4.0, ystart: 18.0, leny: 4.0, resolution: 1/12}
+    forcings: [runoff]
+  gulf_8deg:
+    about: 8° box, same corner
+    grid: {xstart: 265.0, lenx: 8.0, ystart: 18.0, leny: 8.0, resolution: 1/12}
+    forcings: [runoff]
+  gulf_of_mexico:
+    about: The whole Gulf of Mexico; the runoff rmax sweep runs on it
+    grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/12}
+    forcings: [runoff]
+  gulf_of_mexico_4th:
+    about: The Gulf of Mexico at 1/4°
+    grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/4}
+    forcings: [runoff]
+  gulf_of_mexico_8th:
+    about: The Gulf of Mexico at 1/8°
+    grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/8}
+    forcings: [runoff]
+  gulf_of_mexico_25th:
+    about: The Gulf of Mexico at 1/25°
+    grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/25}
+    forcings: [runoff]
+  caribbean:
+    about: The Caribbean
+    grid: {xstart: 270.0, lenx: 35.0, ystart: 5.0, leny: 23.0, resolution: 1/12}
+    forcings: [runoff]
+  north_atlantic:
+    about: The North Atlantic; the runoff rmax sweep runs on it
+    grid: {xstart: 275.0, lenx: 80.0, ystart: 20.0, leny: 50.0, resolution: 1/12}
+    forcings: [runoff]
+  indo_pacific:
+    about: The Indo-Pacific, sized like the CrocIndoPacific_112 case (2.4M cells); the rmax sweep runs on it
+    grid: {xstart: 30.0, lenx: 160.0, ystart: -45.0, leny: 105.0, resolution: 1/12}
+    forcings: [runoff]

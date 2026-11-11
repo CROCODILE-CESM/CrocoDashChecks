@@ -1,4 +1,4 @@
-# The built site (site/build_site.py)
+# The built site (sphinx-build)
 site/_build/
 
 # Fetched from the test-results branch by publish.yml at build time
@@ -9,3 +9,6 @@ cesm_runs/cesm_runs.json
 .benchmarks/
 TopoLibrary/
 __pycache__/
+
+# performance/run.pbs's job log, written where it was submitted from
+crocodashchecks_workflow.o*

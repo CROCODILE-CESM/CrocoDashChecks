@@ -4,32 +4,58 @@ CrocoDashChecks runs three checks on NCAR's systems and publishes their results 
 
 | Check | What it does | Where | When | Results |
 |---|---|---|---|---|
-| [Weekly CESM runs](cesm_runs.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash at each location the test matrix turns on for it, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
+| [The workflow](#the-workflow) | Builds every grid in the test matrix with its bathymetry, runs the forcings turned on for each, and times every step | One Casper node | By hand | `performance/workflow.json` and `workflow.xml` on `main` |
+| [Weekly CESM runs](cesm_runs.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash on each grid the test matrix turns the CESM runs on for, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
 | Data access | Calls every way CrocoDash fetches data (every product's access methods), for real | Casper | Daily 05:00 MT | `data_access/health.json` on `main` |
-| [Performance](performance.ipynb) | Times CrocoDash's expensive steps and records their peak memory | A compute node | By hand | `performance/*.json` on `main` |
 
 ## The test matrix
 
-[`matrix.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/matrix.yaml)
-decides where each check builds its grid. It defines each location's grid once (a
-latitude/longitude box, or a polar stereographic square centred on a pole), then lists, for
-each check, the locations it runs at. To turn a combination on, add the location's name to that
-check's list; to turn it off, delete it. The [Status page](index.ipynb#matrix) shows the matrix
-as it stands.
+[`matrix.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/matrix.yaml) has one
+row per grid: a latitude/longitude box, or a polar stereographic square centred on a pole. Each
+row lists the forcings to run on its grid (by their `crocodash process` flag: `bc` for open
+boundaries, `runoff` for runoff mapping) and whether the weekly CESM runs build cases on it. To
+turn something on for a grid, add it to the row; to turn it off, delete it; to stop building a
+grid at all, delete its row. The [Status page](index.ipynb) shows the matrix with every step's
+latest result.
 
-| Location | Grid | Why |
+Every case starts from
+[`case.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/case.yaml): a
+CrocoDash case config, what `crocodash create --config` reads, without the grid. A row adds its
+grid, and can change anything else for itself under `case:` (the `pacific_*` squares up to 40°
+use it to switch to full-resolution GEBCO). Its bathymetry is GEBCO coarsened 8× (1/30°), since
+full GEBCO over a polar cap needs hundreds of GB, and its forcing is synthetic, so nothing is
+downloaded.
+
+The rows, in three groups:
+
+| Rows | Grids | Why |
 |---|---|---|
-| `labrador` | 5° × 4° at 1/4° | The weekly CESM runs' first domain: a coast with sea ice and rivers |
-| `equator_0e` | 10° × 10° at 1/4° | All four hemispheres, across the prime meridian |
-| `equator_180e` | 10° × 10° at 1/4° | Across the antimeridian |
-| `north_pole`, `south_pole` | 7000 km square at 100 km, polar stereographic | Grids on a projection, over a pole; the South Pole one is wide enough to reach the open ocean past Antarctica |
+| `labrador`, `equator_0e`, `equator_180e`, `north_pole`, `south_pole` | A coast, both seams and both poles, at 1/4° or 100 km | Places that break things: sea ice and rivers, the prime meridian and the antimeridian, and grids on a projection over a pole |
+| `pacific_2p5deg` … `pacific_160deg` | Squares of open ocean from 2.5° to 160°, at 0.1° | Sizes, for the open-boundary and bathymetry fits |
+| `gulf_1deg` … `indo_pacific` | Coasts from a 1° box to the Indo-Pacific, at 1/12°, and the Gulf of Mexico at 1/4°–1/25° | Sizes and resolutions, for the runoff-mapping fits |
 
-- **Benchmarks:** each adds one case per location, at its default settings, on that location's
-  grid. The Performance page shows those cases against the fits, not in them.
-- **Weekly CESM runs:** every compset runs at each of their locations. To try other locations
-  by hand, add `--locations`, e.g. `EXTRA="--locations north_pole"` on the `qsub`.
-- **Bathymetry at the locations** comes from GEBCO coarsened 8× (1/30°): full GEBCO over a polar
-  cap needs hundreds of GB.
+(the-workflow)=
+## The workflow
+
+[`performance/test_workflow.py`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/performance/test_workflow.py)
+runs CrocoDash's workflow on every row, and times it: it is an integration test and a benchmark
+in one.
+
+1. **The grid.** `test_grid` builds the row's grid, bathymetry and vertical grid from its case
+   config with CrocoDash's own builders, as `crocodash create` does, and writes the files a case
+   gets. It checks that no depths are missing and that there is some ocean. Each grid is built
+   once; every forcing on that row reuses it.
+2. **The forcings.** `test_bc` and `test_runoff` run each forcing the row turns on through
+   CrocoDash's own configurators (configure, then process), as `crocodash process` would,
+   without a CESM case. If a grid fails to build, its forcings are skipped.
+3. **The sweeps.** A few more cases vary what isn't a grid, on one or two rows each, for the
+   [Performance](performance.ipynb) page's fits: open boundaries by source resolution, days and
+   workers, and runoff by smoothing radius.
+
+Every step runs in its own forked process and is timed once, with its peak memory. The timings
+go to `performance/workflow.json` (pytest-benchmark); what passed, failed or was skipped, and
+why, goes to `performance/workflow.xml` (pytest's own JUnit report), which is how the site can
+show a failure and not just a missing number.
 
 ## Which CrocoDash gets tested
 
@@ -88,6 +114,9 @@ change to a `.pbs` file only takes effect once the CI clone has it: after mergin
    charts;
 3. `site/write_badges.py` writes the README's two badges from the same counts.
 
+The two pages read every result from the files above; the matrix's names and layout come from
+`matrix.yaml` itself.
+
 To build it yourself:
 
 ```bash
@@ -104,7 +133,7 @@ build reruns it anyway. Code that both pages need is in `site/checks.py`.
 ## Running a check by hand
 
 Everything here runs in the `CrocoDash` conda env (which has pytest-benchmark installed for the
-performance tests). Start every hand run with a fresh clone of CrocoDash `main`:
+workflow). Start every hand run with a fresh clone of CrocoDash `main`:
 
 ```bash
 conda activate CrocoDash
@@ -120,13 +149,17 @@ qsub -q casper@casper-pbs data_access/check.pbs  # or as a Casper job, with a fr
 
 **Weekly CESM runs**: see [Weekly CESM runs](cesm_runs.md).
 
-**Performance**, on a compute node. Each case is timed once, with its peak memory:
+**The workflow** needs a big node: full GEBCO on the 40° square takes ~45 GB, and runoff
+mapping on the Indo-Pacific at rmax 80 km ~90 GB. Submit it from the repo root; it clones
+CrocoDash `main` itself, takes a few hours, and writes `performance/workflow.json` and
+`workflow.xml` in your checkout:
 
 ```bash
-pytest performance/test_obc.py --benchmark-json=performance/obc.json                  # ~1 h, ~80 GB
-pytest performance/test_topo.py --benchmark-json=performance/topo.json                # ~60 GB
-pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json   # 100 GB+
+qsub -q casper@casper-pbs performance/run.pbs
+qsub -q casper@casper-pbs -v PYTEST_ARGS="-k pole" performance/run.pbs   # only some steps
 ```
+
+Commit the two files to publish them.
 
 
 `performance/mom6_scaling.json` holds a hand-run NTASKS_OCN sweep; its scripts are in the CROC

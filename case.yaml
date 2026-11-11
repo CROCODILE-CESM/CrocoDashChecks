@@ -1,9 +1,14 @@
-# Our bathymetry, vertical grid and forcing for run_mom_tests.py. Each regional
-# SMS test in MOM_interface's testlist_mom.xml is rebuilt with CrocoDash on
-# this config, at each location matrix.yaml turns on for cesm_runs (the grid
-# comes from there), keeping only the test's compset and options (_D, _Ld2, ...).
+# The CrocoDash case every check builds: a CrocoDash case config (what
+# `crocodash create --config` reads) without its grid, which comes from each
+# row of matrix.yaml. A row can change any part of it (its `case:` key).
 #
-# Ocean/ice/wave forcing is synthetic (no downloads); bathymetry, runoff,
+#   - performance/test_workflow.py builds each row's grid, bathymetry and
+#     vertical grid from this with CrocoDash's own builders, then runs the
+#     forcings the row turns on, using the settings below.
+#   - cesm_runs/run_mom_tests.py makes a real case from it for each regional
+#     test in MOM_interface's testlist, filling in the test's compset and paths.
+#
+# Ocean, ice and wave forcing are synthetic (no downloads); bathymetry, runoff,
 # river nutrients and the MARBL IC are real files on GLADE.
 
 # GEBCO coarsened 8x (1/30 deg): plenty for these grids, and a polar cap fits
@@ -23,12 +28,13 @@ vgrid:
   nk: 10
 
 # Extra Case(...) kwargs. cesmroot/caseroot/inputdir/compset/machine/project
-# are filled in by the script.
+# are filled in by cesm_runs/run_mom_tests.py.
 case: {}
 
 # configure_forcings kwargs. "common" always applies; every other key is a
 # set of compset-longname substrings ("+"-joined = all required) and applies
-# only when the test's compset contains them.
+# only when the compset contains them. The benchmarks use common's product
+# for open boundaries and DROF's mesh for runoff mapping.
 forcings:
   common:
     date_range: ["2020-01-01 00:00:00", "2020-01-05 00:00:00"]
@@ -43,7 +49,8 @@ forcings:
     ww3_obc_function_name: get_reference_wave_spectra
   "%MARBL":
     marbl_ic_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/bgc/ecosys_jan_IC_omip_latlon_1x1_180W_c231221.nc
+  # The mesh CESM's own DROF%GLOFAS reads (ccs_config's GLOFAS domain).
   DROF:
-    rof_esmf_mesh_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/rof/glofas/dis24/GLOFAS_esmf_mesh_v4.nc
+    rof_esmf_mesh_filepath: /glade/campaign/cesm/cesmdata/inputdata/lnd/dlnd7/GLOFAS/GLOFAS.v4.dis24.ESMFmesh_20260501.nc
   "%MARBL+DROF":
     global_river_nutrients_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/rof/river_nutrients/river_nutrients.GNEWS_GNM.glofas.20250916.64bit.nc

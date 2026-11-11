@@ -2,7 +2,7 @@
 
 This checks that the current CrocoDash sets up the regional coupled compsets so that they actually run.
 
-**What gets tested is not defined here.** It comes from MOM_interface's `testlist_mom.xml` in the CESM checkout. `run_mom_tests.py` selects every regional (`grid="USER_RES"`) `SMS` test for the machine and compiler. It keeps only the test's compset and options (`_D`, `_Ld2`, `_P<n>`) and rebuilds the case with CrocoDash at each location the test matrix (`matrix.yaml` at the repo root) turns on for `cesm_runs`, with our bathymetry and forcing (`config.yaml`), instead of the test's Panama testmods. It then runs the case and records each phase in a CIME `TestStatus` file.
+**What gets tested is not defined here.** It comes from MOM_interface's `testlist_mom.xml` in the CESM checkout. `run_mom_tests.py` selects every regional (`grid="USER_RES"`) `SMS` test for the machine and compiler. It keeps only the test's compset and options (`_D`, `_Ld2`, `_P<n>`) and rebuilds the case with CrocoDash on each grid the test matrix (`matrix.yaml` at the repo root) marks `cesm_runs: true`, from the case config every check shares (`case.yaml`), instead of the test's Panama testmods. It then runs the case and records each phase in a CIME `TestStatus` file.
 
 - **Restart and other multi-run tests** (ERS etc.) are skipped. CESM's own `create_test` runs those with the Panama testmods, and they don't depend on CrocoDash output.
 - **To cover a new compset,** add the test to `testlist_mom.xml` in MOM_interface. It is picked up here automatically.
@@ -52,12 +52,12 @@ The `CrocoDash` conda env supplies the dependencies; the job's CrocoDash clone g
 Each test gets its own directory under `$TESTROOT`:
 
 ```
-SMS_D_Ld2.USER_RES.CR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-<location>.<testid>/
+SMS_D_Ld2.USER_RES.CR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-<grid>.<testid>/
   TestStatus              CIME format: CREATE_NEWCASE, XML, SETUP, ..., RUN
   croc_test.log           output of every command
   crocodash_config.yaml   the exact config passed to `crocodash create`
   <same name as the test dir>/   the case (unique name, so each test gets its own CIME build/run dir)
-inputdir/<compset>.<location>.<testid>/   the case's forcing (kept short: MOM6 truncates INPUTDIR at 128 characters)
+inputdir/<compset>.<grid>.<testid>/     the case's forcing (kept short: MOM6 truncates INPUTDIR at 128 characters)
 ```
 
 Check the results with CIME's own tool:
@@ -74,10 +74,10 @@ $TESTROOT/cs.status.<testid>
 | `SHAREDLIB_BUILD` / `MODEL_BUILD` | `case.build` |
 | `SUBMIT` / `RUN` | `case.submit --no-batch`; RUN passes only if `CaseStatus` records `case.run success` |
 
-## Locations, bathymetry and forcing
+## Grids, bathymetry and forcing
 
-- **Locations:** every compset runs at each location `matrix.yaml` lists under `cesm_runs` (by default `labrador`, a coast with sea ice and rivers, and `equator_180e`, across the antimeridian). A polar location's grid is written as a supergrid file first, since CrocoDash's config only builds latitude/longitude boxes itself. `--locations` overrides the list for a hand run.
-- **Bathymetry** (`config.yaml`): GEBCO coarsened 8× (1/30°), with 10 uniform levels. It is plenty for these grids, and a polar cap fits in memory, which full GEBCO doesn't.
+- **Grids:** every compset runs on each `matrix.yaml` row with `cesm_runs: true` (now `labrador`, a coast with sea ice and rivers, and `equator_180e`, across the antimeridian), with any changes that row makes to `case.yaml`. A polar grid is written as a supergrid file first, since CrocoDash's config only builds latitude/longitude boxes itself. `--grids` overrides the list for a hand run, e.g. `EXTRA="--grids north_pole"` on the `qsub`.
+- **Bathymetry** (`case.yaml`): GEBCO coarsened 8× (1/30°), with 10 uniform levels. It is plenty for these grids, and a polar cap fits in memory, which full GEBCO doesn't.
 - **Ocean, ice and wave forcing:** the synthetic `reference_*` products, so nothing is downloaded.
-- **Runoff, river nutrients and the MARBL IC:** real files on GLADE.
+- **Runoff, river nutrients and the MARBL IC:** real files on GLADE; runoff is mapped from the GLOFAS mesh CESM's own DROF reads.
 - **How forcing args are selected:** they are grouped by compset component, and each test gets only the groups its compset uses.
