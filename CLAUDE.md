@@ -22,6 +22,12 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
 
 ## Rules
 
+- **Everything runs in the `CrocoDash` conda env** (pytest-benchmark installed into it). Don't add
+  other dependencies (the site's own build packages in `site/requirements.txt` are the exception:
+  CI only).
+- **Always test a fresh pull:** CrocoDash `main` via `source crocodash_main.sh` (both jobs do; do it
+  before any hand run too), and CESM's `crocodash` branch tip with its pinned MOM_interface regional
+  tag (the weekly job's `UPDATE=1`).
 - **Keep it small.** One script per job; no packages, frameworks or config layers. MOM_interface's
   `testlist_mom.xml` decides which CESM tests run; don't add test lists here.
 - **The site is Markdown and notebooks, never hand-written HTML, CSS or JS** (the owner can't read
@@ -49,7 +55,10 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
   exceptions and returns False.
 - **The weekly job pushes `cesm_runs.json` to `test-results`, not `main`,** so the site only picks it
   up on its next rebuild, at the latest after the next daily data-access push.
-- **`performance/test_mapping.py` needs the `mom6_forge` env:** CrocoDash's nested mom6_forge lacks the
-  runoff-mapping write-path fix (mom6_forge #125). Keep its boxes clear of the 0/360 seam. Its rmax
-  sweep peaks at ~85 GB (Indo-Pacific at rmax 80), so run it in a PBS job with 100 GB or more.
+- **`performance/test_mapping.py` skips unless mom6_forge has the fast mapping write path**
+  (mom6_forge #125/#137); CrocoDash's nested mom6_forge has it. Keep its boxes clear of the 0/360
+  seam. Its rmax sweep peaks at ~85 GB (Indo-Pacific at rmax 80), so run it in a PBS job with 100 GB
+  or more.
+- **The `CrocoDash` env imports its own installed CrocoDash** (the 2026 workshop checkout), not
+  `main`, unless `crocodash_main.sh` was sourced first.
 - **MOM6 truncates `INPUTDIR` at 128 characters,** so keep `cesm_runs/` test paths short.

@@ -5,8 +5,8 @@ resolutions, and over the smoothing radius rmax. Each case also records how many
 weights (n_s) the two maps hold, which is what CESM's coupler pays for.
 
 Needs the ROF mesh and the coarsened GEBCO (for the land mask) on GLADE, and a
-mom6_forge with a fast mapping write path (see _has_write_path_fix), so run it
-in the mom6_forge env:
+mom6_forge with a fast mapping write path (see _has_write_path_fix; the one in
+CrocoDash has it). In the CrocoDash env, in a PBS job with 100 GB or more:
     pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json
 
 Keep every box clear of the 0/360 seam (asserted below): older mom6_forge
@@ -224,7 +224,7 @@ def _run_gen_rof_maps(
         pytest.skip(
             "installed mom6_forge lacks a fast mapping write path "
             "(mom6_forge PR #125 or #137) — a run would take ~36 min; "
-            "use the mom6_forge conda env"
+            "update CrocoDash's mom6_forge submodule"
         )
 
     import mom6_forge.mapping as mapping

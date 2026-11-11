@@ -32,15 +32,9 @@ if [ -n "${UPDATE:-}" ]; then
   git -C "$REPO_ROOT" fetch -q && git -C "$REPO_ROOT" reset -q --hard '@{u}'
 fi
 
-# A fresh clone of CrocoDash for this run, deleted when the job ends. It goes first
-# on PYTHONPATH, ahead of any CrocoDash installed in the env.
-CROCODASH_SRC=$(mktemp -d /glade/derecho/scratch/$USER/crocodash_clone.XXXXXX)
-export CROCODASH_SRC
-trap 'rm -rf "$CROCODASH_SRC"' EXIT
-git clone -q --recurse-submodules -b "${CROCODASH_BRANCH:-main}" \
-  https://github.com/CROCODILE-CESM/CrocoDash "$CROCODASH_SRC"
-S=$CROCODASH_SRC/CrocoDash
-export PYTHONPATH=$CROCODASH_SRC:$S/rm6:$S/visualCaseGen:$S/visualCaseGen/ProConPy:$S/visualCaseGen/external/mom6_forge:$S/visualCaseGen/external/ipyfilechooser:$CROCODASH_SRC/gallery${PYTHONPATH:+:$PYTHONPATH}
+# A fresh clone of CrocoDash main (or CROCODASH_BRANCH), first on PYTHONPATH,
+# deleted when the job ends.
+source "$REPO_ROOT/crocodash_main.sh"
 python -c "import CrocoDash; print('CrocoDash from', CrocoDash.__file__)"
 
 cd "$REPO_ROOT"

@@ -10,10 +10,13 @@ CrocoDashChecks runs three checks on NCAR's systems and publishes their results 
 
 ## Which CrocoDash gets tested
 
-Both scheduled jobs test the tip of CrocoDash `main`. Each job starts by cloning CrocoDash
-fresh, with its submodules, puts that clone first on `PYTHONPATH`, and deletes it when it
-ends. Each job records the branch and commit it tested, and the [Status page](index.ipynb)
-shows them. The conda env (`CrocoDash`) supplies only the dependencies.
+Every check tests the tip of CrocoDash `main`, and the weekly runs use the tip of CESM's
+`crocodash` branch, with the MOM_interface regional tag it pins. `crocodash_main.sh` clones
+CrocoDash fresh, with its submodules, puts that clone first on `PYTHONPATH`, and deletes it
+when the job (or your shell) exits. Both scheduled jobs source it, and you should too before
+running anything by hand. Each job records the branch and commit it tested, and the
+[Status page](index.ipynb) shows them. The `CrocoDash` conda env supplies only the
+dependencies.
 
 To test another branch, submit the job yourself with `CROCODASH_BRANCH` set, e.g.
 `qsub -v CESMROOT=...,CROCODASH_BRANCH=my-branch cesm_runs/run_mom_tests.pbs`.
@@ -77,7 +80,15 @@ build reruns it anyway. Code that both pages need is in `site/checks.py`.
 
 ## Running a check by hand
 
-**Data access**, in the `CrocoDash` env on GLADE (it checks the CrocoDash that env imports):
+Everything here runs in the `CrocoDash` conda env (which has pytest-benchmark installed for the
+performance tests). Start every hand run with a fresh clone of CrocoDash `main`:
+
+```bash
+conda activate CrocoDash
+source crocodash_main.sh
+```
+
+**Data access**, on GLADE:
 
 ```bash
 python data_access/check.py                     # writes data_access/health.json
@@ -86,14 +97,14 @@ qsub -q casper@casper-pbs data_access/check.pbs  # or as a Casper job, with a fr
 
 **Weekly CESM runs**: see [Weekly CESM runs](cesm_runs.md).
 
-**Performance**, on a compute node; each case is timed once, with its peak memory:
+**Performance**, on a compute node. Each case is timed once, with its peak memory:
 
 ```bash
-pip install pytest-benchmark
-pytest performance/test_obc.py --benchmark-json=performance/obc.json                  # CrocoDash env, ~1 h, ~80 GB
-pytest performance/test_topo.py --benchmark-json=performance/topo.json                # CrocoDash env, ~60 GB
-pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json   # mom6_forge env, 100 GB+
+pytest performance/test_obc.py --benchmark-json=performance/obc.json                  # ~1 h, ~80 GB
+pytest performance/test_topo.py --benchmark-json=performance/topo.json                # ~60 GB
+pytest performance/test_mapping.py --benchmark-json=performance/runoff_mapping.json   # 100 GB+
 ```
+
 
 `performance/mom6_scaling.json` holds a hand-run NTASKS_OCN sweep; its scripts are in the CROC
 monorepo's `dev/scaling_test/`.
