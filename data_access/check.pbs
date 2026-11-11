@@ -44,5 +44,5 @@ if [ -n "${PUBLISH:-}" ]; then
   OUT=$(mktemp -d)
   cp data_access/health.json "$OUT/"
   BRANCH=main DEST=data_access MSG="Daily data-access health $(date +%F)" \
-    bash cesm_runs/push_results.sh "$OUT"
+    bash push_results.sh "$OUT"
 fi

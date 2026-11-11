@@ -16,12 +16,14 @@ import yaml
 from IPython.display import Markdown, display
 
 ROOT = Path(__file__).resolve().parent.parent
-CESM_RUNS = ROOT / "cesm_runs" / "cesm_runs.json"  # fetched from test-results
+INTEGRATION = ROOT / "integration"
+CESM_RUNS = INTEGRATION / "cesm_runs.json"  # fetched from test-results
 HEALTH = ROOT / "data_access" / "health.json"
-PERF = ROOT / "performance"
-WORKFLOW = PERF / "workflow.json"  # the workflow's timings (pytest-benchmark)
-WORKFLOW_OUTCOMES = PERF / "workflow.xml"  # what passed, failed or was skipped, and why
-MATRIX = ROOT / "matrix.yaml"  # the grids, and what runs on each
+WORKFLOW = INTEGRATION / "workflow.json"  # the workflow's timings (pytest-benchmark)
+WORKFLOW_OUTCOMES = (
+    INTEGRATION / "workflow.xml"
+)  # what passed, failed or was skipped, and why
+MATRIX = INTEGRATION / "matrix.yaml"  # the grids, and what runs on each
 REPO_URL = "https://github.com/CROCODILE-CESM/CrocoDashChecks"
 SITE_URL = "https://crocodile-cesm.github.io/CrocoDashChecks"
 
@@ -55,7 +57,7 @@ def matrix():
 
 
 def workflow():
-    """The last run of performance/test_workflow.py, or None:
+    """The last run of integration/test_workflow.py, or None:
     {"date", "crocodash": {branch, commit} or None,
      "cases": {test id: its pytest-benchmark case}, for the steps that passed,
      "outcomes": {test id: (OK, FAIL or NOT_RUN for skipped, why)}}.

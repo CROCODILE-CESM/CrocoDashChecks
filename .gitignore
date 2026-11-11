@@ -2,7 +2,7 @@
 site/_build/
 
 # Fetched from the test-results branch by publish.yml at build time
-cesm_runs/cesm_runs.json
+integration/cesm_runs.json
 
 # pytest, pytest-benchmark, and the TopoLibrary mom6_forge writes while benchmarking
 .pytest_cache/
@@ -10,5 +10,5 @@ cesm_runs/cesm_runs.json
 TopoLibrary/
 __pycache__/
 
-# performance/run.pbs's job log, written where it was submitted from
+# integration/workflow.pbs's job log, written where it was submitted from
 crocodashchecks_workflow.o*

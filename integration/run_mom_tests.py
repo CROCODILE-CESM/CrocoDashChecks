@@ -28,9 +28,7 @@ from pathlib import Path
 
 import yaml
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
-import matrix  # noqa: E402  (matrix.py is at the repo root)
+import matrix
 
 STOP_OPTIONS = {
     "Ln": "nsteps",

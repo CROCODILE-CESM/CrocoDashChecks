@@ -4,13 +4,16 @@ CrocoDashChecks runs three checks on NCAR's systems and publishes their results 
 
 | Check | What it does | Where | When | Results |
 |---|---|---|---|---|
-| [The workflow](#the-workflow) | Builds every grid in the test matrix with its bathymetry, runs the forcings turned on for each, and times every step | One Casper node | By hand | `performance/workflow.json` and `workflow.xml` on `main` |
-| [Weekly CESM runs](cesm_runs.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash on each grid the test matrix turns the CESM runs on for, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
+| [The workflow](#the-workflow) | Builds every grid in the test matrix with its bathymetry, runs the forcings turned on for each, and times every step | One Casper node | By hand | `integration/workflow.json` and `workflow.xml` on `main` |
+| [Weekly CESM runs](integration.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash on each grid the test matrix turns the CESM runs on for, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
 | Data access | Calls every way CrocoDash fetches data (every product's access methods), for real | Casper | Daily 05:00 MT | `data_access/health.json` on `main` |
+
+The first two live in `integration/`, the last in `data_access/`. To run any of them yourself, see
+[Running the checks by hand](#by-hand).
 
 ## The test matrix
 
-[`matrix.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/matrix.yaml) has one
+[`matrix.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/integration/matrix.yaml) has one
 row per grid: a latitude/longitude box, or a polar stereographic square centred on a pole. Each
 row lists the forcings to run on its grid (by their `crocodash process` flag: `bc` for open
 boundaries, `runoff` for runoff mapping) and whether the weekly CESM runs build cases on it. To
@@ -19,7 +22,7 @@ grid at all, delete its row. The [Status page](index.ipynb) shows the matrix wit
 latest result.
 
 Every case starts from
-[`case.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/case.yaml): a
+[`case.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/integration/case.yaml): a
 CrocoDash case config, what `crocodash create --config` reads, without the grid. A row adds its
 grid, and can change anything else for itself under `case:` (the `pacific_*` squares up to 40°
 use it to switch to full-resolution GEBCO). Its bathymetry is GEBCO coarsened 8× (1/30°), since
@@ -37,7 +40,7 @@ The rows, in three groups:
 (the-workflow)=
 ## The workflow
 
-[`performance/test_workflow.py`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/performance/test_workflow.py)
+[`integration/test_workflow.py`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/integration/test_workflow.py)
 runs CrocoDash's workflow on every row, and times it: it is an integration test and a benchmark
 in one.
 
@@ -53,8 +56,8 @@ in one.
    workers, and runoff by smoothing radius.
 
 Every step runs in its own forked process and is timed once, with its peak memory. The timings
-go to `performance/workflow.json` (pytest-benchmark); what passed, failed or was skipped, and
-why, goes to `performance/workflow.xml` (pytest's own JUnit report), which is how the site can
+go to `integration/workflow.json` (pytest-benchmark); what passed, failed or was skipped, and
+why, goes to `integration/workflow.xml` (pytest's own JUnit report), which is how the site can
 show a failure and not just a missing number.
 
 ## Which CrocoDash gets tested
@@ -68,7 +71,7 @@ running anything by hand. Each job records the branch and commit it tested, and 
 dependencies.
 
 To test another branch, submit the job yourself with `CROCODASH_BRANCH` set, e.g.
-`qsub -v CESMROOT=...,CROCODASH_BRANCH=my-branch cesm_runs/run_mom_tests.pbs`.
+`qsub -v CESMROOT=...,CROCODASH_BRANCH=my-branch integration/run_mom_tests.pbs`.
 
 ## How a scheduled run starts
 
@@ -76,15 +79,15 @@ To test another branch, submit the job yourself with `CROCODASH_BRANCH` set, e.g
    no software (not even git), so that script only runs `qsub`:
 
    ```
-   0 2 * * 1 /glade/work/$USER/croc_ci/CrocoDashChecks/cesm_runs/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
+   0 2 * * 1 /glade/work/$USER/croc_ci/CrocoDashChecks/integration/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
    0 5 * * * /glade/work/$USER/croc_ci/CrocoDashChecks/data_access/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
    ```
 
    Edit it with `ssh cron.hpc.ucar.edu` and then `crontab -e`.
-2. **The job** (`cesm_runs/run_mom_tests.pbs` or `data_access/check.pbs`) first resets its
+2. **The job** (`integration/run_mom_tests.pbs` or `data_access/check.pbs`) first resets its
    clone of this repo to `main`. The weekly job also resets the CESM clone and runs
    `git-fleximod update`. Then it clones CrocoDash and runs the check.
-3. **It publishes its results** with `cesm_runs/push_results.sh`, using the token from your
+3. **It publishes its results** with `push_results.sh`, using the token from your
    `gh` login. The weekly runs push `cesm_runs.json` to the `test-results` branch. The daily
    check pushes `data_access/health.json` to `main`, and that push rebuilds this site.
 
@@ -130,37 +133,70 @@ To change a page, open its notebook (`site/index.ipynb` or `site/performance.ipy
 Jupyter, run it, and edit it like any notebook. Clear its outputs before committing: the
 build reruns it anyway. Code that both pages need is in `site/checks.py`.
 
-## Running a check by hand
+(by-hand)=
+## Running the checks by hand
 
-Everything here runs in the `CrocoDash` conda env (which has pytest-benchmark installed for the
-workflow). Start every hand run with a fresh clone of CrocoDash `main`:
+Everything runs in the `CrocoDash` conda env (which has pytest-benchmark installed for the
+workflow), from a checkout of this repo:
 
 ```bash
+git clone https://github.com/CROCODILE-CESM/CrocoDashChecks
+cd CrocoDashChecks
+module load conda
 conda activate CrocoDash
+```
+
+The job scripts (`*.pbs`) clone CrocoDash `main` fresh themselves. To run Python directly, clone it
+first with `source crocodash_main.sh`, or the env's own (older) CrocoDash gets tested. To test
+another CrocoDash branch, set `CROCODASH_BRANCH=my-branch` before sourcing it, or add
+`-v CROCODASH_BRANCH=my-branch` to a `qsub`.
+
+### The workflow: grids and forcings
+
+It needs a big node (full GEBCO on the 40° square takes ~45 GB, runoff mapping on the
+Indo-Pacific at rmax 80 km ~90 GB) and a few hours. Submit it from the repo root:
+
+```bash
+qsub -q casper@casper-pbs integration/workflow.pbs                                 # every step
+qsub -q casper@casper-pbs -v PYTEST_ARGS="-k pole" integration/workflow.pbs        # steps whose name has "pole"
+qsub -q casper@casper-pbs -v PYTEST_ARGS="-k test_grid" integration/workflow.pbs   # only build the grids
+```
+
+A step's name is its test and its grid, like `test_bc[north_pole]`; list them all with
+`pytest --collect-only -q integration/test_workflow.py`. The job writes
+`integration/workflow.json` (timings) and `integration/workflow.xml` (what passed, failed or was
+skipped, and why) in your checkout, and its log, `crocodashchecks_workflow.o<job id>`, where you
+submitted it. Build the site (below) to see them. To publish a run, commit those two files; a run
+with `-k` holds only its own steps, so publish full runs only.
+
+### The weekly CESM runs
+
+They need a checkout of CESM's `crocodash` branch, and run on one Derecho node:
+
+```bash
+git clone -b crocodash https://github.com/CROCODILE-CESM/CESM ~/CESM_crocodash
+(cd ~/CESM_crocodash && ./bin/git-fleximod update)
+
+cd integration
+python run_mom_tests.py --cesmroot ~/CESM_crocodash --test-root /tmp/x --dry-run   # list the tests
+qsub -v CESMROOT=$HOME/CESM_crocodash run_mom_tests.pbs                             # run them all
+qsub -v "CESMROOT=$HOME/CESM_crocodash,EXTRA=--grids north_pole --only GR_JRA" run_mom_tests.pbs
+```
+
+The last one runs only the tests whose name contains `GR_JRA`, on the `north_pole` grid. From
+Casper, add `-q main@desched1`. A hand run publishes nothing (the weekly one sets `PUBLISH=1`):
+each test's directory is in `/glade/derecho/scratch/$USER/croc_tests/`, and
+`cs.status.<test id>` there sums them up. More: [Integration](integration.md).
+
+### Data access
+
+```bash
 source crocodash_main.sh
+python data_access/check.py                       # writes data_access/health.json
+qsub -q casper@casper-pbs data_access/check.pbs   # or as a Casper job, which clones CrocoDash itself
 ```
 
-**Data access**, on GLADE:
+### MOM6 speed vs. tasks
 
-```bash
-python data_access/check.py                     # writes data_access/health.json
-qsub -q casper@casper-pbs data_access/check.pbs  # or as a Casper job, with a fresh clone of main
-```
-
-**Weekly CESM runs**: see [Weekly CESM runs](cesm_runs.md).
-
-**The workflow** needs a big node: full GEBCO on the 40° square takes ~45 GB, and runoff
-mapping on the Indo-Pacific at rmax 80 km ~90 GB. Submit it from the repo root; it clones
-CrocoDash `main` itself, takes a few hours, and writes `performance/workflow.json` and
-`workflow.xml` in your checkout:
-
-```bash
-qsub -q casper@casper-pbs performance/run.pbs
-qsub -q casper@casper-pbs -v PYTEST_ARGS="-k pole" performance/run.pbs   # only some steps
-```
-
-Commit the two files to publish them.
-
-
-`performance/mom6_scaling.json` holds a hand-run NTASKS_OCN sweep; its scripts are in the CROC
+`integration/mom6_scaling.json` holds a hand-run NTASKS_OCN sweep; its scripts are in the CROC
 monorepo's `dev/scaling_test/`.

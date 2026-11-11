@@ -30,9 +30,9 @@ Runoff maps GLOFAS (the mesh CESM's DROF reads, from case.yaml) onto the row's
 ESMF mesh: nearest neighbour, then smoothed over rmax.
 
 In the CrocoDash env, after `source crocodash_main.sh`, on a node with 16 cores
-and 180 GB (performance/run.pbs does this):
-    pytest performance/test_workflow.py \\
-        --benchmark-json=performance/workflow.json --junitxml=performance/workflow.xml
+and 180 GB (workflow.pbs does this), from the repo root:
+    pytest integration/test_workflow.py \\
+        --benchmark-json=integration/workflow.json --junitxml=integration/workflow.xml
 """
 
 import json

@@ -5,9 +5,9 @@
 #
 #   conda activate CrocoDash
 #   source crocodash_main.sh
-#   pytest performance/test_workflow.py ...
+#   pytest integration/test_workflow.py ...
 #
-# Both scheduled jobs (cesm_runs/run_mom_tests.pbs, data_access/check.pbs)
+# Both scheduled jobs (integration/run_mom_tests.pbs, data_access/check.pbs)
 # source it too.
 #
 # CROCODASH_BRANCH : branch to clone instead of main

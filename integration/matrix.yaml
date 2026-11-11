@@ -1,9 +1,9 @@
 # The test matrix: one row per grid, and what runs on it.
 #
 # Every row's grid is built once, with its bathymetry and vertical grid, from
-# case.yaml by CrocoDash's own builders (performance/test_workflow.py). Then
+# case.yaml by CrocoDash's own builders (test_workflow.py). Then
 # each forcing the row lists runs on it, and with `cesm_runs: true`, the weekly
-# CESM runs build a real case on it (cesm_runs/). To turn something on for a
+# CESM runs build a real case on it (run_mom_tests.py). To turn something on for a
 # grid, add it to the row; to turn it off, delete it; to stop building a grid,
 # delete its row. The Status page shows this table with the latest results.
 #

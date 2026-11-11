@@ -40,7 +40,7 @@ jobs:
       - name: Fetch the weekly CESM-run results
         run: |
           git fetch --depth 1 origin test-results
-          git show FETCH_HEAD:cesm_runs.json > cesm_runs/cesm_runs.json || rm -f cesm_runs/cesm_runs.json
+          git show FETCH_HEAD:cesm_runs.json > integration/cesm_runs.json || rm -f integration/cesm_runs.json
 
       # Runs the page notebooks, which read the results JSON and draw the
       # tables and charts.

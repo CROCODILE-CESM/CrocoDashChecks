@@ -1,8 +1,9 @@
 # CLAUDE.md
 
-CrocoDashChecks checks CrocoDash end to end: the workflow on every grid of the test matrix
-(`performance/test_workflow.py`, by hand), weekly CESM runs (`cesm_runs/`), and a daily
-data-access check (`data_access/`). `site/` is a Sphinx
+CrocoDashChecks checks CrocoDash end to end, in two folders: `integration/` (the test matrix of
+grids; the workflow on every grid, `test_workflow.py`, by hand; and the weekly CESM runs on the
+grids marked for them, `run_mom_tests.py`) and `data_access/` (daily). Shared job scripts
+(`crocodash_main.sh`, `push_results.sh`) are at the root. `site/` is a Sphinx
 site on GitHub Pages; its Status and Performance pages are notebooks that read that JSON. How it all
 runs: `site/how_it_works.md`.
 
@@ -29,12 +30,12 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
 - **Always test a fresh pull:** CrocoDash `main` via `source crocodash_main.sh` (both jobs do; do it
   before any hand run too), and CESM's `crocodash` branch tip with its pinned MOM_interface regional
   tag (the weekly job's `UPDATE=1`).
-- **The test matrix is `matrix.yaml`, one row per grid** (read by `matrix.py`), and every case
-  starts from `case.yaml`, a CrocoDash case config without its grid. A row gives its grid, any
+- **The test matrix is `integration/matrix.yaml`, one row per grid** (read by `matrix.py`), and
+  every case starts from `case.yaml`, a CrocoDash case config without its grid. A row gives its grid, any
   changes to `case.yaml`, the forcings to run (`crocodash process` flags) and `cesm_runs`. Add
   grids there, never inside a test; a new forcing needs a step in `test_workflow.py` and its flag
   in `matrix.FORCINGS`.
-- **The workflow is one file, `performance/test_workflow.py`:** each grid is built once
+- **The workflow is one file, `integration/test_workflow.py`:** each grid is built once
   (`test_grid`, through `CrocoDash.recipe`'s builders), then each forcing runs through its
   CrocoDash configurator, without a CESM case. Sweeps that vary what isn't a grid stay in that
   file and run on named rows. Every step runs in a forked child; its timing goes to
@@ -68,9 +69,9 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
 - **The weekly job pushes `cesm_runs.json` to `test-results`, not `main`,** so the site only picks it
   up on its next rebuild, at the latest after the next daily data-access push.
 - **The workflow needs ~90 GB** (runoff on `indo_pacific` at rmax 80; full GEBCO on
-  `pacific_40deg` takes ~45 GB): run it with `performance/run.pbs`, never on a login node.
+  `pacific_40deg` takes ~45 GB): run it with `integration/workflow.pbs`, never on a login node.
 - **A forcing on a grid that failed to build is skipped, not failed:** `equator_180e` fails at
   the grid step (mom6_forge #173, the GEBCO ±180° gap), so its open boundaries show as skipped.
 - **The `CrocoDash` env imports its own installed CrocoDash** (the 2026 workshop checkout), not
   `main`, unless `crocodash_main.sh` was sourced first.
-- **MOM6 truncates `INPUTDIR` at 128 characters,** so keep `cesm_runs/` test paths short.
+- **MOM6 truncates `INPUTDIR` at 128 characters,** so keep the CESM runs' test paths short.

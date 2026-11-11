@@ -63,5 +63,5 @@ python run_mom_tests.py --cesmroot "$CESMROOT" --test-root "$TESTROOT" --paralle
   --results-dir "$RESULTS" ${EXTRA:-}
 
 if [ -n "${PUBLISH:-}" ]; then
-  bash push_results.sh "$RESULTS"
+  bash ../push_results.sh "$RESULTS"
 fi

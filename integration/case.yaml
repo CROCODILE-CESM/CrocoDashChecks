@@ -2,10 +2,10 @@
 # `crocodash create --config` reads) without its grid, which comes from each
 # row of matrix.yaml. A row can change any part of it (its `case:` key).
 #
-#   - performance/test_workflow.py builds each row's grid, bathymetry and
+#   - test_workflow.py builds each row's grid, bathymetry and
 #     vertical grid from this with CrocoDash's own builders, then runs the
 #     forcings the row turns on, using the settings below.
-#   - cesm_runs/run_mom_tests.py makes a real case from it for each regional
+#   - run_mom_tests.py makes a real case from it for each regional
 #     test in MOM_interface's testlist, filling in the test's compset and paths.
 #
 # Ocean, ice and wave forcing are synthetic (no downloads); bathymetry, runoff,
@@ -28,7 +28,7 @@ vgrid:
   nk: 10
 
 # Extra Case(...) kwargs. cesmroot/caseroot/inputdir/compset/machine/project
-# are filled in by cesm_runs/run_mom_tests.py.
+# are filled in by run_mom_tests.py.
 case: {}
 
 # configure_forcings kwargs. "common" always applies; every other key is a
