@@ -9,6 +9,9 @@ running after VALIDATE_TIMEOUT is killed with everything it started, and
 whatever it downloaded goes with its temp dir. A failing method records its
 last error line as `detail`.
 
+health.json also records the CrocoDash branch and commit checked: check.pbs
+clones it fresh every run and sets CROCODASH_SRC.
+
 Usage (in the CrocoDash env, on GLADE; check.pbs runs it daily on Casper):
     python data_access/check.py
 """
@@ -146,6 +149,26 @@ def _check_access_method(product, method):
     return row
 
 
+def crocodash_ref():
+    """{"branch", "commit"} of the CrocoDash checkout in CROCODASH_SRC, or None."""
+
+    def git(*args):
+        out = subprocess.run(
+            ["git", "-C", os.environ["CROCODASH_SRC"], *args],
+            capture_output=True,
+            text=True,
+        )
+        return out.stdout.strip() if out.returncode == 0 else None
+
+    if not os.environ.get("CROCODASH_SRC"):
+        return None
+    commit = git("rev-parse", "--short", "HEAD")
+    return commit and {
+        "branch": git("rev-parse", "--abbrev-ref", "HEAD"),
+        "commit": commit,
+    }
+
+
 def run_validate_checks(registry):
     """Calls validate_function for every registered (product, method) pair,
     VALIDATE_WORKERS at a time."""
@@ -165,6 +188,7 @@ def main():
     checks = run_validate_checks(registry) if registry is not None else []
     data = {
         "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "crocodash": crocodash_ref(),
         "validate_checks": checks,
     }
     OUTPUT_FILE.write_text(json.dumps(data, indent=2))

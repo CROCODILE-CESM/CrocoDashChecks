@@ -13,11 +13,10 @@
 #
 # cron_submit.sh submits this daily; see README.md.
 #
-# CONDA_ENV     : conda env with CrocoDash installed (default: CrocoDash)
-# CROCODASH_SRC : optional CrocoDash checkout (with submodules) to check instead of
-#                 the one installed in CONDA_ENV. It is not updated here; the weekly
-#                 CESM-run job keeps it at its branch tip.
-# UPDATE        : if set, reset this repo to its branch tip first
+# CONDA_ENV        : conda env with CrocoDash's dependencies (default: CrocoDash)
+# CROCODASH_BRANCH : CrocoDash branch to check (default: main). Every run checks
+#                    out a fresh clone of it, so it always checks that branch's tip.
+# UPDATE           : if set, reset this repo to its branch tip first
 # PUBLISH       : if set, push data_access/health.json to main, which rebuilds the site
 set -euo pipefail
 
@@ -33,10 +32,15 @@ if [ -n "${UPDATE:-}" ]; then
   git -C "$REPO_ROOT" fetch -q && git -C "$REPO_ROOT" reset -q --hard '@{u}'
 fi
 
-if [ -n "${CROCODASH_SRC:-}" ]; then
-  S=$CROCODASH_SRC/CrocoDash
-  export PYTHONPATH=$CROCODASH_SRC:$S/rm6:$S/visualCaseGen:$S/visualCaseGen/ProConPy:$S/visualCaseGen/external/mom6_forge:$S/visualCaseGen/external/ipyfilechooser:$CROCODASH_SRC/gallery${PYTHONPATH:+:$PYTHONPATH}
-fi
+# A fresh clone of CrocoDash for this run, deleted when the job ends. It goes first
+# on PYTHONPATH, ahead of any CrocoDash installed in the env.
+CROCODASH_SRC=$(mktemp -d /glade/derecho/scratch/$USER/crocodash_clone.XXXXXX)
+export CROCODASH_SRC
+trap 'rm -rf "$CROCODASH_SRC"' EXIT
+git clone -q --recurse-submodules -b "${CROCODASH_BRANCH:-main}" \
+  https://github.com/CROCODILE-CESM/CrocoDash "$CROCODASH_SRC"
+S=$CROCODASH_SRC/CrocoDash
+export PYTHONPATH=$CROCODASH_SRC:$S/rm6:$S/visualCaseGen:$S/visualCaseGen/ProConPy:$S/visualCaseGen/external/mom6_forge:$S/visualCaseGen/external/ipyfilechooser:$CROCODASH_SRC/gallery${PYTHONPATH:+:$PYTHONPATH}
 python -c "import CrocoDash; print('CrocoDash from', CrocoDash.__file__)"
 
 cd "$REPO_ROOT"

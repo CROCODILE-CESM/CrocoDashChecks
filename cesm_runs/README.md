@@ -9,14 +9,15 @@ This checks that the current CrocoDash sets up the regional coupled compsets so 
 
 ## Run
 
-Needs a checkout of `CROCODILE-CESM/CESM` branch `crocodash`, and a conda env with the CrocoDash you want to test.
+Needs a checkout of `CROCODILE-CESM/CESM` branch `crocodash`, and a conda env with CrocoDash's dependencies (`CrocoDash`). The job clones CrocoDash itself: a fresh clone of `main` every run, or of `CROCODASH_BRANCH` if you set it.
 
 ```bash
 git clone -b crocodash https://github.com/CROCODILE-CESM/CESM ~/CESM_crocodash
 (cd ~/CESM_crocodash && ./bin/git-fleximod update)
 
 cd cesm_runs
-qsub -v CESMROOT=$HOME/CESM_crocodash,CONDA_ENV=CrocoDash run_mom_tests.pbs
+qsub -v CESMROOT=$HOME/CESM_crocodash run_mom_tests.pbs
+qsub -v CESMROOT=$HOME/CESM_crocodash,CROCODASH_BRANCH=my-branch run_mom_tests.pbs   # another branch
 # from Casper: qsub -q main@desched1 ...
 ```
 
@@ -25,7 +26,7 @@ qsub -v CESMROOT=$HOME/CESM_crocodash,CONDA_ENV=CrocoDash run_mom_tests.pbs
 ## Weekly runs and the dashboard
 
 `cron_submit.sh` runs from your crontab on NCAR's cron server. It submits `run_mom_tests.pbs` with:
-- `UPDATE=1`: reset this repo and the CESM and CrocoDash clones to their branch tips first (the cron server has no git, so the job does this). The branches tested are whatever the clones have checked out, e.g. `git -C $CI_ROOT/CrocoDash checkout main`;
+- `UPDATE=1`: reset this repo and the CESM clone to their branch tips first (the cron server has no git, so the job does this). CrocoDash is always a fresh clone of `main`;
 - `PUBLISH=1`: push `cesm_runs.json` (the commits tested and every test's phases) to this repo's `test-results` branch, which the [dashboard](https://crocodile-cesm.github.io/CrocoDashChecks/) and its badge read when the site next rebuilds (at the latest, after the next daily data-access push).
 
 PBS mails you when the job ends; its log is in `$CI_ROOT/logs/`. The push uses the token from your `gh` login (`gh auth login` once on GLADE, e.g. on Casper).
@@ -37,7 +38,6 @@ CI_ROOT=/glade/work/$USER/croc_ci
 git clone https://github.com/CROCODILE-CESM/CrocoDashChecks $CI_ROOT/CrocoDashChecks
 git clone -b crocodash https://github.com/CROCODILE-CESM/CESM $CI_ROOT/CESM
 (cd $CI_ROOT/CESM && ./bin/git-fleximod update)
-git clone --recursive https://github.com/CROCODILE-CESM/CrocoDash $CI_ROOT/CrocoDash
 
 ssh cron.hpc.ucar.edu
 crontab -e
@@ -45,7 +45,7 @@ crontab -e
 0 2 * * 1 /glade/work/$USER/croc_ci/CrocoDashChecks/cesm_runs/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
 ```
 
-The `CrocoDash` conda env supplies the dependencies; the clone is put first on `PYTHONPATH`. Update the env when CrocoDash's `environment.yml` gains a dependency.
+The `CrocoDash` conda env supplies the dependencies; the job's CrocoDash clone goes first on `PYTHONPATH` and is deleted when the job ends. Update the env when CrocoDash's `environment.yml` gains a dependency.
 
 ## Results
 

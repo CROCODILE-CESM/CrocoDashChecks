@@ -13,16 +13,16 @@
 # 4 MPI tasks for the small ocean, ice and wave grids, 56 for the data
 # atmosphere, data runoff and mediator, which read global data.
 #
-#   qsub -v CESMROOT=~/CESM_crocodash,CONDA_ENV=CrocoDash run_mom_tests.pbs
+#   qsub -v CESMROOT=~/CESM_crocodash run_mom_tests.pbs
 #
 # cron_submit.sh submits this weekly; see README.md.
 #
 # CESMROOT  : a checkout of CROCODILE-CESM/CESM branch `crocodash` (required)
-# CONDA_ENV : conda env with the CrocoDash to test installed (default: CrocoDash)
+# CONDA_ENV : conda env with CrocoDash's dependencies (default: CrocoDash)
 # TESTROOT  : where test dirs go (default: /glade/derecho/scratch/$USER/croc_tests)
-# CROCODASH_SRC : optional CrocoDash checkout (with submodules) to test instead
-#                 of the one installed in CONDA_ENV, e.g. a clone of main
-# UPDATE    : if set, reset this repo, CESMROOT and CROCODASH_SRC to their branch tips first
+# CROCODASH_BRANCH : CrocoDash branch to test (default: main). Every run checks out
+#                    a fresh clone of it, so it always tests that branch's tip.
+# UPDATE    : if set, reset this repo and CESMROOT to their branch tips first
 # PUBLISH   : if set, push cesm_runs.json (the dashboard's summary) to the test-results branch
 # EXTRA     : extra args for run_mom_tests.py, e.g. "--only MARBL"
 set -euo pipefail
@@ -47,16 +47,19 @@ if [ -n "${UPDATE:-}" ]; then
   # fleximod updates submodules itself, so turn that recursion off.
   (cd "$CESMROOT" && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=fetch.recurseSubmodules GIT_CONFIG_VALUE_0=false \
     ./bin/git-fleximod update)
-  if [ -n "${CROCODASH_SRC:-}" ]; then
-    sync "$CROCODASH_SRC"
-    git -C "$CROCODASH_SRC" submodule update -q --init --recursive
-  fi
 fi
 
-if [ -n "${CROCODASH_SRC:-}" ]; then
-  S=$CROCODASH_SRC/CrocoDash
-  export PYTHONPATH=$CROCODASH_SRC:$S/rm6:$S/visualCaseGen:$S/visualCaseGen/ProConPy:$S/visualCaseGen/external/mom6_forge:$S/visualCaseGen/external/ipyfilechooser:$CROCODASH_SRC/gallery${PYTHONPATH:+:$PYTHONPATH}
-fi
+# A fresh clone of CrocoDash for this run, deleted when the job ends (the cases
+# don't read it once created). It goes first on PYTHONPATH, ahead of any CrocoDash
+# installed in the env; run_mom_tests.py records its branch and commit.
+mkdir -p "$TESTROOT"
+CROCODASH_SRC=$(mktemp -d "$TESTROOT/crocodash_clone.XXXXXX")
+export CROCODASH_SRC
+trap 'rm -rf "$CROCODASH_SRC"' EXIT
+git clone -q --recurse-submodules -b "${CROCODASH_BRANCH:-main}" \
+  https://github.com/CROCODILE-CESM/CrocoDash "$CROCODASH_SRC"
+S=$CROCODASH_SRC/CrocoDash
+export PYTHONPATH=$CROCODASH_SRC:$S/rm6:$S/visualCaseGen:$S/visualCaseGen/ProConPy:$S/visualCaseGen/external/mom6_forge:$S/visualCaseGen/external/ipyfilechooser:$CROCODASH_SRC/gallery${PYTHONPATH:+:$PYTHONPATH}
 python -c "import CrocoDash, regional_mom6; print('CrocoDash from', CrocoDash.__file__)"
 
 cd "$PBS_O_WORKDIR"
