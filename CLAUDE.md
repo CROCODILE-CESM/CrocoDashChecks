@@ -68,8 +68,8 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
   exceptions and returns False.
 - **The weekly job pushes `cesm_runs.json` to `test-results`, not `main`,** so the site only picks it
   up on its next rebuild, at the latest after the next daily data-access push.
-- **The workflow needs ~90 GB** (runoff on `indo_pacific` at rmax 80; full GEBCO on
-  `pacific_40deg` takes ~45 GB): run it with `integration/workflow.pbs`, never on a login node.
+- **The workflow needs ~80 GB at its peak** (runoff on `indo_pacific` at rmax 80 km; full GEBCO
+  on `pacific_40deg` takes ~65 GB and 22 min; the whole run ~2 h): run it with `integration/workflow.pbs`, never on a login node.
 - **A forcing on a grid that failed to build is skipped, not failed:** `equator_180e` fails at
   the grid step (mom6_forge #173, the GEBCO ±180° gap), so its open boundaries show as skipped.
 - **The `CrocoDash` env imports its own installed CrocoDash** (the 2026 workshop checkout), not

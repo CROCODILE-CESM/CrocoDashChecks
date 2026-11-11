@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="1" tests="79" time="6789.167" timestamp="2026-11-11T14:54:36.706649-07:00" hostname="crhtc104"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="2ad0c272" /></properties><testcase classname="performance.test_workflow" name="test_grid[labrador]" time="43.346" /><testcase classname="performance.test_workflow" name="test_grid[equator_0e]" time="7.773" /><testcase classname="performance.test_workflow" name="test_grid[equator_180e]" time="3.060"><failure message="RuntimeError: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">benchmark = &lt;pytest_benchmark.fixture.BenchmarkFixture object at 0x1520e37a4e10&gt;
+row = 'equator_180e'
+tmp_path_factory = TempPathFactory(_given_basetemp=PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.6615823.casper-pbs...cho/scratch/manishrv/crocodashchecks_workflow.6615823.casper-pbs/pytest'), _retention_count=3, _retention_policy='all')
+
+    @pytest.mark.parametrize("row", matrix.rows())
+    def test_grid(benchmark, row, tmp_path_factory):
+        workdir = tmp_path_factory.mktemp(row)
+        try:
+&gt;           peak_mb = _timed(benchmark, _build_grid, row, workdir)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+performance/test_workflow.py:290: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+performance/test_workflow.py:198: in _timed
+    benchmark.pedantic(run, rounds=1, iterations=1, warmup_rounds=0)
+/glade/work/manishrv/conda-envs/CrocoDash/lib/python3.11/site-packages/pytest_benchmark/fixture.py:206: in pedantic
+    return self._raw_pedantic(
+/glade/work/manishrv/conda-envs/CrocoDash/lib/python3.11/site-packages/pytest_benchmark/fixture.py:344: in _raw_pedantic
+    duration, result = runner(loops_range)
+                       ^^^^^^^^^^^^^^^^^^^
+/glade/work/manishrv/conda-envs/CrocoDash/lib/python3.11/site-packages/pytest_benchmark/fixture.py:152: in runner
+    result = function_to_benchmark(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+performance/test_workflow.py:196: in run
+    _, box["peak_mb"] = measure_peak_rss(_in_child, fn, *args)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+performance/test_workflow.py:153: in measure_peak_rss
+    result = fn(*args)
+             ^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fn = &lt;function _build_grid at 0x1520e376c400&gt;
+args = ('equator_180e', PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.6615823.casper-pbs/pytest/equator_180e0'))
+read_end = 11, write_end = 12, pid = 109689
+
+    def _in_child(fn, *args):
+        """Run fn(*args) in a forked child; if it fails, raise its last error line
+        here (and print its traceback), so the results say why."""
+        sys.stdout.flush()
+        sys.stderr.flush()
+        read_end, write_end = os.pipe()
+        pid = os.fork()
+        if pid == 0:
+            os.close(read_end)
+            code = 0
+            try:
+                fn(*args)
+            except BaseException:
+                code = 1
+                os.write(write_end, traceback.format_exc().encode())
+            finally:
+                os._exit(code)
+        os.close(write_end)
+        with os.fdopen(read_end) as pipe:
+            error = pipe.read()
+        _, status = os.waitpid(pid, 0)
+        code = os.waitstatus_to_exitcode(status)
+        if code != 0:
+            print(error, file=sys.stderr)
+            lines = error.strip().splitlines()
+&gt;           raise RuntimeError(
+                lines[-1] if lines else f"killed by signal {-code} (out of memory?)"
+            )
+E           RuntimeError: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.
+
+performance/test_workflow.py:186: RuntimeError</failure></testcase><testcase classname="performance.test_workflow" name="test_grid[north_pole]" time="123.232" /><testcase classname="performance.test_workflow" name="test_grid[south_pole]" time="127.920" /><testcase classname="performance.test_workflow" name="test_grid[pacific_2p5deg]" time="17.098" /><testcase classname="performance.test_workflow" name="test_grid[pacific_5deg]" time="17.298" /><testcase classname="performance.test_workflow" name="test_grid[pacific_10deg]" time="57.819" /><testcase classname="performance.test_workflow" name="test_grid[pacific_20deg]" time="257.428" /><testcase classname="performance.test_workflow" name="test_grid[pacific_40deg]" time="1323.528" /><testcase classname="performance.test_workflow" name="test_grid[pacific_80deg]" time="82.648" /><testcase classname="performance.test_workflow" name="test_grid[pacific_160deg]" time="334.190" /><testcase classname="performance.test_workflow" name="test_grid[gulf_1deg]" time="7.580" /><testcase classname="performance.test_workflow" name="test_grid[gulf_2deg]" time="4.348" /><testcase classname="performance.test_workflow" name="test_grid[gulf_4deg]" time="4.430" /><testcase classname="performance.test_workflow" name="test_grid[gulf_8deg]" time="4.818" /><testcase classname="performance.test_workflow" name="test_grid[gulf_of_mexico]" time="6.919" /><testcase classname="performance.test_workflow" name="test_grid[gulf_of_mexico_4th]" time="5.721" /><testcase classname="performance.test_workflow" name="test_grid[gulf_of_mexico_8th]" time="5.922" /><testcase classname="performance.test_workflow" name="test_grid[gulf_of_mexico_25th]" time="11.596" /><testcase classname="performance.test_workflow" name="test_grid[caribbean]" time="14.476" /><testcase classname="performance.test_workflow" name="test_grid[north_atlantic]" time="57.503" /><testcase classname="performance.test_workflow" name="test_grid[indo_pacific]" time="265.419" /><testcase classname="performance.test_workflow" name="test_bc[equator_0e]" time="26.601" /><testcase classname="performance.test_workflow" name="test_bc[equator_180e]" time="0.006"><skipped type="pytest.skip" message="its grid failed to build: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/u/home/manishrv/documents/croc/dev/CrocoDashChecks/performance/test_workflow.py:250: its grid failed to build: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="performance.test_workflow" name="test_bc[north_pole]" time="34.675" /><testcase classname="performance.test_workflow" name="test_bc[south_pole]" time="31.768" /><testcase classname="performance.test_workflow" name="test_bc[pacific_2p5deg]" time="16.803" /><testcase classname="performance.test_workflow" name="test_bc[pacific_5deg]" time="16.216" /><testcase classname="performance.test_workflow" name="test_bc[pacific_10deg]" time="17.486" /><testcase classname="performance.test_workflow" name="test_bc[pacific_20deg]" time="19.240" /><testcase classname="performance.test_workflow" name="test_bc[pacific_40deg]" time="25.212" /><testcase classname="performance.test_workflow" name="test_bc[pacific_80deg]" time="53.949" /><testcase classname="performance.test_workflow" name="test_bc[pacific_160deg]" time="138.412" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_1deg]" time="33.298" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_2deg]" time="30.295" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_4deg]" time="29.864" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_8deg]" time="29.050" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_of_mexico]" time="29.883" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_of_mexico_4th]" time="30.364" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_of_mexico_8th]" time="30.966" /><testcase classname="performance.test_workflow" name="test_runoff[gulf_of_mexico_25th]" time="31.013" /><testcase classname="performance.test_workflow" name="test_runoff[caribbean]" time="30.915" /><testcase classname="performance.test_workflow" name="test_runoff[north_atlantic]" time="37.226" /><testcase classname="performance.test_workflow" name="test_runoff[indo_pacific]" time="87.473" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.5-30-1]" time="17.607" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.1-30-1]" time="19.938" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.05-30-1]" time="25.097" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.025-30-1]" time="32.679" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.01-30-1]" time="79.562" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-90-1]" time="40.877" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-180-1]" time="61.892" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-360-1]" time="96.450" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-360-2]" time="79.494" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-360-3]" time="74.862" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-360-4]" time="68.595" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-360-6]" time="67.154" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.25-360-12]" time="59.787" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.05-360-1]" time="137.323" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.05-360-2]" time="106.236" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.05-360-3]" time="97.518" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.05-360-4]" time="88.430" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.05-360-6]" time="87.478" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_10deg-0.05-360-12]" time="81.619" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_80deg-0.25-360-1]" time="327.560" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_80deg-0.25-360-2]" time="247.199" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_80deg-0.25-360-3]" time="200.628" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_80deg-0.25-360-4]" time="199.577" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_80deg-0.25-360-6]" time="204.952" /><testcase classname="performance.test_workflow" name="test_bc_sweep[pacific_80deg-0.25-360-12]" time="167.247" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[gulf_of_mexico-10]" time="29.930" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[gulf_of_mexico-40]" time="31.005" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[gulf_of_mexico-80]" time="32.465" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[north_atlantic-10]" time="37.068" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[north_atlantic-40]" time="39.910" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[north_atlantic-80]" time="50.000" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[indo_pacific-10]" time="83.767" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[indo_pacific-40]" time="96.991" /><testcase classname="performance.test_workflow" name="test_runoff_sweep[indo_pacific-80]" time="137.694" /></testsuite></testsuites>

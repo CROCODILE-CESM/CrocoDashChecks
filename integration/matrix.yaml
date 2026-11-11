@@ -69,7 +69,7 @@ grids:
     case: *full_gebco
     forcings: [bc]
   pacific_40deg:
-    about: 40° square; full GEBCO needs ~45 GB
+    about: 40° square; full GEBCO needs ~65 GB
     grid: {xstart: 180.0, lenx: 40.0, ystart: -20.0, leny: 40.0, resolution: 0.1}
     case: *full_gebco
     forcings: [bc]

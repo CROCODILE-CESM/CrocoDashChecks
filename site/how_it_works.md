@@ -153,8 +153,8 @@ another CrocoDash branch, set `CROCODASH_BRANCH=my-branch` before sourcing it, o
 
 ### The workflow: grids and forcings
 
-It needs a big node (full GEBCO on the 40° square takes ~45 GB, runoff mapping on the
-Indo-Pacific at rmax 80 km ~90 GB) and a few hours. Submit it from the repo root:
+It needs a big node (full GEBCO on the 40° square takes ~65 GB, runoff mapping on the
+Indo-Pacific at rmax 80 km ~80 GB) and about two hours. Submit it from the repo root:
 
 ```bash
 qsub -q casper@casper-pbs integration/workflow.pbs                                 # every step

@@ -76,10 +76,19 @@ BC_WORKER_SETS = [
     ("pacific_80deg", 0.25),
 ]
 BC_WORKERS = [1, 2, 3, 4, 6, 12]
-# indo_pacific at rmax 80 has ~1.7e9 weights (77% of 2^31) and peaks near 90 GB;
+# indo_pacific at rmax 80 has ~1.6e9 weights (73% of 2^31) and peaks near 76 GB;
 # rmax 100 would pass 2^31, so the sweep stops at 80.
 RUNOFF_SWEEP_ROWS = ["gulf_of_mexico", "north_atlantic", "indo_pacific"]
 RUNOFF_RMAX_KM = [10, 20, 40, 80]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _import_crocodash_once():
+    """Import CrocoDash here, once, so every step's forked child inherits it
+    rather than timing its own import (the first, from a cold disk, took 40 s)."""
+    import CrocoDash.forcing.mom6  # noqa: F401
+    import CrocoDash.forcing.runoff  # noqa: F401
+    import CrocoDash.recipe  # noqa: F401
 
 
 @pytest.fixture(scope="session", autouse=True)
