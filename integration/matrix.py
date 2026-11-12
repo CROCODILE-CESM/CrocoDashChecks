@@ -19,6 +19,12 @@ FORCINGS = {"bc": "Open boundaries", "runoff": "Runoff mapping"}  # what a row c
 for _name, _row in GRIDS.items():
     _unknown = set(_row.get("forcings", [])) - set(FORCINGS)
     assert not _unknown, f"matrix.yaml: {_name} lists unknown forcings {_unknown}"
+    # The CESM runs build every forcing (every compset needs open boundaries, and
+    # GLOFAS runoff needs its map), so their rows run each one on its own too.
+    _missing = set(FORCINGS) - set(_row.get("forcings", []))
+    assert not (
+        _row.get("cesm_runs") and _missing
+    ), f"matrix.yaml: {_name} has cesm_runs, so it must also list {sorted(_missing)}"
 
 
 def rows(what=None):

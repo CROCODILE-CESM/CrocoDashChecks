@@ -37,7 +37,8 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   every case starts from `case.yaml`, a CrocoDash case config without its grid. A row gives its grid, any
   changes to `case.yaml`, the forcings to run (`crocodash process` flags) and `cesm_runs`. Add
   grids there, never inside a test; a new forcing needs a step in `test_workflow.py` and its flag
-  in `matrix.FORCINGS`.
+  in `matrix.FORCINGS`. A `cesm_runs` row must list every forcing, since the CESM runs build
+  them all (GLOFAS runoff needs its map); `matrix.py` asserts it.
 - **The workflow is one file, `integration/test_workflow.py`:** each grid is built once
   (`test_grid`, through `CrocoDash.recipe`'s builders), then each forcing runs through its
   CrocoDash configurator, without a CESM case. Sweeps that vary what isn't a grid stay in that

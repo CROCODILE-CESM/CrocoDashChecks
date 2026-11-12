@@ -16,6 +16,8 @@ Every Monday at 02:00 MT, three checks run against a fresh clone of CrocoDash `m
   the CrocoDash case config every row starts from (coarse GEBCO, synthetic forcing); a row can
   change it under `case:`.
 - To add a grid, add a row; to turn a step off, delete it from its row.
+- A row with `cesm_runs: true` lists every forcing too, since the CESM runs build them all
+  (`matrix.py` refuses a matrix that doesn't).
 
 ## The weekly run
 

@@ -36,7 +36,7 @@ grids:
   equator_180e:
     about: Across the antimeridian, at 180°E
     grid: {xstart: 175.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.25}
-    forcings: [bc]
+    forcings: [bc, runoff]
     cesm_runs: true
   north_pole:
     about: Polar stereographic, centred on the North Pole
