@@ -26,6 +26,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          # The whole history: the Status page compares this week's timings with
+          # the past runs' committed integration/workflow.json.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:

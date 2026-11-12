@@ -81,3 +81,6 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
 - **The `CrocoDash` env imports its own installed CrocoDash** (the 2026 workshop checkout), not
   `main`, unless `crocodash_main.sh` was sourced first.
 - **MOM6 truncates `INPUTDIR` at 128 characters,** so keep the CESM runs' test paths short.
+- **The speed-change marks read past runs from git history** (`checks.past_workflows`: each
+  weekly run's commit of `integration/workflow.json`), so `publish.yml` checks out with
+  `fetch-depth: 0`, and `main`'s history must never be squashed or rewritten.

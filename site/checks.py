@@ -7,6 +7,7 @@ on the site comes from the results files named here; a missing file shows as
 """
 
 import json
+import subprocess
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
@@ -56,16 +57,30 @@ def matrix():
     return yaml.safe_load(MATRIX.read_text())["grids"]
 
 
-def workflow():
-    """The last run of integration/test_workflow.py, or None:
+def _text(path, rev):
+    """A file's text in this checkout, or as it was in git commit rev; None if missing."""
+    if rev is None:
+        return path.read_text() if path.exists() else None
+    shown = subprocess.run(
+        ["git", "-C", str(ROOT), "show", f"{rev}:{path.relative_to(ROOT)}"],
+        capture_output=True,
+        text=True,
+    )
+    return shown.stdout if shown.returncode == 0 else None
+
+
+def workflow(rev=None):
+    """The last run of integration/test_workflow.py (or the one committed in
+    rev), or None:
     {"date", "crocodash": {branch, commit} or None,
      "cases": {test id: its pytest-benchmark case}, for the steps that passed,
      "outcomes": {test id: (OK, FAIL or NOT_RUN for skipped, why)}}.
     A test id is e.g. "test_bc[equator_0e]"."""
-    timings = load(WORKFLOW)
-    if timings is None or not WORKFLOW_OUTCOMES.exists():
+    timings, junit = _text(WORKFLOW, rev), _text(WORKFLOW_OUTCOMES, rev)
+    if timings is None or junit is None:
         return None
-    suite = ET.parse(WORKFLOW_OUTCOMES).getroot()
+    timings = json.loads(timings)
+    suite = ET.fromstring(junit)
     if suite.tag != "testsuite":
         suite = suite.find("testsuite")
     props = {p.get("name"): p.get("value") for p in suite.iter("property")}
@@ -91,6 +106,35 @@ def workflow():
         "cases": {b["name"]: b for b in timings["benchmarks"]},
         "outcomes": outcomes,
     }
+
+
+def past_workflows(n):
+    """The n runs of the workflow before the current one, newest first, from the
+    git history of its results (each weekly run commits them). Fewer if the
+    history is shorter, e.g. in a shallow clone."""
+    current = workflow()
+    log = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(ROOT),
+            "log",
+            "--format=%H",
+            "--",
+            str(WORKFLOW.relative_to(ROOT)),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    past, dates = [], {current["date"]} if current else set()
+    for rev in log.stdout.split():
+        run = workflow(rev)
+        if run and run["date"] not in dates:
+            past.append(run)
+            dates.add(run["date"])
+        if len(past) == n:
+            break
+    return past
 
 
 def resolution(grid):

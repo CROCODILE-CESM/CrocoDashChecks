@@ -16,6 +16,8 @@ Every Monday at 02:00 MT, three checks run against a fresh clone of CrocoDash `m
   the CrocoDash case config every row starts from (coarse GEBCO, synthetic forcing); a row can
   change it under `case:`.
 - To add a grid, add a row; to turn a step off, delete it from its row.
+- ▲ or ▼ beside a step: it got more than 25% (and 5 s or 1 GB) slower or faster than the median
+  of the last 4 runs, which the site reads from git history. Nothing shows otherwise.
 - A row with `cesm_runs: true` lists every forcing too, since the CESM runs build them all
   (`matrix.py` refuses a matrix that doesn't).
 
