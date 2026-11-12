@@ -1,84 +1,85 @@
 {
-  "date": "2026-11-11T16:54:44+00:00",
+  "date": "2026-11-12T12:09:31+00:00",
   "crocodash": {
     "branch": "main",
-    "commit": "f049b004"
+    "commit": "2ad0c272"
   },
   "validate_checks": [
     {
       "product": "cesm-ww3-jra",
       "method": "get_cesm_ww3_jra_spectra",
       "ok": true,
-      "elapsed_s": 7.46
+      "elapsed_s": 5.92
     },
     {
       "product": "cesm_mom_output",
       "method": "get_mom6_output_data",
-      "ok": true,
-      "elapsed_s": 5.13
+      "ok": false,
+      "elapsed_s": 2.37,
+      "detail": "cesm_mom_output.get_mom6_output_data reads whatever cadence the data you point it at has, so it must be given: pass data_freq, e.g. 'MS' for monthly or 'D' for daily output."
     },
     {
       "product": "cesm_mom_output",
       "method": "get_mom6_single_variable_data",
       "ok": false,
-      "elapsed_s": 6.06,
-      "detail": "When encoding chunked arrays of datetime values, both the units and dtype must be prescribed or both must be unprescribed. Prescribing only one or the other is not currently supported. Got a units encoding of days since 0001-01-01 and a dtype encoding of None."
+      "elapsed_s": 2.33,
+      "detail": "cesm_mom_output.get_mom6_single_variable_data reads whatever cadence the data you point it at has, so it must be given: pass data_freq, e.g. 'MS' for monthly or 'D' for daily output."
     },
     {
       "product": "cesm_pop_output",
       "method": "get_cesm_single_variable_data",
       "ok": true,
-      "elapsed_s": 48.33
+      "elapsed_s": 54.4
     },
     {
       "product": "cice_restart",
       "method": "get_cice_restart_subset",
       "ok": true,
-      "elapsed_s": 5.48
+      "elapsed_s": 5.92
     },
     {
       "product": "era5_wave_spectra",
       "method": "get_era5_2d_spectra",
       "ok": true,
-      "elapsed_s": 24.2
+      "elapsed_s": 25.69
     },
     {
       "product": "gebco",
       "method": "get_gebco_data_script",
       "ok": true,
-      "elapsed_s": 4.34
+      "elapsed_s": 2.39
     },
     {
       "product": "gebco",
       "method": "get_gebco_data_with_python",
       "ok": false,
-      "elapsed_s": 379.58,
+      "elapsed_s": 302.74,
       "detail": "File is not a zip file"
     },
     {
       "product": "glofas",
       "method": "get_global_data_with_python",
       "ok": false,
-      "elapsed_s": 5.11,
+      "elapsed_s": 3.42,
       "detail": "400 Client Error: Bad Request for url: https://ewds.climate.copernicus.eu/api/retrieve/v1/processes/cems-glofas-historical/execution"
     },
     {
       "product": "glofas",
       "method": "get_processed_global_glofas_script_for_cli",
       "ok": true,
-      "elapsed_s": 3.0
+      "elapsed_s": 2.19
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_from_cds_api",
       "ok": true,
-      "elapsed_s": 73.31
+      "elapsed_s": 85.94
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_from_rda",
       "ok": true,
-      "elapsed_s": 12.76
+      "elapsed_s": 13.63
     },
     {
       "product": "glorys",
@@ -90,43 +91,43 @@
       "product": "reference_ice",
       "method": "get_reference_ice_data",
       "ok": true,
-      "elapsed_s": 2.33
+      "elapsed_s": 2.38
     },
     {
       "product": "reference_ocean",
       "method": "get_reference_ocean_data",
       "ok": true,
-      "elapsed_s": 2.35
+      "elapsed_s": 2.43
     },
     {
       "product": "reference_waves",
       "method": "get_reference_wave_spectra",
       "ok": true,
-      "elapsed_s": 2.28
+      "elapsed_s": 2.22
     },
     {
       "product": "seawifs",
       "method": "get_global_seawifs_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.12
+      "elapsed_s": 2.03
     },
     {
       "product": "seawifs",
       "method": "get_processed_global_seawifs_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.13
+      "elapsed_s": 2.15
     },
     {
       "product": "srtm",
       "method": "get_srtm_data_script",
       "ok": true,
-      "elapsed_s": 2.16
+      "elapsed_s": 2.1
     },
     {
       "product": "srtm",
       "method": "get_srtm_data_with_python",
       "ok": true,
-      "elapsed_s": 796.21
+      "elapsed_s": 471.46
     }
   ]
 }
