@@ -1,5 +1,5 @@
 {
- "date": "2026-11-12T13:59:48+00:00",
+ "date": "2026-11-12T23:54:22+00:00",
  "cesm": {
   "branch": "crocodash",
   "commit": "8d654c3"
@@ -9,6 +9,76 @@
   "commit": "2ad0c272"
  },
  "tests": [
+  {
+   "name": "SMS_D_Ld2.USER_RES.CR_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
+   "test": "SMS_D_Ld2",
+   "compset": "CR_JRA_GLOFAS",
+   "grid": "equator_180e",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL_DROF%GLOFAS_SGLC_SWAV",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "FAIL"
+    ]
+   ],
+   "passed": false
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.CR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
+   "test": "SMS_D_Ld2",
+   "compset": "CR1850MARBL_JRA_GLOFAS",
+   "grid": "equator_180e",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL%MARBL-BIO_DROF%GLOFAS_SGLC_SWAV",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "FAIL"
+    ]
+   ],
+   "passed": false
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.GR_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
+   "test": "SMS_D_Ld2",
+   "compset": "GR_JRA_GLOFAS",
+   "grid": "equator_180e",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_CICE_MOM6%REGIONAL_DROF%GLOFAS_SGLC_SWAV",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "FAIL"
+    ]
+   ],
+   "passed": false
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.CWR_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
+   "test": "SMS_D_Ld2",
+   "compset": "CWR_JRA_GLOFAS",
+   "grid": "equator_180e",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL_DROF%GLOFAS_SGLC_WW3",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "FAIL"
+    ]
+   ],
+   "passed": false
+  },
+  {
+   "name": "SMS_D_Ld2.USER_RES.GWR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
+   "test": "SMS_D_Ld2",
+   "compset": "GWR1850MARBL_JRA_GLOFAS",
+   "grid": "equator_180e",
+   "longname": "1850_DATM%JRA-1p5-2023_SLND_CICE_MOM6%REGIONAL%MARBL-BIO_DROF%GLOFAS_SGLC_WW3",
+   "phases": [
+    [
+     "CREATE_NEWCASE",
+     "FAIL"
+    ]
+   ],
+   "passed": false
+  },
   {
    "name": "SMS_D_Ld2.USER_RES.CR_JRA_GLOFAS.derecho_intel.crocodash-labrador",
    "test": "SMS_D_Ld2",
@@ -48,20 +118,6 @@
    "passed": true
   },
   {
-   "name": "SMS_D_Ld2.USER_RES.CR_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
-   "test": "SMS_D_Ld2",
-   "compset": "CR_JRA_GLOFAS",
-   "grid": "equator_180e",
-   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL_DROF%GLOFAS_SGLC_SWAV",
-   "phases": [
-    [
-     "CREATE_NEWCASE",
-     "FAIL"
-    ]
-   ],
-   "passed": false
-  },
-  {
    "name": "SMS_D_Ld2.USER_RES.CR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-labrador",
    "test": "SMS_D_Ld2",
    "compset": "CR1850MARBL_JRA_GLOFAS",
@@ -94,20 +150,6 @@
     ],
     [
      "RUN",
-     "FAIL"
-    ]
-   ],
-   "passed": false
-  },
-  {
-   "name": "SMS_D_Ld2.USER_RES.CR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
-   "test": "SMS_D_Ld2",
-   "compset": "CR1850MARBL_JRA_GLOFAS",
-   "grid": "equator_180e",
-   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL%MARBL-BIO_DROF%GLOFAS_SGLC_SWAV",
-   "phases": [
-    [
-     "CREATE_NEWCASE",
      "FAIL"
     ]
    ],
@@ -152,20 +194,6 @@
    "passed": true
   },
   {
-   "name": "SMS_D_Ld2.USER_RES.GR_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
-   "test": "SMS_D_Ld2",
-   "compset": "GR_JRA_GLOFAS",
-   "grid": "equator_180e",
-   "longname": "1850_DATM%JRA-1p5-2023_SLND_CICE_MOM6%REGIONAL_DROF%GLOFAS_SGLC_SWAV",
-   "phases": [
-    [
-     "CREATE_NEWCASE",
-     "FAIL"
-    ]
-   ],
-   "passed": false
-  },
-  {
    "name": "SMS_D_Ld2.USER_RES.CWR_JRA_GLOFAS.derecho_intel.crocodash-labrador",
    "test": "SMS_D_Ld2",
    "compset": "CWR_JRA_GLOFAS",
@@ -204,20 +232,6 @@
    "passed": true
   },
   {
-   "name": "SMS_D_Ld2.USER_RES.CWR_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
-   "test": "SMS_D_Ld2",
-   "compset": "CWR_JRA_GLOFAS",
-   "grid": "equator_180e",
-   "longname": "1850_DATM%JRA-1p5-2023_SLND_DICE%SSMI_MOM6%REGIONAL_DROF%GLOFAS_SGLC_WW3",
-   "phases": [
-    [
-     "CREATE_NEWCASE",
-     "FAIL"
-    ]
-   ],
-   "passed": false
-  },
-  {
    "name": "SMS_D_Ld2.USER_RES.GWR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-labrador",
    "test": "SMS_D_Ld2",
    "compset": "GWR1850MARBL_JRA_GLOFAS",
@@ -250,20 +264,6 @@
     ],
     [
      "RUN",
-     "FAIL"
-    ]
-   ],
-   "passed": false
-  },
-  {
-   "name": "SMS_D_Ld2.USER_RES.GWR1850MARBL_JRA_GLOFAS.derecho_intel.crocodash-equator_180e",
-   "test": "SMS_D_Ld2",
-   "compset": "GWR1850MARBL_JRA_GLOFAS",
-   "grid": "equator_180e",
-   "longname": "1850_DATM%JRA-1p5-2023_SLND_CICE_MOM6%REGIONAL%MARBL-BIO_DROF%GLOFAS_SGLC_WW3",
-   "phases": [
-    [
-     "CREATE_NEWCASE",
      "FAIL"
     ]
    ],
