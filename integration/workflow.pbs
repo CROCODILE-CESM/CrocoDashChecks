@@ -3,7 +3,8 @@
 # node, against a fresh clone of CrocoDash main and CESMROOT. Writes, in RESULTS,
 # workflow.json (the timings), workflow.xml (what passed, failed or was skipped,
 # and why) and, on a row with CESM runs, cesm_runs.json (their phases).
-# weekly.sh submits one per row, and collect.pbs merges them. By hand, from the
+# weekly.sh submits one per row (testing rows to 64 cores of develop instead of
+# the whole main node below), and collect.pbs merges them. By hand, from the
 # repo root:
 #   qsub -v ROW=labrador,CESMROOT=/path/to/CESM integration/workflow.pbs
 # PYTEST_K runs only the steps a pytest -k expression selects, e.g. its case:

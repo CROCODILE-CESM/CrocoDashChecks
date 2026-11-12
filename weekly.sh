@@ -10,10 +10,11 @@
 # this script from it every Monday; the cron host itself has no git.
 #
 # It submits, from this run's own directory:
-#   testing      every week: one Derecho job per testing row of
+#   testing      every week: one Derecho develop job per testing row of
 #                integration/matrix.yaml (workflow.pbs), then collect.pbs
 #                to merge and publish their results once they have all ended
-#   performance  the same for the performance rows, on the first Monday of each month
+#   performance  the same for the performance rows, each on a whole main node,
+#                on the first Monday of each month
 #   data access  data_access/check.pbs on Casper
 # Every row's job tests the same CrocoDash main commit (its tip now).
 #
@@ -63,9 +64,17 @@ if [ "$(date +%-d)" -le 7 ] || [ -n "${PERFORMANCE:-}" ]; then
   SUITES+=(performance)
 fi
 for suite in "${SUITES[@]}"; do
+  # Testing rows are small: 64 cores of a shared develop node, which starts at
+  # once (a user may run 256 cores there, so 4 rows at a time). Performance rows
+  # get a whole main node each (workflow.pbs's own -q and -l), for clean timings.
+  if [ "$suite" = testing ]; then
+    WHERE=(-q develop@desched1 -l select=1:ncpus=64:mpiprocs=64:mem=120GB -l place=pack:shared)
+  else
+    WHERE=(-q main@desched1)
+  fi
   jobs=()
   for row in $(python3 integration/matrix.py "$suite"); do
-    jobs+=("$($QSUB -q main@desched1 -N "$row" "${OPTS[@]}" \
+    jobs+=("$($QSUB "${WHERE[@]}" -N "$row" "${OPTS[@]}" \
       -v "ROW=$row,CESMROOT=$CESMROOT,CROCODASH_COMMIT=$COMMIT,RUN_ID=$RUN_ID,RESULTS=$RUN/results/$suite/$row" \
       integration/workflow.pbs)")
     echo "$row: ${jobs[-1]}"

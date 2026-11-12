@@ -6,7 +6,7 @@
 | `case.yaml` | The CrocoDash case config every row starts from; a row can change it |
 | `matrix.py` | Reads both |
 | `test_workflow.py` | A row's case through the CrocoDash CLI, timed, and its CESM runs |
-| `workflow.pbs` | One row on one Derecho node (`ROW=`) |
+| `workflow.pbs` | One row (`ROW=`) on a whole Derecho node; `weekly.sh` gives testing rows 64 develop cores instead |
 | `collect.pbs` | Merges a suite's rows into `testing.*` or `performance.*` and publishes them |
 | `mom6_scaling.json` | A hand-run sweep of MOM6's speed against its task count |
 

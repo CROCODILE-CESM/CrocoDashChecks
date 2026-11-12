@@ -90,6 +90,9 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
 - **A CESM test is ~20 min, almost all start-up:** DATM reading JRA's time bounds (~6 min) and
   DROF mapping GLOFAS (~4.5 min); the 2-day run is under a minute. A `cesm_runs` row's job is
   its 5 compsets in a row, so it is the longest (~2 h).
+- **Testing rows run on `develop`, 64 cores each; performance rows on whole `main` nodes.** `main`
+  can queue for hours; `develop` starts at once but runs at most 256 cores per user (`cpudev`), so
+  4 testing rows at a time (the 5th starts when a short one ends) and nothing else of the user's.
 - **A test with no cases on a row is collected as `test_x[NOTSET]`;** `workflow.pbs` deselects it
   (`-k "not NOTSET"`), or it would show as a skipped step.
 - **`/etc/profile` isn't `set -e` safe** (`weekly.sh` sources it for a Python new enough for

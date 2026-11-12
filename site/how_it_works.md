@@ -2,8 +2,8 @@
 
 | Check | When | What it does | Where | Results, on `main` |
 |---|---|---|---|---|
-| Testing | Every Monday, 02:00 MT | Each testing row of the matrix: `crocodash create`, then `crocodash process` for each forcing it turns on; on rows marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | A Derecho job per row | `integration/testing.json`, `testing.xml`, `cesm_runs.json` |
-| Performance | First Monday of each month | The same on the performance rows, timed, plus the sweeps for the [fits](performance.ipynb) | A Derecho job per row | `integration/performance.json`, `performance.xml` |
+| Testing | Every Monday, 02:00 MT | Each testing row of the matrix: `crocodash create`, then `crocodash process` for each forcing it turns on; on rows marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | A Derecho develop job per row (64 cores; 4 at a time) | `integration/testing.json`, `testing.xml`, `cesm_runs.json` |
+| Performance | First Monday of each month | The same on the performance rows, timed, plus the sweeps for the [fits](performance.ipynb) | A whole Derecho node per row | `integration/performance.json`, `performance.xml` |
 | Data access | Every Monday | Calls every way CrocoDash fetches data | Casper | `data_access/health.json` |
 
 ## The matrix
