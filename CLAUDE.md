@@ -1,8 +1,8 @@
 # CLAUDE.md
 
 CrocoDashChecks checks CrocoDash end to end, in two folders: `integration/` (the test matrix of
-grids; the workflow on every grid, `test_workflow.py`, by hand; and the weekly CESM runs on the
-grids marked for them, `run_mom_tests.py`) and `data_access/` (daily). Shared job scripts
+grids; the workflow on every grid, `test_workflow.py`, on Casper; and the CESM runs on the grids
+marked for them, `run_mom_tests.py`, on Derecho: both weekly, submitted by one `cron_submit.sh`) and `data_access/` (daily). Shared job scripts
 (`crocodash_main.sh`, `push_results.sh`) are at the root. `site/` is a Sphinx
 site on GitHub Pages; its Status and Performance pages are notebooks that read that JSON. How it all
 runs: `site/how_it_works.md`.
@@ -17,17 +17,18 @@ runs: `site/how_it_works.md`.
 | Crontab | `cron.hpc.ucar.edu`; read it with `ssh cron.hpc.ucar.edu crontab -l`; only the user edits it |
 | Cron and job logs | `/glade/work/$USER/croc_ci/cron.log`, `/glade/work/$USER/croc_ci/logs/` |
 | Weekly CESM-run summary | `cesm_runs.json` on the `test-results` branch |
+| Weekly workflow results | `integration/workflow.json` and `workflow.xml` on `main` |
 | Published site | <https://crocodile-cesm.github.io/CrocoDashChecks/>, built by `.github/workflows/publish.yml` |
 
-Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `cesm_runs.json` and
-`health.json`), and the Status page shows them.
+Every job records the CrocoDash branch and commit it tested (`crocodash` in `cesm_runs.json` and
+`health.json`, properties in `workflow.xml`), and the Status page shows them.
 
 ## Rules
 
 - **Everything runs in the `CrocoDash` conda env** (pytest-benchmark installed into it). Don't add
   other dependencies (the site's own build packages in `site/requirements.txt` are the exception:
   CI only).
-- **Always test a fresh pull:** CrocoDash `main` via `source crocodash_main.sh` (both jobs do; do it
+- **Always test a fresh pull:** CrocoDash `main` via `source crocodash_main.sh` (every job does; do it
   before any hand run too), and CESM's `crocodash` branch tip with its pinned MOM_interface regional
   tag (the weekly job's `UPDATE=1`).
 - **The test matrix is `integration/matrix.yaml`, one row per grid** (read by `matrix.py`), and
@@ -45,10 +46,11 @@ Both jobs record the CrocoDash branch and commit they tested (`crocodash` in `ce
   `testlist_mom.xml` decides which CESM tests run; don't add test lists here.
 - **The site is Markdown and notebooks, never hand-written HTML, CSS or JS** (the owner can't read
   them). Charts are matplotlib cell outputs; Sphinx runs the notebooks on every build and shows
-  their code above each output. Commit notebooks without outputs; edit them as notebooks (no
-  generator scripts). Shared helpers go in `site/checks.py`, page logic stays in
+  only their outputs, not their code (`nb_remove_code_source`). Commit notebooks without outputs;
+  edit them as notebooks (no generator scripts). Shared helpers go in `site/checks.py`, page logic stays in
   the page's notebook. `site/requirements.txt` is pinned; bump it on purpose.
-- **Status marks are an icon beside a word** (✅ Pass, ❌ Failed: …), never color alone. Every number
+- **Keep the Status page terse and glanceable:** the matrix shows marks only (✅ ❌ ⬜ ⚠️, shapes,
+  never color alone) with a one-line legend; tables are compact (`checks.table`). Every number
   on the site comes from the JSON. A check older than `STALE_DAYS` in `site/checks.py` shows as
   stale, because a schedule that stops running fails silently otherwise.
 - **Keep the anchors other pages link to:** `#cesm` and `#data-access` (README badges) and

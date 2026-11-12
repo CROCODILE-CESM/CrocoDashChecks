@@ -4,8 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # The data-access check runs daily on GLADE (data_access/cron_submit.sh) and
-  # pushes data_access/health.json to main, which rebuilds the site.
+  # The daily data-access check and the weekly workflow run on GLADE and push
+  # their results (data_access/health.json, integration/workflow.*) to main,
+  # which rebuilds the site.
 
 permissions:
   contents: read

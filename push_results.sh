@@ -1,12 +1,13 @@
 #!/bin/bash
-# Push the result JSONs in a directory to a branch of this repo: by default
-# the weekly run's cesm_runs.json (run_mom_tests.py --results-dir) to the
+# Push the result files in a directory to a branch of this repo: by default
+# the weekly CESM runs' cesm_runs.json (run_mom_tests.py --results-dir) to the
 # `test-results` branch, which publish.yml reads when it builds the site.
 #
 #   push_results.sh <results-dir>
 #
 # BRANCH, DEST and MSG push to elsewhere, e.g. the daily data-access snapshot:
 #   BRANCH=main DEST=data_access MSG="..." push_results.sh <dir-with-health.json>
+# (the weekly workflow pushes workflow.json and workflow.xml to main the same way).
 #
 # Authenticates with the token that `gh auth login` stored in
 # ~/.config/gh/hosts.yml; Derecho has no gh module, so gh itself isn't needed.
@@ -30,7 +31,7 @@ else
 fi
 
 mkdir -p "$WORK/$DEST"
-cp "$RESULTS_DIR"/*.json "$WORK/$DEST"/
+cp "$RESULTS_DIR"/* "$WORK/$DEST"/
 git_ add -A
 git_ diff --cached --quiet && exit 0
 git_ commit -q -m "${MSG:-Test results $(date +%F)}"

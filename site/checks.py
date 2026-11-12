@@ -28,7 +28,7 @@ REPO_URL = "https://github.com/CROCODILE-CESM/CrocoDashChecks"
 SITE_URL = "https://crocodile-cesm.github.io/CrocoDashChecks"
 
 # A check older than this many days means its schedule stopped running.
-STALE_DAYS = {"cesm": 8, "health": 2}
+STALE_DAYS = {"workflow": 8, "cesm": 8, "health": 2}
 
 # CIME's test phases, in order, and what each is for a CrocoDash-built case.
 PHASES = [
@@ -93,18 +93,6 @@ def workflow():
     }
 
 
-def step(wf, test_id):
-    """One workflow step's result in a few words: its time if it passed, or
-    Failed, Skipped or No result."""
-    if wf is None or test_id not in wf["outcomes"]:
-        return f"{WARN} No result"
-    mark, _ = wf["outcomes"][test_id]
-    if mark == OK:
-        case = wf["cases"].get(test_id)
-        return f"{OK} {fmt_s(case['stats']['mean'])}" if case else f"{OK} Passed"
-    return f"{mark} {'Failed' if mark == FAIL else 'Skipped'}"
-
-
 def resolution(grid):
     """A matrix.yaml grid's resolution as written, e.g. 1/12° or 100 km."""
     if "resolution_km" in grid:
@@ -154,12 +142,16 @@ def commit(ref, repo):
 
 
 def table(headers, rows):
-    """A Markdown table: one header row, then one row per item."""
+    """A compact Markdown table: one header row, then one row per item.
+    table-sm is the theme's own class for tight cells; widths auto keeps each
+    column as narrow as its content."""
     lines = ["| " + " | ".join(headers) + " |", "|" + "---|" * len(headers)]
     for row in rows:
         cells = [str(c).replace("|", "\\|").replace("\n", " ") for c in row]
         lines.append("| " + " | ".join(cells) + " |")
-    return "\n".join(lines)
+    return (
+        "```{table}\n:class: table-sm\n:widths: auto\n\n" + "\n".join(lines) + "\n```"
+    )
 
 
 def plain(text):

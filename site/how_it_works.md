@@ -4,7 +4,7 @@ CrocoDashChecks runs three checks on NCAR's systems and publishes their results 
 
 | Check | What it does | Where | When | Results |
 |---|---|---|---|---|
-| [The workflow](#the-workflow) | Builds every grid in the test matrix with its bathymetry, runs the forcings turned on for each, and times every step | One Casper node | By hand | `integration/workflow.json` and `workflow.xml` on `main` |
+| [The workflow](#the-workflow) | Builds every grid in the test matrix with its bathymetry, runs the forcings turned on for each, and times every step | One Casper node | Mondays 02:00 MT | `integration/workflow.json` and `workflow.xml` on `main` |
 | [Weekly CESM runs](integration.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash on each grid the test matrix turns the CESM runs on for, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
 | Data access | Calls every way CrocoDash fetches data (every product's access methods), for real | Casper | Daily 05:00 MT | `data_access/health.json` on `main` |
 
@@ -65,7 +65,7 @@ show a failure and not just a missing number.
 Every check tests the tip of CrocoDash `main`, and the weekly runs use the tip of CESM's
 `crocodash` branch, with the MOM_interface regional tag it pins. `crocodash_main.sh` clones
 CrocoDash fresh, with its submodules, puts that clone first on `PYTHONPATH`, and deletes it
-when the job (or your shell) exits. Both scheduled jobs source it, and you should too before
+when the job (or your shell) exits. Every scheduled job sources it, and you should too before
 running anything by hand. Each job records the branch and commit it tested, and the
 [Status page](index.ipynb) shows them. The `CrocoDash` conda env supplies only the
 dependencies.
@@ -75,8 +75,9 @@ To test another branch, submit the job yourself with `CROCODASH_BRANCH` set, e.g
 
 ## How a scheduled run starts
 
-1. **The crontab on `cron.hpc.ucar.edu`** runs a `cron_submit.sh` script. The cron host has
-   no software (not even git), so that script only runs `qsub`:
+1. **The crontab on `cron.hpc.ucar.edu`** has two lines: the weekly one submits both weekly
+   jobs (the workflow and the CESM runs), the daily one the data-access check. The cron host has
+   no software (not even git), so each `cron_submit.sh` only runs `qsub`:
 
    ```
    0 2 * * 1 /glade/work/$USER/croc_ci/CrocoDashChecks/integration/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
@@ -84,12 +85,13 @@ To test another branch, submit the job yourself with `CROCODASH_BRANCH` set, e.g
    ```
 
    Edit it with `ssh cron.hpc.ucar.edu` and then `crontab -e`.
-2. **The job** (`integration/run_mom_tests.pbs` or `data_access/check.pbs`) first resets its
-   clone of this repo to `main`. The weekly job also resets the CESM clone and runs
-   `git-fleximod update`. Then it clones CrocoDash and runs the check.
+2. **Each job** (`integration/workflow.pbs`, `integration/run_mom_tests.pbs` or
+   `data_access/check.pbs`) first resets its clone of this repo to `main`. The CESM runs also
+   reset the CESM clone and run `git-fleximod update`. Then it clones CrocoDash and runs the check.
 3. **It publishes its results** with `push_results.sh`, using the token from your
-   `gh` login. The weekly runs push `cesm_runs.json` to the `test-results` branch. The daily
-   check pushes `data_access/health.json` to `main`, and that push rebuilds this site.
+   `gh` login. The CESM runs push `cesm_runs.json` to the `test-results` branch. The workflow
+   pushes `integration/workflow.json` and `workflow.xml`, and the daily check
+   `data_access/health.json`, to `main`, and those pushes rebuild this site.
 
 :::{important}
 PBS copies a job script when the job is submitted, before the job updates its clone. So a
@@ -166,8 +168,8 @@ A step's name is its test and its grid, like `test_bc[north_pole]`; list them al
 `pytest --collect-only -q integration/test_workflow.py`. The job writes
 `integration/workflow.json` (timings) and `integration/workflow.xml` (what passed, failed or was
 skipped, and why) in your checkout, and its log, `crocodashchecks_workflow.o<job id>`, where you
-submitted it. Build the site (below) to see them. To publish a run, commit those two files; a run
-with `-k` holds only its own steps, so publish full runs only.
+submitted it. Build the site (below) to see them. The weekly run publishes itself; a hand run publishes
+nothing unless you add `-v PUBLISH=1` (full runs only: a run with `-k` holds only its own steps).
 
 ### The weekly CESM runs
 

@@ -28,9 +28,8 @@ nb_execution_mode = "force"  # run every notebook on every build
 nb_execution_raise_on_error = True  # a notebook that errors fails the build
 nb_execution_timeout = 300  # seconds per cell
 nb_output_stderr = "remove"  # leave warnings out of the pages
+nb_remove_code_source = True  # show each cell's output, not its code
 nb_render_markdown_format = "myst"  # Markdown a cell prints can hold tables and links
-nb_code_prompt_show = "Show the full table"  # the toggle on folded tables
-nb_code_prompt_hide = "Hide the full table"
 
 myst_enable_extensions = ["colon_fence"]
 myst_heading_anchors = 3

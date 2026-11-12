@@ -7,8 +7,9 @@ CrocoDash's workflow, checked end to end on every grid of the test matrix, two w
 | `matrix.yaml` | The test matrix: one row per grid, with the forcings to run on it and whether the CESM runs use it |
 | `case.yaml` | The CrocoDash case config every check starts from, without its grid; a row can change it |
 | `matrix.py` | Reads both: the rows, and each row's full case config |
-| `test_workflow.py`, `workflow.pbs` | **The workflow**, run by hand on Casper: builds every grid once with its bathymetry, runs the forcings turned on for it, and times every step. Results: `workflow.json` (timings) and `workflow.xml` (what passed, failed or was skipped, and why) |
-| `run_mom_tests.py`, `run_mom_tests.pbs`, `cron_submit.sh` | **The weekly CESM runs**, Mondays on Derecho: MOM_interface's regional tests built with CrocoDash on the matrix's grids and run in CESM. Results: `cesm_runs.json` on the `test-results` branch |
+| `test_workflow.py`, `workflow.pbs` | **The workflow**, Mondays on Casper: builds every grid once with its bathymetry, runs the forcings turned on for it, and times every step. Results: `workflow.json` (timings) and `workflow.xml` (what passed, failed or was skipped, and why) |
+| `run_mom_tests.py`, `run_mom_tests.pbs` | **The weekly CESM runs**, Mondays on Derecho: MOM_interface's regional tests built with CrocoDash on the matrix's grids and run in CESM. Results: `cesm_runs.json` on the `test-results` branch |
+| `cron_submit.sh` | Submits both weekly jobs, from the crontab |
 | `mom6_scaling.json` | A hand-run sweep of MOM6's speed against its task count |
 
 How the matrix and the workflow work, and how to run the workflow:
@@ -42,7 +43,7 @@ qsub -v CESMROOT=$HOME/CESM_crocodash,CROCODASH_BRANCH=my-branch run_mom_tests.p
 
 ### Weekly runs and the dashboard
 
-`cron_submit.sh` runs from your crontab on NCAR's cron server. It submits `run_mom_tests.pbs` with:
+`cron_submit.sh` runs from your crontab on NCAR's cron server. It submits `run_mom_tests.pbs` (and the workflow, `workflow.pbs`, to Casper) with:
 - `UPDATE=1`: reset this repo and the CESM clone to their branch tips first (the cron server has no git, so the job does this). CrocoDash is always a fresh clone of `main`;
 - `PUBLISH=1`: push `cesm_runs.json` (the commits tested and every test's phases) to this repo's `test-results` branch, which the [dashboard](https://crocodile-cesm.github.io/CrocoDashChecks/) and its badge read when the site next rebuilds (at the latest, after the next daily data-access push).
 
