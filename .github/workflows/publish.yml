@@ -1,12 +1,12 @@
 name: Publish site
 
 on:
+  # The weekly checks push their results from GLADE: the workflow and the
+  # data-access check to main, the CESM runs to test-results. Each push rebuilds
+  # the site, always from main.
   push:
-    branches: [main]
+    branches: [main, test-results]
   workflow_dispatch:
-  # The daily data-access check and the weekly workflow run on GLADE and push
-  # their results (data_access/health.json, integration/workflow.*) to main,
-  # which rebuilds the site.
 
 permissions:
   contents: read

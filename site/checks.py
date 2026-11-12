@@ -28,7 +28,7 @@ REPO_URL = "https://github.com/CROCODILE-CESM/CrocoDashChecks"
 SITE_URL = "https://crocodile-cesm.github.io/CrocoDashChecks"
 
 # A check older than this many days means its schedule stopped running.
-STALE_DAYS = {"workflow": 8, "cesm": 8, "health": 2}
+STALE_DAYS = {"workflow": 8, "cesm": 8, "health": 8}
 
 # CIME's test phases, in order, and what each is for a CrocoDash-built case.
 PHASES = [

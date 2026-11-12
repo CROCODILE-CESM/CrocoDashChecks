@@ -1,12 +1,12 @@
 # How it works
 
-CrocoDashChecks runs three checks on NCAR's systems and publishes their results here.
+CrocoDashChecks runs three checks on NCAR's systems every Monday and publishes their results here.
 
 | Check | What it does | Where | When | Results |
 |---|---|---|---|---|
 | [The workflow](#the-workflow) | Builds every grid in the test matrix with its bathymetry, runs the forcings turned on for each, and times every step | One Casper node | Mondays 02:00 MT | `integration/workflow.json` and `workflow.xml` on `main` |
-| [Weekly CESM runs](integration.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash on each grid the test matrix turns the CESM runs on for, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
-| Data access | Calls every way CrocoDash fetches data (every product's access methods), for real | Casper | Daily 05:00 MT | `data_access/health.json` on `main` |
+| [CESM runs](integration.md) | Builds each regional SMS test in MOM_interface's `testlist_mom.xml` with CrocoDash on each grid the test matrix turns the CESM runs on for, then runs it in CESM | One Derecho node | Mondays 02:00 MT | `cesm_runs.json` on the `test-results` branch |
+| Data access | Calls every way CrocoDash fetches data (every product's access methods), for real | Casper | Mondays 02:00 MT | `data_access/health.json` on `main` |
 
 The first two live in `integration/`, the last in `data_access/`. To run any of them yourself, see
 [Running the checks by hand](#by-hand).
@@ -75,43 +75,37 @@ To test another branch, submit the job yourself with `CROCODASH_BRANCH` set, e.g
 
 ## How a scheduled run starts
 
-1. **The crontab on `cron.hpc.ucar.edu`** has two lines: the weekly one submits both weekly
-   jobs (the workflow and the CESM runs), the daily one the data-access check. The cron host has
-   no software (not even git), so each `cron_submit.sh` only runs `qsub`:
+1. **One crontab line on `cron.hpc.ucar.edu`**, Mondays at 02:00 MT. The cron host has no
+   git, so the line only submits a small Casper job, which clones this repo fresh and runs
+   `weekly.sh` from it (with your username for `$USER`; edit it with `ssh cron.hpc.ucar.edu`
+   and then `crontab -e`):
 
    ```
-   0 2 * * 1 /glade/work/$USER/croc_ci/CrocoDashChecks/integration/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
-   0 5 * * * /glade/work/$USER/croc_ci/CrocoDashChecks/data_access/cron_submit.sh >> /glade/work/$USER/croc_ci/cron.log 2>&1
+   0 2 * * 1 /opt/pbs/bin/qsub -q casper@casper-pbs -A NCGD0011 -l select=1:ncpus=1:mem=4GB -l walltime=00:30:00 -j oe -o /glade/derecho/scratch/$USER/crocodashchecks/ -- /bin/bash -c 'D=$(mktemp -d) && git clone -q https://github.com/CROCODILE-CESM/CrocoDashChecks $D && bash $D/weekly.sh' >> /glade/derecho/scratch/$USER/crocodashchecks/cron.log 2>&1
    ```
+2. **`weekly.sh`** makes this run's directory, `/glade/derecho/scratch/$USER/crocodashchecks/<date>/`,
+   copies the fresh clone into it, and submits the three jobs from there: the workflow and the
+   data-access check to Casper, the CESM runs to Derecho. It deletes runs older than four weeks.
+3. **Each job** clones CrocoDash `main` fresh (the CESM runs clone CESM's `crocodash` branch
+   too), runs its check, and publishes its results with `push_results.sh`, using the token from
+   your `gh` login: the workflow and data access push to `main`, the CESM runs push
+   `cesm_runs.json` to the `test-results` branch. Each push rebuilds this site.
 
-   Edit it with `ssh cron.hpc.ucar.edu` and then `crontab -e`.
-2. **Each job** (`integration/workflow.pbs`, `integration/run_mom_tests.pbs` or
-   `data_access/check.pbs`) first resets its clone of this repo to `main`. The CESM runs also
-   reset the CESM clone and run `git-fleximod update`. Then it clones CrocoDash and runs the check.
-3. **It publishes its results** with `push_results.sh`, using the token from your
-   `gh` login. The CESM runs push `cesm_runs.json` to the `test-results` branch. The workflow
-   pushes `integration/workflow.json` and `workflow.xml`, and the daily check
-   `data_access/health.json`, to `main`, and those pushes rebuild this site.
-
-:::{important}
-PBS copies a job script when the job is submitted, before the job updates its clone. So a
-change to a `.pbs` file only takes effect once the CI clone has it: after merging, run
-`git -C /glade/work/$USER/croc_ci/CrocoDashChecks pull`.
-:::
+Nothing is kept from one run to the next, so whatever is on `main` on Monday morning is what
+runs: there is no clone to update after merging.
 
 ## Where things are
 
 | What | Where |
 |---|---|
-| CI clones the jobs run from (reset every run, so don't edit them) | `/glade/work/$USER/croc_ci/`: this repo and CESM's `crocodash` branch |
-| Cron output | `/glade/work/$USER/croc_ci/cron.log` |
-| Job logs | `/glade/work/$USER/croc_ci/logs/` |
-| Weekly test directories | `/glade/derecho/scratch/$USER/croc_tests/` |
+| Each run: this repo and CESM as cloned that day, and the job logs (four weeks kept) | `/glade/derecho/scratch/$USER/crocodashchecks/<date>/` |
+| Cron output | `/glade/derecho/scratch/$USER/crocodashchecks/cron.log` |
+| CESM test directories | `/glade/derecho/scratch/$USER/croc_tests/` |
 | Credentials the data-access check uses | your own: `~/.cdsapirc`, `~/.copernicusmarine` |
 
 ## How this site is built
 
-`.github/workflows/publish.yml` rebuilds the site on every push to `main`:
+`.github/workflows/publish.yml` rebuilds the site on every push to `main` or `test-results`:
 
 1. it fetches `cesm_runs.json` from the `test-results` branch;
 2. `sphinx-build` runs the page notebooks ([Status](index.ipynb) and
@@ -171,9 +165,10 @@ skipped, and why) in your checkout, and its log, `crocodashchecks_workflow.o<job
 submitted it. Build the site (below) to see them. The weekly run publishes itself; a hand run publishes
 nothing unless you add `-v PUBLISH=1` (full runs only: a run with `-k` holds only its own steps).
 
-### The weekly CESM runs
+### The CESM runs
 
-They need a checkout of CESM's `crocodash` branch, and run on one Derecho node:
+They need a checkout of CESM's `crocodash` branch (if `CESMROOT` doesn't exist yet, the job
+clones it there first), and run on one Derecho node:
 
 ```bash
 git clone -b crocodash https://github.com/CROCODILE-CESM/CESM ~/CESM_crocodash

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Daily data-access check: calls every access method CrocoDash registers
+"""The data-access check: calls every access method CrocoDash registers
 (validate_method) for real, and writes health.json next to this file, a
 snapshot overwritten each run. Methods that read the user's own files get real
 ones from METHOD_ARGS.
@@ -12,7 +12,7 @@ last error line as `detail`.
 health.json also records the CrocoDash branch and commit checked: check.pbs
 clones it fresh every run and sets CROCODASH_SRC.
 
-Usage (in the CrocoDash env, on GLADE; check.pbs runs it daily on Casper):
+Usage (in the CrocoDash env, on GLADE; check.pbs runs it weekly on Casper):
     python data_access/check.py
 """
 

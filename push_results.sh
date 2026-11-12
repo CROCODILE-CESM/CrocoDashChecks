@@ -5,7 +5,7 @@
 #
 #   push_results.sh <results-dir>
 #
-# BRANCH, DEST and MSG push to elsewhere, e.g. the daily data-access snapshot:
+# BRANCH, DEST and MSG push to elsewhere, e.g. the data-access snapshot:
 #   BRANCH=main DEST=data_access MSG="..." push_results.sh <dir-with-health.json>
 # (the weekly workflow pushes workflow.json and workflow.xml to main the same way).
 #

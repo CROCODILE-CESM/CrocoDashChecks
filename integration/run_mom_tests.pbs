@@ -15,14 +15,14 @@
 #
 #   qsub -v CESMROOT=~/CESM_crocodash run_mom_tests.pbs
 #
-# cron_submit.sh submits this weekly; see README.md.
+# weekly.sh submits this every week, with a CESMROOT that doesn't exist yet.
 #
-# CESMROOT  : a checkout of CROCODILE-CESM/CESM branch `crocodash` (required)
+# CESMROOT  : a checkout of CROCODILE-CESM/CESM branch `crocodash` (required); if it
+#             doesn't exist, the tip of that branch is cloned there first
 # CONDA_ENV : conda env with CrocoDash's dependencies (default: CrocoDash)
 # TESTROOT  : where test dirs go (default: /glade/derecho/scratch/$USER/croc_tests)
 # CROCODASH_BRANCH : CrocoDash branch to test (default: main). Every run checks out
 #                    a fresh clone of it, so it always tests that branch's tip.
-# UPDATE    : if set, reset this repo and CESMROOT to their branch tips first
 # PUBLISH   : if set, push cesm_runs.json (the dashboard's summary) to the test-results branch
 # EXTRA     : extra args for run_mom_tests.py, e.g. "--only MARBL"
 set -euo pipefail
@@ -36,17 +36,9 @@ conda activate "$CONDA_ENV"
 # ESMF ships with the conda env; don't mix in a system ESMF module.
 export ESMFMKFILE=$CONDA_PREFIX/lib/esmf.mk
 
-if [ -n "${UPDATE:-}" ]; then
-  # These are CI-only clones: follow each branch tip, even across force-pushes.
-  sync() { git -C "$1" fetch -q && git -C "$1" reset -q --hard '@{u}'; }
-  # This repo too (PBS already holds its own copy of this script).
-  sync "$PBS_O_WORKDIR"
-  sync "$CESMROOT"
-  # When upstream moves a submodule inside a sparse checkout (CAM's cam-sima),
-  # git's on-demand submodule fetch fails with "Could not access submodule".
-  # fleximod updates submodules itself, so turn that recursion off.
-  (cd "$CESMROOT" && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=fetch.recurseSubmodules GIT_CONFIG_VALUE_0=false \
-    ./bin/git-fleximod update)
+if [ ! -d "$CESMROOT" ]; then
+  git clone -q -b crocodash https://github.com/CROCODILE-CESM/CESM "$CESMROOT"
+  (cd "$CESMROOT" && ./bin/git-fleximod update)
 fi
 
 # A fresh clone of CrocoDash main (or CROCODASH_BRANCH), first on PYTHONPATH,

@@ -25,8 +25,9 @@ full_gebco: &full_gebco
 grids:
   # Places: a coast, both seams, both poles.
   labrador:
-    about: A coast with sea ice and rivers
+    about: A coast with sea ice and rivers, with every step on it, CESM runs included
     grid: {xstart: 299.0, lenx: 5.0, ystart: 54.0, leny: 4.0, resolution: 0.25}
+    forcings: [bc, runoff]
     cesm_runs: true
   equator_0e:
     about: All four hemispheres, across the prime meridian

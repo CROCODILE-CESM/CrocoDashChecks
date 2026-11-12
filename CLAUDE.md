@@ -2,8 +2,9 @@
 
 CrocoDashChecks checks CrocoDash end to end, in two folders: `integration/` (the test matrix of
 grids; the workflow on every grid, `test_workflow.py`, on Casper; and the CESM runs on the grids
-marked for them, `run_mom_tests.py`, on Derecho: both weekly, submitted by one `cron_submit.sh`) and `data_access/` (daily). Shared job scripts
-(`crocodash_main.sh`, `push_results.sh`) are at the root. `site/` is a Sphinx
+marked for them, `run_mom_tests.py`, on Derecho) and `data_access/` (every data access method, on
+Casper). All three run every Monday from `weekly.sh`, started by one crontab line. Shared job
+scripts (`weekly.sh`, `crocodash_main.sh`, `push_results.sh`) are at the root. `site/` is a Sphinx
 site on GitHub Pages; its Status and Performance pages are notebooks that read that JSON. How it all
 runs: `site/how_it_works.md`.
 
@@ -12,10 +13,11 @@ runs: `site/how_it_works.md`.
 | What | Where |
 |---|---|
 | Dev checkout (edit here, or in a worktree) | `dev/CrocoDashChecks/` in the CROC monorepo |
-| CI clones the scheduled jobs run from | `/glade/work/$USER/croc_ci/` (this repo, CESM `crocodash`); hard-reset every run, never edit |
+| Each weekly run (fresh clones of this repo and CESM, job logs; 4 weeks kept) | `/glade/derecho/scratch/$USER/crocodashchecks/<date>/` |
+| Data the data-access check reads (not a clone; keep it) | `/glade/work/$USER/croc_ci/inputs/` |
 | The CrocoDash tested | a fresh clone of `main` per job (`CROCODASH_BRANCH` overrides), deleted when the job ends |
 | Crontab | `cron.hpc.ucar.edu`; read it with `ssh cron.hpc.ucar.edu crontab -l`; only the user edits it |
-| Cron and job logs | `/glade/work/$USER/croc_ci/cron.log`, `/glade/work/$USER/croc_ci/logs/` |
+| Cron and job logs | `/glade/derecho/scratch/$USER/crocodashchecks/cron.log`, each run's `logs/` |
 | Weekly CESM-run summary | `cesm_runs.json` on the `test-results` branch |
 | Weekly workflow results | `integration/workflow.json` and `workflow.xml` on `main` |
 | Published site | <https://crocodile-cesm.github.io/CrocoDashChecks/>, built by `.github/workflows/publish.yml` |
@@ -30,7 +32,7 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   CI only).
 - **Always test a fresh pull:** CrocoDash `main` via `source crocodash_main.sh` (every job does; do it
   before any hand run too), and CESM's `crocodash` branch tip with its pinned MOM_interface regional
-  tag (the weekly job's `UPDATE=1`).
+  tag (the weekly CESM job clones it fresh).
 - **The test matrix is `integration/matrix.yaml`, one row per grid** (read by `matrix.py`), and
   every case starts from `case.yaml`, a CrocoDash case config without its grid. A row gives its grid, any
   changes to `case.yaml`, the forcings to run (`crocodash process` flags) and `cesm_runs`. Add
@@ -55,10 +57,10 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   stale, because a schedule that stops running fails silently otherwise.
 - **Keep the anchors other pages link to:** `#cesm` and `#data-access` (README badges) and
   `#mom6-scaling` (the gallery's `ocean_only` notebook) on the Status page.
-- **The jobs run from the CI clones in `/glade/work/$USER/croc_ci`** and reset them to their branch
-  tips (`UPDATE=1`). PBS copies a job script when it's submitted, so a change to a `.pbs` file takes
-  effect only once the clone has it: pull there after merging.
-- **Keep `cron_submit.sh` scripts executable in git (100755):** the reset restores git's mode.
+- **Nothing is kept between weekly runs:** the crontab line clones this repo fresh and runs
+  `weekly.sh`, which copies the clone into that run's directory and submits every job from there,
+  so whatever is on `main` on Monday runs. Keep the crontab line itself minimal (clone, then
+  `weekly.sh`); everything else belongs in `weekly.sh`.
 - Use black on Python and the notebooks (`black[jupyter]`) before committing. Build the site with
   `sphinx-build --fail-on-warning site site/_build/html`, as CI does.
 
@@ -69,8 +71,8 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   whole-file download held up every run.
 - **A failing method's `detail` is its last error line,** because `validate_method` catches its own
   exceptions and returns False.
-- **The weekly job pushes `cesm_runs.json` to `test-results`, not `main`,** so the site only picks it
-  up on its next rebuild, at the latest after the next daily data-access push.
+- **The CESM runs push `cesm_runs.json` to `test-results`, not `main`;** `publish.yml` rebuilds on
+  pushes to either branch, always from `main`, fetching `cesm_runs.json` from `test-results`.
 - **The workflow needs ~80 GB at its peak** (runoff on `indo_pacific` at rmax 80 km; full GEBCO
   on `pacific_40deg` takes ~65 GB and 22 min; the whole run ~2 h): run it with `integration/workflow.pbs`, never on a login node.
 - **A forcing on a grid that failed to build is skipped, not failed:** `equator_180e` fails at
