@@ -1,68 +1,87 @@
-"""CrocoDash's workflow on every grid in matrix.yaml, timed: an integration test
-and a benchmark in one.
+"""CrocoDash on every grid in matrix.yaml, through its own CLI on real cases,
+timed: an integration test and a benchmark in one, run weekly on one Derecho
+node by workflow.pbs.
 
 For each row of matrix.yaml:
-  1. test_grid builds its grid, bathymetry and vertical grid from its CrocoDash
-     case config (case.yaml plus the row) with CrocoDash's own builders, as
-     `crocodash create` does, and writes the files a case gets: supergrid,
-     topography, vertical grid and ESMF mesh. It checks for missing depths and
-     that there is some ocean. Each grid is built once; the forcings reuse it.
-  2. test_bc and test_runoff run each forcing the row turns on, through
-     CrocoDash's own configurators (configure, then process), as `crocodash
-     process --bc` or `--runoff` would, but without a CESM case. A forcing on a
-     grid that failed to build is skipped.
+  1. test_create makes the row's case with `crocodash create --configure-only`,
+     in BASE_COMPSET, from case.yaml plus the row: grid, bathymetry, vertical
+     grid, the CESM case, and its forcings configured. It runs under Python's
+     profiler, which splits its time into those parts.
+  2. test_bc and test_runoff run `crocodash process --bc` or `--runoff` on that
+     case, for each forcing the row turns on.
+  3. On rows with cesm_runs, test_cesm runs every regional SMS test in
+     MOM_interface's testlist_mom.xml as a case on the row: the row's own case
+     for BASE_COMPSET, and for every other compset a new case made from the row
+     case's grid, bathymetry and vertical grid files. Each processes all its
+     forcings, takes the test's options, builds and runs; the phases go to
+     cesm_runs.json.
+A step on a row whose case failed to create is skipped.
 
-Then the sweeps vary what isn't a grid, on a few rows, for the Performance
-page's fits: open boundaries by source resolution, days and workers, and
-runoff by smoothing radius.
+The sweeps vary what isn't a grid, on a few rows, for the Performance page's
+fits: `crocodash process --config` on an edited copy of the row case's forcing
+config, so they overwrite that case's forcing files (sweep rows don't run CESM).
 
-Every step runs in a forked child, so one case's leftover heap can't count
-toward the next; its memory is the peak PSS of the whole process tree.
+Every step runs in a forked child, timed once, with the peak memory of its whole
+process tree. The cases are kept.
 
-Open boundaries use CrocoDash's synthetic reference_ocean (case.yaml), so
-nothing is downloaded. Each case runs process_bc twice: first on every core,
-which makes the raw data; then, raw data kept and regridded data cleared, the
-timed run: REGRID + MERGE, CrocoDash's own cost whatever the product. REGRID
-does the boundaries one after another, each over its 30-day slices, given in
-equal runs to min(workers, slices) forked workers.
+Environment:
+  CESMROOT        a checkout of CESM's crocodash branch (required)
+  CASES_ROOT      where the cases go (default /glade/derecho/scratch/$USER/croc_tests);
+                  keep it short: MOM6 truncates INPUTDIR at 128 characters
+  RUN_ID          names this run's cases (default: the time now)
+  CESM_RUNS_JSON  where the CESM tests' summary goes (default integration/cesm_runs.json)
 
-Runoff maps GLOFAS (the mesh CESM's DROF reads, from case.yaml) onto the row's
-ESMF mesh: nearest neighbour, then smoothed over rmax.
-
-In the CrocoDash env, after `source crocodash_main.sh`, on a node with 16 cores
-and 180 GB (workflow.pbs does this), from the repo root:
-    pytest integration/test_workflow.py \\
+From the repo root, in the CrocoDash env, after `source crocodash_main.sh`:
+    CESMROOT=... pytest integration/test_workflow.py \\
         --benchmark-json=integration/workflow.json --junitxml=integration/workflow.xml
 """
 
+import cProfile
+import functools
 import json
 import math
 import os
+import pstats
 import shutil
 import subprocess
 import sys
 import threading
 import traceback
-from datetime import datetime, timedelta
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import numpy as np
 import psutil
 import pytest
 import xarray as xr
+import yaml
 
 import matrix
 
-# Compsets for the configurators: open boundaries need a regional MOM6,
-# runoff mapping a data runoff model.
-BC_COMPSET = "1850_DATM%NYF_SLND_SICE_MOM6%REGIONAL_SROF_SGLC_SWAV"
-ROF_COMPSET = "1850_DATM%JRA_SLND_SICE_MOM6%REGIONAL_DROF%GLOFAS_SGLC_SWAV"
+CESMROOT = Path(os.environ["CESMROOT"]) if os.environ.get("CESMROOT") else None
+CASES_ROOT = Path(
+    os.environ.get(
+        "CASES_ROOT", f"/glade/derecho/scratch/{os.environ.get('USER')}/croc_tests"
+    )
+)
+RUN_ID = os.environ.get("RUN_ID", datetime.now().strftime("%Y%m%d_%H%M"))
+CESM_RUNS_JSON = Path(os.environ.get("CESM_RUNS_JSON", matrix.ROOT / "cesm_runs.json"))
+MACHINE, COMPILER, PROJECT = "derecho", "intel", "NCGD0011"
+
+# Every row's own case: a GLOFAS compset, so runoff can run on any row, and one
+# of the testlist's, so a CESM row's own case is one of its tests.
+BASE_COMPSET = "CR_JRA_GLOFAS"
 BOUNDARIES = ["south", "north", "west", "east"]
 REGRID_STEP_DAYS = 30  # ConditionsConfigurator's slice
 
-# Each row's own case. rmax = 20 km is the CrocIndoPacific_112 production value;
-# fold = rmax keeps the smoothing kernel's shape the same at every radius.
-SOURCE_RES_DEG, DAYS, WORKERS = 0.25, 30, 1
-RMAX_KM = 20
+# The row cases' settings, from case.yaml; open boundaries on one worker.
+_COMMON = matrix.CASE["forcings"]["common"]
+START = datetime.fromisoformat(_COMMON["date_range"][0])
+DAYS = (datetime.fromisoformat(_COMMON["date_range"][1]) - START).days + 1
+SOURCE_RES_DEG = _COMMON["function_overrides"]["resolution_deg"]
+RMAX_KM = matrix.CASE["forcings"]["DROF"]["rmax"]
+WORKERS = 1
 
 # The sweeps, on rows matrix.yaml must turn the forcing on for.
 BC_SWEEP_ROW = "pacific_10deg"
@@ -81,26 +100,17 @@ BC_WORKERS = [1, 2, 3, 4, 6, 12]
 RUNOFF_SWEEP_ROWS = ["gulf_of_mexico", "north_atlantic", "indo_pacific"]
 RUNOFF_RMAX_KM = [10, 20, 40, 80]
 
+# What `crocodash create` spends its time on: {part: (file, function)}.
+PROFILED = {
+    "grid_s": ("CrocoDash/recipe.py", "build_grid"),
+    "topo_s": ("CrocoDash/recipe.py", "build_topo"),
+    "vgrid_s": ("CrocoDash/recipe.py", "build_vgrid"),
+    "case_s": ("CrocoDash/case.py", "__init__"),
+    "configure_s": ("CrocoDash/case.py", "configure_forcings"),
+}
 
-@pytest.fixture(scope="session", autouse=True)
-def _import_crocodash_once():
-    """Import CrocoDash here, once, so every step's forked child inherits it
-    rather than timing its own import (the first, from a cold disk, took 40 s)."""
-    import CrocoDash.forcing.mom6  # noqa: F401
-    import CrocoDash.forcing.runoff  # noqa: F401
-    import CrocoDash.recipe  # noqa: F401
-
-
-@pytest.fixture(scope="session", autouse=True)
-def _crocodash_tested(record_testsuite_property):
-    """Record in workflow.xml which CrocoDash this run tested: the clone
-    crocodash_main.sh made."""
-    src = os.environ.get("CROCODASH_SRC")
-    if src:
-        for name, arg in (("branch", "--abbrev-ref"), ("commit", "--short")):
-            git = ["git", "-C", src, "rev-parse", arg, "HEAD"]
-            value = subprocess.run(git, capture_output=True, text=True).stdout.strip()
-            record_testsuite_property(f"crocodash_{name}", value)
+STOP_OPTIONS = {"Ln": "nsteps", "Lh": "nhours", "Ld": "ndays", "Lm": "nmonths"}
+NTASKS, DATA_NTASKS = 4, 56  # CESM tests: per component; DATM, DROF and the mediator
 
 
 def _bc_sweep():
@@ -121,6 +131,96 @@ def _runoff_sweep():
         for rmax in RUNOFF_RMAX_KM
         if row in on and rmax != RMAX_KM
     ]
+
+
+def _cesm_tests():
+    """(row, test, compset, test options, testlist options) for every regional
+    SMS test in MOM_interface's testlist, on every row with cesm_runs."""
+    if CESMROOT is None:
+        return []
+    sys.path.insert(0, str(CESMROOT / "cime"))
+    from CIME.utils import parse_test_name
+    from CIME.XML.testlist import Testlist
+
+    testlist = CESMROOT / "components/mom/cime_config/testdefs/testlist_mom.xml"
+    tests, seen = [], set()
+    for t in Testlist(str(testlist)).get_tests(machine=MACHINE, compiler=COMPILER):
+        test, opts, grid, compset, *_ = parse_test_name(
+            f"{t['testname']}.{t['grid']}.{t['compset']}"
+        )
+        if grid != "USER_RES" or test != "SMS" or (t["testname"], compset) in seen:
+            continue
+        seen.add((t["testname"], compset))
+        for row in matrix.rows("cesm_runs"):
+            tests.append(
+                pytest.param(
+                    row,
+                    t["testname"],
+                    compset,
+                    opts or [],
+                    t.get("options", {}),
+                    id=f"{row}-{compset}",
+                )
+            )
+    return tests
+
+
+def _longname(compset):
+    for f in (CESMROOT / "components").glob("*/cime_config/config_compsets.xml"):
+        for node in ET.parse(f).getroot().iter("compset"):
+            if node.findtext("alias") == compset:
+                return node.findtext("lname")
+    return compset  # already a longname
+
+
+def _git_ref(path):
+    """{"branch", "commit"} of a checkout, or None outside one."""
+
+    def git(*a):
+        r = subprocess.run(["git", "-C", str(path), *a], capture_output=True, text=True)
+        return r.stdout.strip() if r.returncode == 0 else None
+
+    commit = git("rev-parse", "--short", "HEAD") if path else None
+    return (
+        {"branch": git("rev-parse", "--abbrev-ref", "HEAD"), "commit": commit}
+        if commit
+        else None
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _import_crocodash_once():
+    """Import CrocoDash here, once, so every step's forked child inherits it
+    rather than timing its own import (the first, from a cold disk, took 40 s)."""
+    import CrocoDash.cli  # noqa: F401
+    import CrocoDash.recipe  # noqa: F401
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _crocodash_tested(record_testsuite_property):
+    """Record in workflow.xml which CrocoDash this run tested: the clone
+    crocodash_main.sh made."""
+    ref = _git_ref(os.environ.get("CROCODASH_SRC"))
+    if ref:
+        for name, value in ref.items():
+            record_testsuite_property(f"crocodash_{name}", value)
+
+
+_CESM = []  # cesm_runs.json's tests, as test_cesm runs them
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _cesm_summary():
+    """After the run, write cesm_runs.json if any CESM test ran."""
+    yield
+    if _CESM:
+        summary = {
+            "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "cesm": _git_ref(CESMROOT),
+            "crocodash": _git_ref(os.environ.get("CROCODASH_SRC")),
+            "tests": _CESM,
+        }
+        CESM_RUNS_JSON.write_text(json.dumps(summary, indent=1) + "\n")
 
 
 # --- running and measuring a step -------------------------------------------
@@ -208,105 +308,142 @@ def _timed(benchmark, fn, *args):
     return box["peak_mb"]
 
 
-# --- the grid ---------------------------------------------------------------
+def _crocodash(*argv, profile=None):
+    """Run the crocodash CLI with these arguments, as the `crocodash` command
+    does. With profile, run it under Python's profiler and write the seconds
+    spent in each PROFILED part to that file."""
+    from CrocoDash.cli import main
 
-_GRIDS = {}  # row -> the directory its grid files are in, or why it failed to build
+    sys.argv = ["crocodash", *map(str, argv)]
+    if profile is None:
+        return main()
+    profiler = cProfile.Profile()
+    profiler.runcall(main)
+    seconds = dict.fromkeys(PROFILED, 0.0)
+    for (path, _, func), (*_, cumtime, _) in pstats.Stats(profiler).stats.items():
+        for part, (suffix, name) in PROFILED.items():
+            if path.endswith(suffix) and func == name:
+                seconds[part] += cumtime
+    Path(profile).write_text(json.dumps(seconds))
 
 
-def _build_grid(row, workdir):
-    """Build a row's grid, bathymetry and vertical grid from its case config
-    with CrocoDash's builders, and write the files a case gets."""
-    from CrocoDash import recipe
+# --- the cases --------------------------------------------------------------
 
-    os.chdir(workdir)
+
+def _paths(row, compset):
+    """A case's caseroot and inputdir. Its name is unique per run, since it also
+    names CIME's build and run directories."""
+    name = f"{row}.{compset}.{RUN_ID}"
+    return CASES_ROOT / name, CASES_ROOT / "inputdir" / name
+
+
+def _config(row, compset, workdir, files=None):
+    """The config `crocodash create` reads: case.yaml plus the row, this case's
+    compset and paths, and only the forcing blocks the compset uses. files: a
+    case's state, whose grid, bathymetry and vertical grid files to reuse."""
+    caseroot, inputdir = _paths(row, compset)
     cfg = matrix.config(row, workdir)
-    grid = recipe.build_grid(cfg["grid"])
-    topo = recipe.build_topo(cfg["topo"], grid)
-    vgrid = recipe.build_vgrid(cfg["vgrid"], topo)
-    grid.write_supergrid(str(workdir / "ocean_hgrid.nc"))
-    topo.write_topo(str(workdir / "ocean_topog.nc"))
-    vgrid.write(str(workdir / "ocean_vgrid.nc"))
-    topo.write_esmf_mesh(str(workdir / "ocean_mesh.nc"))
-
-    depth = np.asarray(topo.depth)
-    ocean = depth > 0
-    area_km2 = np.asarray(grid.tarea) / 1e6
-    stats = {
-        "nx": int(grid.nx),
-        "ny": int(grid.ny),
-        "n_cells": int(depth.size),
-        "ocean_cells": int(ocean.sum()),
-        "missing_depths": int(np.isnan(depth).sum()),
-        "ocean_cell_km2": float(area_km2[ocean].mean()) if ocean.any() else None,
-        "bathymetry": os.path.basename(
-            cfg["topo"]["source"].get("bathymetry_path", "")
-        ),
+    if files:
+        cfg["grid"] = {"supergrid_path": files["supergrid_path"], "name": row}
+        cfg["topo"] = {
+            "min_depth": cfg["topo"]["min_depth"],
+            "source": {"type": "from_file", "topo_file_path": files["topo_path"]},
+        }
+        cfg["vgrid"] = {"type": "from_file", "filename": files["vgrid_path"]}
+    cfg["case"] = {
+        **cfg.get("case", {}),
+        "cesmroot": str(CESMROOT),
+        "caseroot": str(caseroot),
+        "inputdir": str(inputdir),
+        "compset": compset,
+        "machine": MACHINE,
+        "project": PROJECT,
     }
-    (workdir / "grid.json").write_text(json.dumps(stats))
+    lname, forcings = _longname(compset), {}
+    for key, kwargs in cfg["forcings"].items():
+        if key == "common" or all(part in lname for part in key.split("+")):
+            forcings.update(kwargs)
+    cfg["forcings"] = forcings
+    path = workdir / "crocodash_config.yaml"
+    path.write_text(yaml.safe_dump(cfg))
+    return path
 
 
-def _grid(row, tmp_path_factory):
-    """A row's grid directory, built once per session (untimed if test_grid
-    didn't run first); skips the calling test if the grid failed to build."""
-    if row not in _GRIDS:
+def _create(config, workdir, *flags, profile=None):
+    os.chdir(workdir)  # anything create leaves behind stays out of the repo
+    CASES_ROOT.joinpath("inputdir").mkdir(parents=True, exist_ok=True)
+    _crocodash("create", "--config", config, *flags, profile=profile)
+
+
+def _state(caseroot):
+    """The case's own record of its files and inputdir."""
+    from CrocoDash import case_state
+
+    return case_state.read(caseroot)
+
+
+_CASES = {}  # row -> its own case's caseroot, or why it failed to create
+_STATS = {}  # row -> its grid's sizes
+
+
+def _case(row, tmp_path_factory):
+    """A row's own case, made once per run (untimed if test_create didn't run
+    first); skips the calling test if it failed to create."""
+    if row not in _CASES:
         workdir = tmp_path_factory.mktemp(row)
+        config = _config(row, BASE_COMPSET, workdir)
         try:
-            _in_child(_build_grid, row, workdir)
-            _GRIDS[row] = workdir
+            _in_child(_create, config, workdir, "--configure-only")
+            _CASES[row] = _paths(row, BASE_COMPSET)[0]
         except RuntimeError as error:
-            _GRIDS[row] = error
-    if isinstance(_GRIDS[row], Exception):
-        pytest.skip(f"its grid failed to build: {_GRIDS[row]}")
-    return _GRIDS[row]
+            _CASES[row] = error
+    if isinstance(_CASES[row], Exception):
+        pytest.skip(f"its case failed to create: {_CASES[row]}")
+    return _CASES[row]
 
 
-def _grid_stats(grid_dir):
-    return json.loads((grid_dir / "grid.json").read_text())
+def _grid_stats(row):
+    """The row case's grid: its size, ocean cells and missing depths."""
+    if row not in _STATS:
+        from mom6_forge.grid import Grid
 
-
-def _context(grid_dir, run_dir):
-    """The WorkflowContext a forcing's process step gets: the row's grid files,
-    and this case's own data directories."""
-    from CrocoDash.forcing.base import WorkflowContext
-
-    ctx = WorkflowContext(
-        inputdir=run_dir,
-        supergrid_path=grid_dir / "ocean_hgrid.nc",
-        vgrid_path=grid_dir / "ocean_vgrid.nc",
-        topo_path=grid_dir / "ocean_topog.nc",
-        raw_data_dir=run_dir / "raw",
-        regridded_data_dir=run_dir / "regridded",
-        output_path=run_dir / "output",
-        config={},
-    )
-    for d in (ctx.raw_data_dir, ctx.regridded_data_dir, ctx.output_path):
-        d.mkdir(parents=True, exist_ok=True)
-    return ctx
-
-
-def _no_case(monkeypatch):
-    """A configurator's configure() ends by writing its settings into the CESM
-    case; there is none here, and processing needs only what it sets first."""
-    from CrocoDash.forcing.base import BaseConfigurator
-
-    monkeypatch.setattr(BaseConfigurator, "configure", lambda self: None)
+        state = _state(_CASES[row])
+        with xr.open_dataset(state["topo_path"]) as ds:
+            depth = ds["depth"].values
+        ocean = depth > 0
+        tarea = np.asarray(Grid.from_supergrid(state["supergrid_path"]).tarea) / 1e6
+        _STATS[row] = {
+            "nx": int(depth.shape[1]),
+            "ny": int(depth.shape[0]),
+            "n_cells": int(depth.size),
+            "ocean_cells": int(ocean.sum()),
+            "missing_depths": int(np.isnan(depth).sum()),
+            "ocean_cell_km2": float(tarea[ocean].mean()) if ocean.any() else None,
+        }
+    return _STATS[row]
 
 
 @pytest.mark.parametrize("row", matrix.rows())
-def test_grid(benchmark, row, tmp_path_factory):
+def test_create(benchmark, row, tmp_path_factory):
     workdir = tmp_path_factory.mktemp(row)
+    config = _config(row, BASE_COMPSET, workdir)
+    profile = workdir / "profile.json"
     try:
-        peak_mb = _timed(benchmark, _build_grid, row, workdir)
+        create = functools.partial(_create, profile=profile)
+        peak_mb = _timed(benchmark, create, config, workdir, "--configure-only")
     except RuntimeError as error:
-        _GRIDS[row] = error
+        _CASES[row] = error
         raise
-    _GRIDS[row] = workdir
-    stats = _grid_stats(workdir)
+    _CASES[row] = _paths(row, BASE_COMPSET)[0]
+    stats = _grid_stats(row)
     spec = matrix.GRIDS[row]["grid"]
+    source = yaml.safe_load(config.read_text())["topo"]["source"]
     benchmark.extra_info.update(
         row=row,
         area_deg2=None if matrix.is_polar(row) else spec["lenx"] * spec["leny"],
+        bathymetry=os.path.basename(source.get("bathymetry_path", "")),
         peak_mb=peak_mb,
+        **json.loads(profile.read_text()),
         **stats,
     )
     assert stats["missing_depths"] == 0, f"{stats['missing_depths']} missing depths"
@@ -316,53 +453,52 @@ def test_grid(benchmark, row, tmp_path_factory):
 # --- open boundaries --------------------------------------------------------
 
 
-def _bc(
-    benchmark,
-    row,
-    tmp_path_factory,
-    tmp_path,
-    monkeypatch,
-    source_res_deg,
-    days,
-    workers,
-):
-    from CrocoDash.forcing.mom6 import ConditionsConfigurator
+def _process(caseroot, flag, config=None):
+    """`crocodash process --<flag>` on the case, or from an edited copy of its
+    forcing config."""
+    where = ["--config", config] if config else ["--caseroot", caseroot]
+    _crocodash("process", *where, f"--{flag}")
 
-    grid_dir = _grid(row, tmp_path_factory)
-    ctx = _context(grid_dir, tmp_path)
-    common = matrix.CASE["forcings"]["common"]
-    start = datetime.fromisoformat(common["date_range"][0])
-    conditions = ConditionsConfigurator(
-        start_date=start.strftime("%Y%m%d"),
-        end_date=(start + timedelta(days=days - 1)).strftime("%Y%m%d"),
-        boundaries=BOUNDARIES,
-        product_name=common["product_name"],
-        function_name=common["function_name"],
-        compset=BC_COMPSET,
-        function_args={"resolution_deg": source_res_deg},  # reference_ocean's
-    )
-    _no_case(monkeypatch)
-    conditions.configure()
 
-    # First run, on every core: makes the raw data the timed run reuses.
-    monkeypatch.delenv("CROCODASH_MAX_WORKERS", raising=False)
-    _in_child(conditions.process_bc, ctx)
-    for d in (ctx.regridded_data_dir, ctx.output_path):
-        shutil.rmtree(d)  # with REGRID's cached weights
-        d.mkdir()
+def _edited_config(caseroot, workdir, edit):
+    """A copy of the case's forcing config, with edit(config) applied."""
+    inputdir = Path(_state(caseroot)["inputdir"])
+    cfg = json.loads((inputdir / "extract_forcings" / "config.json").read_text())
+    edit(cfg)
+    path = workdir / "config.json"
+    path.write_text(json.dumps(cfg))
+    return path
+
+
+def _bc(benchmark, row, tmp_path_factory, tmp_path, monkeypatch, res, days, workers):
+    caseroot = _case(row, tmp_path_factory)
+    extract = Path(_state(caseroot)["inputdir"]) / "extract_forcings"
+    config = None
+    if (res, days) != (SOURCE_RES_DEG, DAYS):  # a sweep case
+
+        def edit(cfg):
+            inputs = cfg["conditions"]["inputs"]
+            inputs["end_date"] = (START + timedelta(days=days - 1)).strftime("%Y%m%d")
+            inputs["function_args"]["resolution_deg"] = res
+
+        config = _edited_config(caseroot, tmp_path, edit)
+    # Raw file names don't record the source resolution: start every case clean.
+    for d in ("raw_data", "regridded_data"):
+        shutil.rmtree(extract / d, ignore_errors=True)
+        (extract / d).mkdir(parents=True)
     monkeypatch.setenv("CROCODASH_MAX_WORKERS", str(workers))
-    peak_mb = _timed(benchmark, conditions.process_bc, ctx)
+    peak_mb = _timed(benchmark, _process, caseroot, "bc", config)
 
     # Source points: the horizontal size of each boundary's raw data.
     n_src = 0
     for b in BOUNDARIES:
-        raw = sorted(ctx.raw_data_dir.glob(f"{b}_unprocessed*.nc"))[0]
+        raw = sorted((extract / "raw_data").glob(f"{b}_unprocessed*.nc"))[0]
         with xr.open_dataset(raw) as ds:
             n_src += ds.sizes["latitude"] * ds.sizes["longitude"]
-    stats = _grid_stats(grid_dir)
+    stats = _grid_stats(row)
     benchmark.extra_info.update(
         row=row,
-        source_res_deg=source_res_deg,
+        source_res_deg=res,
         n_src=n_src,
         n_dst=2 * (stats["nx"] + stats["ny"]),  # boundary cells
         n_cells=stats["n_cells"],  # domain cells
@@ -392,46 +528,40 @@ def test_bc(benchmark, row, tmp_path_factory, tmp_path, monkeypatch):
 _GLOFAS_CELLS = {}
 
 
-def _runoff(benchmark, row, tmp_path_factory, tmp_path, monkeypatch, rmax):
+def _runoff(benchmark, row, tmp_path_factory, tmp_path, rmax):
     from mom6_forge.mapping import get_nn_map_filepath, get_smoothed_map_filepath
 
-    from CrocoDash.forcing.runoff import RunoffConfigurator
+    caseroot = _case(row, tmp_path_factory)
+    config = None
+    if rmax != RMAX_KM:  # a sweep case; fold = rmax keeps the kernel's shape
 
-    grid_dir = _grid(row, tmp_path_factory)
-    rof_mesh = matrix.CASE["forcings"]["DROF"]["rof_esmf_mesh_filepath"]
-    runoff = RunoffConfigurator(
-        case_grid_name=row,
-        case_session_id="checks",
-        case_compset_lname=ROF_COMPSET,
-        case_inputdir=str(tmp_path),
-        case_esmf_mesh_path=str(grid_dir / "ocean_mesh.nc"),
-        rmax=rmax,
-        fold=rmax,
-        rof_grid_name="GLOFAS",
-        rof_esmf_mesh_filepath=rof_mesh,
-    )
-    _no_case(monkeypatch)
-    runoff.configure()
-    peak_mb = _timed(benchmark, runoff.process, _context(grid_dir, tmp_path))
+        def edit(cfg):
+            cfg["runoff"]["inputs"].update(rmax=rmax, fold=rmax)
 
-    # The maps' weights (n_s) are what CESM's coupler pays for, a route handle
-    # per map: record them from the files, then delete the files (GBs each).
-    mapping_dir = tmp_path / "mapping"
+        config = _edited_config(caseroot, tmp_path, edit)
+    mapping = Path(_state(caseroot)["inputdir"]) / "mapping"
     prefix = f"GLOFAS_to_{row}_map"
     maps = {
-        "nn": get_nn_map_filepath(prefix, mapping_dir),
-        "nnsm": get_smoothed_map_filepath(prefix, mapping_dir, rmax, rmax),
+        "nn": get_nn_map_filepath(prefix, mapping),
+        "nnsm": get_smoothed_map_filepath(prefix, mapping, rmax, rmax),
     }
+    for path in maps.values():  # every case makes both maps
+        Path(path).unlink(missing_ok=True)
+    peak_mb = _timed(benchmark, _process, caseroot, "runoff", config)
+
+    # The maps' weights (n_s) are what CESM's coupler pays for, a route handle per map.
     for key, path in maps.items():
         with xr.open_dataset(path) as ds:
             benchmark.extra_info[f"{key}_n_s"] = int(ds.sizes["n_s"])
-        benchmark.extra_info[f"{key}_file_mb"] = path.stat().st_size / 1024**2
-    shutil.rmtree(mapping_dir)
+        benchmark.extra_info[f"{key}_file_mb"] = Path(path).stat().st_size / 1024**2
+    if config:
+        Path(maps["nnsm"]).unlink()  # a sweep's map is GBs and nothing reads it
 
+    rof_mesh = matrix.CASE["forcings"]["DROF"]["rof_esmf_mesh_filepath"]
     if rof_mesh not in _GLOFAS_CELLS:  # the header only: the mesh is 1.3 GB
         with xr.open_dataset(rof_mesh) as ds:
             _GLOFAS_CELLS[rof_mesh] = int(ds.sizes["elementCount"])
-    stats = _grid_stats(grid_dir)
+    stats = _grid_stats(row)
     benchmark.extra_info.update(
         row=row,
         rmax_km=rmax,
@@ -445,8 +575,8 @@ def _runoff(benchmark, row, tmp_path_factory, tmp_path, monkeypatch, rmax):
 
 
 @pytest.mark.parametrize("row", matrix.rows("runoff"))
-def test_runoff(benchmark, row, tmp_path_factory, tmp_path, monkeypatch):
-    _runoff(benchmark, row, tmp_path_factory, tmp_path, monkeypatch, RMAX_KM)
+def test_runoff(benchmark, row, tmp_path_factory, tmp_path):
+    _runoff(benchmark, row, tmp_path_factory, tmp_path, RMAX_KM)
 
 
 # --- the sweeps -------------------------------------------------------------
@@ -476,5 +606,98 @@ def test_bc_sweep(
 
 
 @pytest.mark.parametrize("row, rmax", _runoff_sweep())
-def test_runoff_sweep(benchmark, row, rmax, tmp_path_factory, tmp_path, monkeypatch):
-    _runoff(benchmark, row, tmp_path_factory, tmp_path, monkeypatch, rmax)
+def test_runoff_sweep(benchmark, row, rmax, tmp_path_factory, tmp_path):
+    _runoff(benchmark, row, tmp_path_factory, tmp_path, rmax)
+
+
+# --- the CESM runs ----------------------------------------------------------
+
+
+def _xmlchanges(opts, options):
+    """The xmlchanges for a test's options (_D, _Ld2, _P<n>) and its layout."""
+    changes, ntasks = [], NTASKS
+    for opt in opts:
+        if opt == "D":
+            changes.append("DEBUG=TRUE")
+        elif opt[:2] in STOP_OPTIONS:
+            changes.append(f"STOP_OPTION={STOP_OPTIONS[opt[:2]]},STOP_N={opt[2:]}")
+        elif opt.startswith("P") and opt[1:].isdigit():
+            ntasks = int(opt[1:])
+        else:
+            raise ValueError(f"unsupported test option _{opt}")
+    # The small ocean, ice and wave grids decompose onto a few tasks, but DATM
+    # and DROF read global data, so they and the mediator get more.
+    data = max(DATA_NTASKS, ntasks)
+    changes += [
+        f"NTASKS={ntasks},ROOTPE=0",
+        f"NTASKS_ATM={data},NTASKS_ROF={data},NTASKS_CPL={data}",
+        # Derecho's default launcher takes every core in the job: launch exactly these.
+        f"MPI_RUN_COMMAND=mpiexec -n {data} --cpu-bind none",
+    ]
+    if "wallclock" in options:
+        changes.append(f"JOB_WALLCLOCK_TIME={options['wallclock']}")
+    return changes
+
+
+def _run(cmd, log, cwd):
+    with open(log, "a") as f:
+        f.write(f"\n$ {' '.join(cmd)}\n")
+        f.flush()
+        return (
+            subprocess.run(cmd, cwd=cwd, stdout=f, stderr=subprocess.STDOUT).returncode
+            == 0
+        )
+
+
+@pytest.mark.parametrize("row, test, compset, opts, options", _cesm_tests())
+def test_cesm(row, test, compset, opts, options, tmp_path_factory, tmp_path):
+    phases = []
+    _CESM.append(
+        {
+            "name": f"{test}.USER_RES.{compset}.{MACHINE}_{COMPILER}.crocodash-{row}",
+            "test": test,
+            "compset": compset,
+            "grid": row,
+            "longname": _longname(compset),
+            "phases": phases,
+            "passed": False,
+        }
+    )
+    caseroot = _paths(row, compset)[0]
+    log = CASES_ROOT / f"{caseroot.name}.log"
+
+    def phase(name, ok, why=""):
+        phases.append([name, "PASS" if ok else "FAIL"])
+        if not ok:
+            pytest.fail(f"{name} failed: {why or f'see {log}'}")
+
+    try:
+        base = _case(row, tmp_path_factory)
+    except pytest.skip.Exception:
+        phases.append(["CREATE_NEWCASE", "FAIL"])
+        raise
+    try:
+        if compset == BASE_COMPSET:
+            _in_child(_crocodash, "process", "--caseroot", base, "--all")
+        else:  # a new case on the row case's grid, bathymetry and vertical grid
+            config = _config(row, compset, tmp_path, files=_state(base))
+            _in_child(_create, config, tmp_path)
+        phase("CREATE_NEWCASE", True)
+    except RuntimeError as error:
+        phase("CREATE_NEWCASE", False, str(error))
+    try:
+        changes = _xmlchanges(opts, options)
+    except ValueError as error:
+        phase("XML", False, str(error))
+    phase("XML", all(_run(["./xmlchange", c], log, caseroot) for c in changes))
+    # crocodash create already ran case.setup: redo it for the new layout.
+    phase("SETUP", _run(["./case.setup", "--reset"], log, caseroot))
+    built = _run(["./case.build"], log, caseroot)
+    phase("SHAREDLIB_BUILD", built)
+    phase("MODEL_BUILD", built)
+    phase("SUBMIT", _run(["./case.submit", "--no-batch"], log, caseroot))
+    # case.run logs "success" only after CIME checks the coupler log's last line.
+    status = caseroot / "CaseStatus"
+    ran = status.exists() and "case.run success" in status.read_text()
+    phase("RUN", ran, f"see {status}")
+    _CESM[-1]["passed"] = True

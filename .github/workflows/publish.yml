@@ -1,11 +1,10 @@
 name: Publish site
 
 on:
-  # The weekly checks push their results from GLADE: the workflow and the
-  # data-access check to main, the CESM runs to test-results. Each push rebuilds
-  # the site, always from main.
+  # The weekly checks push their results from GLADE to main (integration/ and
+  # data_access/), and each push rebuilds the site.
   push:
-    branches: [main, test-results]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -38,13 +37,6 @@ jobs:
 
       - name: Install the site's packages
         run: pip install -r site/requirements.txt
-
-      # The weekly CESM-run job pushes its summary to the test-results
-      # branch, not main; the page says "no results yet" if it's missing.
-      - name: Fetch the weekly CESM-run results
-        run: |
-          git fetch --depth 1 origin test-results
-          git show FETCH_HEAD:cesm_runs.json > integration/cesm_runs.json || rm -f integration/cesm_runs.json
 
       # Runs the page notebooks, which read the results JSON and draw the
       # tables and charts.

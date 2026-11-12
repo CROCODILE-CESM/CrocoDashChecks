@@ -7,7 +7,7 @@ Checks CrocoDash `main` end to end on NCAR's systems every Monday:
 
 | Folder | What's in it |
 |---|---|
-| [`integration/`](integration/README.md) | The test matrix, the workflow on every grid (Casper), and the CESM runs (Derecho) |
+| [`integration/`](integration/README.md) | The test matrix, and every grid's case through the CrocoDash CLI, with the CESM runs (Derecho) |
 | [`data_access/`](data_access/) | Every way CrocoDash fetches data, called for real (Casper) |
 | [`site/`](site/) | The website: Markdown pages and notebooks that read the results |
 

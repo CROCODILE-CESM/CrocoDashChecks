@@ -1,11 +1,12 @@
 # The test matrix: one row per grid, and what runs on it.
 #
-# Every row's grid is built once, with its bathymetry and vertical grid, from
-# case.yaml by CrocoDash's own builders (test_workflow.py). Then
-# each forcing the row lists runs on it, and with `cesm_runs: true`, the weekly
-# CESM runs build a real case on it (run_mom_tests.py). To turn something on for a
-# grid, add it to the row; to turn it off, delete it; to stop building a grid,
-# delete its row. The Status page shows this table with the latest results.
+# Every row gets a real case, made by `crocodash create` from case.yaml plus the
+# row; each forcing the row lists is processed on it with `crocodash process`; and
+# with `cesm_runs: true`, every regional test compset in MOM_interface's
+# testlist is built and run as a case on it (all in test_workflow.py). To turn
+# something on for a grid, add it to the row; to turn it off, delete it; to stop
+# testing a grid, delete its row. The Status page shows this table with the
+# latest results.
 #
 #   about:     what the grid is for
 #   grid:      a latitude/longitude box (xstart, lenx, ystart, leny and

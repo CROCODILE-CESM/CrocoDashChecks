@@ -7,8 +7,8 @@
 #   source crocodash_main.sh
 #   pytest integration/test_workflow.py ...
 #
-# Both scheduled jobs (integration/run_mom_tests.pbs, data_access/check.pbs)
-# source it too.
+# Both weekly jobs (integration/workflow.pbs, data_access/check.pbs) source it
+# too.
 #
 # CROCODASH_BRANCH : branch to clone instead of main
 # CLONE_ROOT       : where the clone goes (default: /glade/derecho/scratch/$USER)

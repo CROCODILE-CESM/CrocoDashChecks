@@ -1,9 +1,10 @@
 # CLAUDE.md
 
 CrocoDashChecks checks CrocoDash end to end, in two folders: `integration/` (the test matrix of
-grids; the workflow on every grid, `test_workflow.py`, on Casper; and the CESM runs on the grids
-marked for them, `run_mom_tests.py`, on Derecho) and `data_access/` (every data access method, on
-Casper). All three run every Monday from `weekly.sh`, started by one crontab line. Shared job
+grids, and `test_workflow.py`, which takes every row through the CrocoDash CLI on a real case and
+builds and runs CESM on the rows marked for it, on one Derecho node) and `data_access/` (every
+data access method, on Casper). Both run every Monday from `weekly.sh <CESMROOT>`, started by one
+crontab line. Shared job
 scripts (`weekly.sh`, `crocodash_main.sh`, `push_results.sh`) are at the root. `site/` is a Sphinx
 site on GitHub Pages; its Status and Performance pages are notebooks that read that JSON. How it all
 runs: `site/how_it_works.md`.
@@ -13,13 +14,14 @@ runs: `site/how_it_works.md`.
 | What | Where |
 |---|---|
 | Dev checkout (edit here, or in a worktree) | `dev/CrocoDashChecks/` in the CROC monorepo |
-| Each weekly run (fresh clones of this repo and CESM, job logs; 4 weeks kept) | `/glade/derecho/scratch/$USER/crocodashchecks/<date>/` |
+| Each weekly run (a fresh clone of this repo, job logs; 4 weeks kept) | `/glade/derecho/scratch/$USER/crocodashchecks/<date>/` |
+| The CESM checkout (an argument: `weekly.sh <CESMROOT>`, `qsub -v CESMROOT=`) | the user's: `~/work/installs/CESM_crocodashchecks`, kept clean at `crocodash`'s tip by the job; never their `CESM_crocodash` |
+| The cases (kept) | `/glade/derecho/scratch/$USER/croc_tests/<grid>.<compset>.<run>/` |
 | Data the data-access check reads (not a clone; keep it) | `/glade/work/$USER/croc_ci/inputs/` |
 | The CrocoDash tested | a fresh clone of `main` per job (`CROCODASH_BRANCH` overrides), deleted when the job ends |
 | Crontab | `cron.hpc.ucar.edu`; read it with `ssh cron.hpc.ucar.edu crontab -l`; only the user edits it |
 | Cron and job logs | `/glade/derecho/scratch/$USER/crocodashchecks/cron.log`, each run's `logs/` |
-| Weekly CESM-run summary | `cesm_runs.json` on the `test-results` branch |
-| Weekly workflow results | `integration/workflow.json` and `workflow.xml` on `main` |
+| Weekly results | `integration/workflow.json`, `workflow.xml`, `cesm_runs.json` and `data_access/health.json` on `main` |
 | Published site | <https://crocodile-cesm.github.io/CrocoDashChecks/>, built by `.github/workflows/publish.yml` |
 
 Every job records the CrocoDash branch and commit it tested (`crocodash` in `cesm_runs.json` and
@@ -32,19 +34,22 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   CI only).
 - **Always test a fresh pull:** CrocoDash `main` via `source crocodash_main.sh` (every job does; do it
   before any hand run too), and CESM's `crocodash` branch tip with its pinned MOM_interface regional
-  tag (the weekly CESM job clones it fresh).
+  tag (`workflow.pbs` refuses a CESMROOT with local changes and fast-forwards it).
+- **Use the real CLI, never MCP servers or the container:** this runs from cron, so every step is a
+  `crocodash` command (called as `CrocoDash.cli.main` in a forked child) or a CIME script.
 - **The test matrix is `integration/matrix.yaml`, one row per grid** (read by `matrix.py`), and
   every case starts from `case.yaml`, a CrocoDash case config without its grid. A row gives its grid, any
   changes to `case.yaml`, the forcings to run (`crocodash process` flags) and `cesm_runs`. Add
   grids there, never inside a test; a new forcing needs a step in `test_workflow.py` and its flag
   in `matrix.FORCINGS`. A `cesm_runs` row must list every forcing, since the CESM runs build
   them all (GLOFAS runoff needs its map); `matrix.py` asserts it.
-- **The workflow is one file, `integration/test_workflow.py`:** each grid is built once
-  (`test_grid`, through `CrocoDash.recipe`'s builders), then each forcing runs through its
-  CrocoDash configurator, without a CESM case. Sweeps that vary what isn't a grid stay in that
-  file and run on named rows. Every step runs in a forked child; its timing goes to
-  `workflow.json` and its pass/fail/skip, with the reason, to `workflow.xml` (pytest's junit),
-  which is what lets the site show failures.
+- **The workflow is one file, `integration/test_workflow.py`:** `test_create` makes each row's case
+  (`crocodash create --configure-only`, profiled into grid/topo/vgrid/case), `test_bc` and
+  `test_runoff` run `crocodash process` on it, and `test_cesm` builds and runs every testlist
+  compset on `cesm_runs` rows (other compsets reuse the row case's grid files). Sweeps run
+  `crocodash process --config` on an edited copy of a row case's forcing config. Every step runs in
+  a forked child; its timing goes to `workflow.json`, its pass/fail/skip with the reason to
+  `workflow.xml` (pytest's junit), and the CESM phases to `cesm_runs.json`.
 - **Keep it small.** One script per job; no packages, frameworks or config layers. MOM_interface's
   `testlist_mom.xml` decides which CESM tests run; don't add test lists here.
 - **The site is Markdown and notebooks, never hand-written HTML, CSS or JS** (the owner can't read
@@ -72,12 +77,14 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   whole-file download held up every run.
 - **A failing method's `detail` is its last error line,** because `validate_method` catches its own
   exceptions and returns False.
-- **The CESM runs push `cesm_runs.json` to `test-results`, not `main`;** `publish.yml` rebuilds on
-  pushes to either branch, always from `main`, fetching `cesm_runs.json` from `test-results`.
-- **The workflow needs ~80 GB at its peak** (runoff on `indo_pacific` at rmax 80 km; full GEBCO
-  on `pacific_40deg` takes ~65 GB and 22 min; the whole run ~2 h): run it with `integration/workflow.pbs`, never on a login node.
-- **A forcing on a grid that failed to build is skipped, not failed:** `equator_180e` fails at
-  the grid step (mom6_forge #173, the GEBCO ±180° gap), so its open boundaries show as skipped.
+- **`crocodash create` needs Derecho** (it runs `case.setup`, which doesn't complete on Casper), so
+  the whole workflow does: one node, ~80 GB at its peak (runoff on `indo_pacific` at rmax 80 km;
+  full GEBCO on `pacific_40deg` ~65 GB and 22 min). Never on a login node.
+- **`qsub -v` strips quotes,** so a multi-word pytest `-k` goes in `PYTEST_K`, which the job passes
+  as one argument.
+- **A step on a row whose case failed to create is skipped, not failed:** `equator_180e` fails
+  at `test_create` (mom6_forge #173, the GEBCO ±180° gap), so its forcings show as skipped and its
+  CESM tests fail at CREATE_NEWCASE.
 - **The `CrocoDash` env imports its own installed CrocoDash** (the 2026 workshop checkout), not
   `main`, unless `crocodash_main.sh` was sourced first.
 - **MOM6 truncates `INPUTDIR` at 128 characters,** so keep the CESM runs' test paths short.

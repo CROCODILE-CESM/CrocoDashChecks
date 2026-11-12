@@ -18,7 +18,7 @@ from IPython.display import Markdown, display
 
 ROOT = Path(__file__).resolve().parent.parent
 INTEGRATION = ROOT / "integration"
-CESM_RUNS = INTEGRATION / "cesm_runs.json"  # fetched from test-results
+CESM_RUNS = INTEGRATION / "cesm_runs.json"  # the CESM runs (test_workflow.py)
 HEALTH = ROOT / "data_access" / "health.json"
 WORKFLOW = INTEGRATION / "workflow.json"  # the workflow's timings (pytest-benchmark)
 WORKFLOW_OUTCOMES = (

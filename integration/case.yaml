@@ -1,12 +1,8 @@
 # The CrocoDash case every check builds: a CrocoDash case config (what
 # `crocodash create --config` reads) without its grid, which comes from each
 # row of matrix.yaml. A row can change any part of it (its `case:` key).
-#
-#   - test_workflow.py builds each row's grid, bathymetry and
-#     vertical grid from this with CrocoDash's own builders, then runs the
-#     forcings the row turns on, using the settings below.
-#   - run_mom_tests.py makes a real case from it for each regional
-#     test in MOM_interface's testlist, filling in the test's compset and paths.
+# test_workflow.py fills in each case's compset and paths, makes it with
+# `crocodash create`, and processes its forcings with `crocodash process`.
 #
 # Ocean, ice and wave forcing are synthetic (no downloads); bathymetry, runoff,
 # river nutrients and the MARBL IC are real files on GLADE.
@@ -28,18 +24,19 @@ vgrid:
   nk: 10
 
 # Extra Case(...) kwargs. cesmroot/caseroot/inputdir/compset/machine/project
-# are filled in by run_mom_tests.py.
+# are filled in by test_workflow.py.
 case: {}
 
 # configure_forcings kwargs. "common" always applies; every other key is a
 # set of compset-longname substrings ("+"-joined = all required) and applies
-# only when the compset contains them. The benchmarks use common's product
-# for open boundaries and DROF's mesh for runoff mapping.
+# only when the compset contains them. 30 days is one open-boundary slice; the
+# sweeps in test_workflow.py vary the days, the source resolution and rmax.
 forcings:
   common:
-    date_range: ["2020-01-01 00:00:00", "2020-01-05 00:00:00"]
+    date_range: ["2020-01-01 00:00:00", "2020-01-30 00:00:00"]
     product_name: reference_ocean
     function_name: get_reference_ocean_data
+    function_overrides: {resolution_deg: 0.25}
   CICE:
     restore_ice: true
     cice_product_name: reference_ice
@@ -50,7 +47,11 @@ forcings:
   "%MARBL":
     marbl_ic_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/bgc/ecosys_jan_IC_omip_latlon_1x1_180W_c231221.nc
   # The mesh CESM's own DROF%GLOFAS reads (ccs_config's GLOFAS domain).
+  # rmax 20 km is CrocIndoPacific_112's; CrocoDash's default (100) would pass
+  # 2^31 weights on indo_pacific. fold = rmax keeps the kernel's shape.
   DROF:
     rof_esmf_mesh_filepath: /glade/campaign/cesm/cesmdata/inputdata/lnd/dlnd7/GLOFAS/GLOFAS.v4.dis24.ESMFmesh_20260501.nc
+    rmax: 20
+    fold: 20
   "%MARBL+DROF":
     global_river_nutrients_filepath: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/rof/river_nutrients/river_nutrients.GNEWS_GNM.glofas.20250916.64bit.nc

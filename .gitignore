@@ -1,9 +1,6 @@
 # The built site (sphinx-build)
 site/_build/
 
-# Fetched from the test-results branch by publish.yml at build time
-integration/cesm_runs.json
-
 # pytest, pytest-benchmark, and the TopoLibrary mom6_forge writes while benchmarking
 .pytest_cache/
 .benchmarks/
@@ -11,4 +8,4 @@ TopoLibrary/
 __pycache__/
 
 # integration/workflow.pbs's job log, written where it was submitted from
-crocodashchecks_workflow.o*
+crocodashchecks*.o*

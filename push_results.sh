@@ -1,13 +1,11 @@
 #!/bin/bash
-# Push the result files in a directory to a branch of this repo: by default
-# the weekly CESM runs' cesm_runs.json (run_mom_tests.py --results-dir) to the
-# `test-results` branch, which publish.yml reads when it builds the site.
+# Push the result files in a directory to this repo's main branch, into DEST,
+# which rebuilds the site:
 #
-#   push_results.sh <results-dir>
+#   DEST=integration MSG="..." push_results.sh <results-dir>
 #
-# BRANCH, DEST and MSG push to elsewhere, e.g. the data-access snapshot:
-#   BRANCH=main DEST=data_access MSG="..." push_results.sh <dir-with-health.json>
-# (the weekly workflow pushes workflow.json and workflow.xml to main the same way).
+# The workflow pushes workflow.json, workflow.xml and cesm_runs.json to
+# integration/; the data-access check pushes health.json to data_access/.
 #
 # Authenticates with the token that `gh auth login` stored in
 # ~/.config/gh/hosts.yml; Derecho has no gh module, so gh itself isn't needed.
@@ -15,7 +13,7 @@ set -euo pipefail
 
 RESULTS_DIR=$(cd "$1" && pwd)
 REPO=https://github.com/CROCODILE-CESM/CrocoDashChecks
-BRANCH=${BRANCH:-test-results}
+BRANCH=${BRANCH:-main}
 DEST=${DEST:-.}
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
