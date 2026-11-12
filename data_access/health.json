@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-12T12:09:31+00:00",
+  "date": "2026-11-12T22:28:07+00:00",
   "crocodash": {
     "branch": "main",
     "commit": "2ad0c272"
@@ -9,125 +9,126 @@
       "product": "cesm-ww3-jra",
       "method": "get_cesm_ww3_jra_spectra",
       "ok": true,
-      "elapsed_s": 5.92
+      "elapsed_s": 12.63
     },
     {
       "product": "cesm_mom_output",
       "method": "get_mom6_output_data",
       "ok": false,
-      "elapsed_s": 2.37,
+      "elapsed_s": 9.33,
       "detail": "cesm_mom_output.get_mom6_output_data reads whatever cadence the data you point it at has, so it must be given: pass data_freq, e.g. 'MS' for monthly or 'D' for daily output."
     },
     {
       "product": "cesm_mom_output",
       "method": "get_mom6_single_variable_data",
       "ok": false,
-      "elapsed_s": 2.33,
+      "elapsed_s": 9.36,
       "detail": "cesm_mom_output.get_mom6_single_variable_data reads whatever cadence the data you point it at has, so it must be given: pass data_freq, e.g. 'MS' for monthly or 'D' for daily output."
     },
     {
       "product": "cesm_pop_output",
       "method": "get_cesm_single_variable_data",
       "ok": true,
-      "elapsed_s": 54.4
+      "elapsed_s": 69.38
     },
     {
       "product": "cice_restart",
       "method": "get_cice_restart_subset",
       "ok": true,
-      "elapsed_s": 5.92
+      "elapsed_s": 12.52
     },
     {
       "product": "era5_wave_spectra",
       "method": "get_era5_2d_spectra",
       "ok": true,
-      "elapsed_s": 25.69
+      "elapsed_s": 37.38
     },
     {
       "product": "gebco",
       "method": "get_gebco_data_script",
       "ok": true,
-      "elapsed_s": 2.39
+      "elapsed_s": 9.34
     },
     {
       "product": "gebco",
       "method": "get_gebco_data_with_python",
       "ok": false,
-      "elapsed_s": 302.74,
+      "elapsed_s": 320.53,
       "detail": "File is not a zip file"
     },
     {
       "product": "glofas",
       "method": "get_global_data_with_python",
       "ok": false,
-      "elapsed_s": 3.42,
+      "elapsed_s": 3.68,
       "detail": "400 Client Error: Bad Request for url: https://ewds.climate.copernicus.eu/api/retrieve/v1/processes/cems-glofas-historical/execution"
     },
     {
       "product": "glofas",
       "method": "get_processed_global_glofas_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.19
+      "elapsed_s": 1.98
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_from_cds_api",
       "ok": true,
-      "elapsed_s": 85.94
+      "elapsed_s": 77.4
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_from_rda",
       "ok": true,
-      "elapsed_s": 13.63
+      "elapsed_s": 17.71
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.09
+      "elapsed_s": 2.06
     },
     {
       "product": "reference_ice",
       "method": "get_reference_ice_data",
       "ok": true,
-      "elapsed_s": 2.38
+      "elapsed_s": 2.36
     },
     {
       "product": "reference_ocean",
       "method": "get_reference_ocean_data",
       "ok": true,
-      "elapsed_s": 2.43
+      "elapsed_s": 2.36
     },
     {
       "product": "reference_waves",
       "method": "get_reference_wave_spectra",
       "ok": true,
-      "elapsed_s": 2.22
+      "elapsed_s": 2.29
     },
     {
       "product": "seawifs",
       "method": "get_global_seawifs_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.03
+      "elapsed_s": 2.04
     },
     {
       "product": "seawifs",
       "method": "get_processed_global_seawifs_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.15
+      "elapsed_s": 2.08
     },
     {
       "product": "srtm",
       "method": "get_srtm_data_script",
       "ok": true,
-      "elapsed_s": 2.1
+      "elapsed_s": 2.04
     },
     {
       "product": "srtm",
       "method": "get_srtm_data_with_python",
-      "ok": true,
-      "elapsed_s": 471.46
+      "ok": false,
+      "elapsed_s": 901.01,
+      "detail": "timed out after 900 s"
     }
   ]
 }
