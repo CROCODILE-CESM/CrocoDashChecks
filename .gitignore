@@ -9,3 +9,5 @@ __pycache__/
 
 # integration/workflow.pbs's job log, written where it was submitted from
 crocodashchecks*.o*
+integration/results/
+collect.o*

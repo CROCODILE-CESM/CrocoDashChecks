@@ -7,10 +7,11 @@
 #   source crocodash_main.sh
 #   pytest integration/test_workflow.py ...
 #
-# Both weekly jobs (integration/workflow.pbs, data_access/check.pbs) source it
-# too.
+# Every job (integration/workflow.pbs, data_access/check.pbs) sources it too.
 #
 # CROCODASH_BRANCH : branch to clone instead of main
+# CROCODASH_COMMIT : a commit on that branch to test instead of its tip, so that
+#                    every row's job of a run tests the same one (weekly.sh)
 # CLONE_ROOT       : where the clone goes (default: /glade/derecho/scratch/$USER)
 #
 # Sets CROCODASH_SRC to the clone; the checks record its branch and commit.
@@ -20,6 +21,10 @@ export CROCODASH_SRC
 trap 'rm -rf "$CROCODASH_SRC"' EXIT
 git clone -q --recurse-submodules -b "${CROCODASH_BRANCH:-main}" \
   https://github.com/CROCODILE-CESM/CrocoDash "$CROCODASH_SRC" || return 1
+if [ -n "${CROCODASH_COMMIT:-}" ]; then
+  git -C "$CROCODASH_SRC" reset -q --hard "$CROCODASH_COMMIT" &&
+    git -C "$CROCODASH_SRC" submodule update -q --init --recursive || return 1
+fi
 
 # CrocoDash and the packages it embeds as submodules.
 _cd=$CROCODASH_SRC/CrocoDash

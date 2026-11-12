@@ -1,28 +1,27 @@
 # How it works
 
-Every Monday at 02:00 MT, two jobs run against a fresh clone of CrocoDash `main`:
+| Check | When | What it does | Where | Results, on `main` |
+|---|---|---|---|---|
+| Testing | Every Monday, 02:00 MT | Each testing row of the matrix: `crocodash create`, then `crocodash process` for each forcing it turns on; on rows marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | A Derecho job per row | `integration/testing.json`, `testing.xml`, `cesm_runs.json` |
+| Performance | First Monday of each month | The same on the performance rows, timed, plus the sweeps for the [fits](performance.ipynb) | A Derecho job per row | `integration/performance.json`, `performance.xml` |
+| Data access | Every Monday | Calls every way CrocoDash fetches data | Casper | `data_access/health.json` |
 
-| Job | What it does | Where | Results, on `main` |
-|---|---|---|---|
-| Workflow | For every grid in the test matrix: `crocodash create`, then `crocodash process` for each forcing it turns on, each step timed; on grids marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | One Derecho node | `integration/workflow.json`, `workflow.xml`, `cesm_runs.json` |
-| Data access | Calls every way CrocoDash fetches data | Casper | `data_access/health.json` |
-
-## The test matrix
+## The matrix
 
 - [`integration/matrix.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/integration/matrix.yaml):
-  one row per grid, with the forcings to process on it (`bc`, `runoff`) and `cesm_runs: true`.
+  one row per grid, in two parts: `testing` (places CrocoDash must work) and `performance`
+  (sizes, for the fits). A row lists the forcings to process on it (`bc`, `runoff`) and
+  `cesm_runs: true`.
 - [`integration/case.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/integration/case.yaml):
   the CrocoDash case config every row starts from (coarse GEBCO, synthetic forcing); a row can
   change it under `case:`.
 - Every row's case is a real case, kept after the run; a CESM row's other compsets reuse its
   grid, bathymetry and vertical grid files.
 - To add a grid, add a row; to turn a step off, delete it from its row.
-- A row with `cesm_runs: true` lists every forcing too, since the CESM runs build them all
-  (`matrix.py` refuses a matrix that doesn't).
 - ▲ or ▼ beside a step: it got more than 25% (and 5 s or 1 GB) slower or faster than the median
-  of the last 4 runs, which the site reads from git history. Nothing shows otherwise.
+  of its suite's last 4 runs, which the site reads from git history. Nothing shows otherwise.
 
-## The weekly run
+## The schedule
 
 - One crontab line on `cron.hpc.ucar.edu` (`crontab -e` there) submits a small Casper job that
   clones this repo and runs `weekly.sh`, with the CESM checkout to use as its argument:
@@ -30,29 +29,29 @@ Every Monday at 02:00 MT, two jobs run against a fresh clone of CrocoDash `main`
   ```
   0 2 * * 1 /opt/pbs/bin/qsub -q casper@casper-pbs -A NCGD0011 -l select=1:ncpus=1:mem=4GB -l walltime=00:30:00 -j oe -o /glade/derecho/scratch/$USER/crocodashchecks/ -- /bin/bash -c 'D=$(mktemp -d) && git clone -q https://github.com/CROCODILE-CESM/CrocoDashChecks $D && bash $D/weekly.sh /glade/u/home/$USER/work/installs/CESM_crocodashchecks' >> /glade/derecho/scratch/$USER/crocodashchecks/cron.log 2>&1
   ```
-- The CESM checkout must be on CESM's `crocodash` branch with no local changes; the workflow
-  fast-forwards it to the branch's tip before it starts.
-- `weekly.sh` copies the clone to `/glade/derecho/scratch/$USER/crocodashchecks/<date>/` and
-  submits both jobs from there; their logs go to its `logs/`. Runs older than four weeks are
-  deleted.
-- Each job clones CrocoDash `main`, runs, and pushes its results with your `gh` login's token.
-  Each push rebuilds this site.
-- The cases: `/glade/derecho/scratch/$USER/croc_tests/<grid>.<compset>.<run>/`, each with a
-  `.log` beside it for the CESM runs.
+- `weekly.sh` brings the CESM checkout to the tip of CESM's `crocodash` branch (it must have no
+  local changes), then submits one job per row, all testing the same CrocoDash `main` commit.
+  Once a suite's jobs have all ended, `integration/collect.pbs` merges their results and
+  pushes them, which rebuilds this site.
+- Each run: `/glade/derecho/scratch/$USER/crocodashchecks/<date>/` (its results by row, and
+  `logs/`), deleted after four weeks. The cases:
+  `/glade/derecho/scratch/$USER/croc_tests/<grid>.<compset>.<run>/`.
 
 ## Running a check by hand
 
 From a clone of this repo:
 
 ```bash
-# the workflow; PYTEST_K=pole runs only the steps whose name matches "pole"
-qsub -q main@desched1 -v CESMROOT=/path/to/CESM integration/workflow.pbs
+# one row; PYTEST_K=test_create runs only the steps whose name matches
+qsub -q main@desched1 -v ROW=labrador,CESMROOT=/path/to/CESM integration/workflow.pbs
 # data access
 qsub -q casper@casper-pbs data_access/check.pbs
+# everything, as on a Monday, with the performance rows too
+PERFORMANCE=1 bash weekly.sh /path/to/CESM
 ```
 
-- Add `CROCODASH_BRANCH=my-branch` to `-v` to test another CrocoDash branch, and `PUBLISH=1` to
-  publish the results (full runs only).
+- A row's results go to `integration/results/<row>/`. Add `CROCODASH_BRANCH=my-branch` to `-v`
+  to test another CrocoDash branch.
 - To run Python directly, `source crocodash_main.sh` first, or the `CrocoDash` env's own older
   CrocoDash is tested.
 

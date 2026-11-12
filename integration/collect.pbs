@@ -1,0 +1,61 @@
+#!/bin/bash
+# Merges one suite's rows (each row's results from workflow.pbs) into the files
+# the site reads, in integration/: <SUITE>.json (the timings), <SUITE>.xml (the
+# outcomes) and, from rows with CESM runs, cesm_runs.json. weekly.sh submits it
+# to start once every row's job has ended, whether it passed or not.
+#
+# SUITE   : testing or performance, as in matrix.yaml (required)
+# RESULTS : a directory with one directory of results per row (required)
+# PUBLISH : if set, push the merged files to main, which rebuilds the site
+#PBS -N collect
+#PBS -A NCGD0011
+#PBS -q develop
+#PBS -l select=1:ncpus=1:mem=4GB
+#PBS -l walltime=00:15:00
+#PBS -j oe
+set -euo pipefail
+: "${SUITE:?set SUITE to testing or performance}" "${RESULTS:?set RESULTS to the directory of row results}"
+cd "$(git -C "$PBS_O_WORKDIR" rev-parse --show-toplevel)"
+MERGED=$(mktemp -d)
+trap 'rm -rf "$MERGED"' EXIT
+
+python3 - "$RESULTS" "$MERGED" "$SUITE" <<'EOF'
+import json
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+results, merged, suite = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+rows = sorted(d for d in results.iterdir() if (d / "workflow.xml").exists())
+if not rows:
+    sys.exit("No row wrote results")
+
+# The timings: one pytest-benchmark file with every row's cases.
+timings = [json.loads(p.read_text()) for p in (d / "workflow.json" for d in rows) if p.exists()]
+if timings:
+    out = dict(
+        timings[0],
+        datetime=min(t["datetime"] for t in timings),
+        benchmarks=[b for t in timings for b in t["benchmarks"]],
+    )
+    (merged / (suite + ".json")).write_text(json.dumps(out, indent=1) + "\n")
+
+# The outcomes: each row's junit <testsuite> in one <testsuites>.
+suites = ET.Element("testsuites", name="pytest tests")
+for d in rows:
+    suites.extend(ET.parse(str(d / "workflow.xml")).getroot())
+ET.ElementTree(suites).write(str(merged / (suite + ".xml")), encoding="utf-8", xml_declaration=True)
+
+# The CESM runs.
+cesm = [json.loads(p.read_text()) for p in (d / "cesm_runs.json" for d in rows) if p.exists()]
+if cesm:
+    out = dict(cesm[0], date=max(c["date"] for c in cesm), tests=[t for c in cesm for t in c["tests"]])
+    (merged / "cesm_runs.json").write_text(json.dumps(out, indent=1) + "\n")
+
+print("Merged", len(rows), "rows:", " ".join(d.name for d in rows))
+EOF
+
+cp "$MERGED"/* integration/
+if [ -n "${PUBLISH:-}" ]; then
+  BRANCH=main DEST=integration MSG="${SUITE^} results $(date +%F)" bash push_results.sh "$MERGED"
+fi

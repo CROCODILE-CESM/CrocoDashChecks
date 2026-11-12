@@ -4,8 +4,9 @@
 #
 #   DEST=integration MSG="..." push_results.sh <results-dir>
 #
-# The workflow pushes workflow.json, workflow.xml and cesm_runs.json to
-# integration/; the data-access check pushes health.json to data_access/.
+# integration/collect.pbs pushes a suite's results (testing.json and .xml with
+# cesm_runs.json, or performance.json and .xml) to integration/; the data-access
+# check pushes health.json to data_access/.
 #
 # Authenticates with the token that `gh auth login` stored in
 # ~/.config/gh/hosts.yml; Derecho has no gh module, so gh itself isn't needed.

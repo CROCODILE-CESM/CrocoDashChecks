@@ -1,12 +1,17 @@
-# The test matrix: one row per grid, and what runs on it.
+# The matrix: one row per grid, and what runs on it, in two parts.
+#
+#   testing:      places CrocoDash must work (a coast, both seams, both poles),
+#                 every step on each, CESM runs included. Every week.
+#   performance:  sizes, for the Performance page's fits, and the sweeps
+#                 test_workflow.py runs on a few of them. On the first Monday of
+#                 each month.
 #
 # Every row gets a real case, made by `crocodash create` from case.yaml plus the
 # row; each forcing the row lists is processed on it with `crocodash process`; and
 # with `cesm_runs: true`, every regional test compset in MOM_interface's
-# testlist is built and run as a case on it (all in test_workflow.py). To turn
-# something on for a grid, add it to the row; to turn it off, delete it; to stop
-# testing a grid, delete its row. The Status page shows this table with the
-# latest results.
+# testlist is built and run as a case on it (all in test_workflow.py, one job
+# per row). To turn something on for a grid, add it to the row; to turn it off,
+# delete it; to stop running a grid, delete its row.
 #
 #   about:     what the grid is for
 #   grid:      a latitude/longitude box (xstart, lenx, ystart, leny and
@@ -23,8 +28,7 @@
 full_gebco: &full_gebco
   topo: {source: {bathymetry_path: /glade/campaign/cesm/cesmdata/inputdata/ocn/mom/croc/crocogallerydata/gebco/GEBCO_2024.nc}}
 
-grids:
-  # Places: a coast, both seams, both poles.
+testing:
   labrador:
     about: A coast with sea ice and rivers, with every step on it, CESM runs included
     grid: {xstart: 299.0, lenx: 5.0, ystart: 54.0, leny: 4.0, resolution: 0.25}
@@ -48,16 +52,12 @@ grids:
     grid: {crs: "EPSG:3031", width_km: 7000, resolution_km: 100}
     forcings: [bc]
 
+performance:
   # Sizes: squares of open ocean centred on 200°E, 0°N, at 0.1°, for the
   # open-boundary and bathymetry fits.
   pacific_2p5deg:
     about: 2.5° square
     grid: {xstart: 198.75, lenx: 2.5, ystart: -1.25, leny: 2.5, resolution: 0.1}
-    case: *full_gebco
-    forcings: [bc]
-  pacific_5deg:
-    about: 5° square
-    grid: {xstart: 197.5, lenx: 5.0, ystart: -2.5, leny: 5.0, resolution: 0.1}
     case: *full_gebco
     forcings: [bc]
   pacific_10deg:
@@ -79,52 +79,23 @@ grids:
     about: 80° square; the open-boundary worker sweep also runs on it
     grid: {xstart: 160.0, lenx: 80.0, ystart: -40.0, leny: 80.0, resolution: 0.1}
     forcings: [bc]
-  pacific_160deg:
-    about: 160° square
-    grid: {xstart: 120.0, lenx: 160.0, ystart: -80.0, leny: 160.0, resolution: 0.1}
-    forcings: [bc]
-
   # Coasts: from a 1° box on the Gulf of Mexico's southern coast (nested in
-  # the Gulf) to the Indo-Pacific, at 1/12° like CROC's real cases there, and the
-  # Gulf at other resolutions, for the runoff-mapping fits.
+  # the Gulf) to the Indo-Pacific, at 1/12° like CROC's real cases there, for
+  # the runoff-mapping fits.
   gulf_1deg:
     about: 1° box on the Gulf of Mexico's southern coast, at Coatzacoalcos
     grid: {xstart: 265.0, lenx: 1.0, ystart: 18.0, leny: 1.0, resolution: 1/12}
-    forcings: [runoff]
-  gulf_2deg:
-    about: 2° box, same corner
-    grid: {xstart: 265.0, lenx: 2.0, ystart: 18.0, leny: 2.0, resolution: 1/12}
     forcings: [runoff]
   gulf_4deg:
     about: 4° box, same corner
     grid: {xstart: 265.0, lenx: 4.0, ystart: 18.0, leny: 4.0, resolution: 1/12}
     forcings: [runoff]
-  gulf_8deg:
-    about: 8° box, same corner
-    grid: {xstart: 265.0, lenx: 8.0, ystart: 18.0, leny: 8.0, resolution: 1/12}
-    forcings: [runoff]
   gulf_of_mexico:
     about: The whole Gulf of Mexico; the runoff rmax sweep runs on it
     grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/12}
     forcings: [runoff]
-  gulf_of_mexico_4th:
-    about: The Gulf of Mexico at 1/4°
-    grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/4}
-    forcings: [runoff]
-  gulf_of_mexico_8th:
-    about: The Gulf of Mexico at 1/8°
-    grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/8}
-    forcings: [runoff]
-  gulf_of_mexico_25th:
-    about: The Gulf of Mexico at 1/25°
-    grid: {xstart: 262.0, lenx: 18.0, ystart: 18.0, leny: 13.0, resolution: 1/25}
-    forcings: [runoff]
-  caribbean:
-    about: The Caribbean
-    grid: {xstart: 270.0, lenx: 35.0, ystart: 5.0, leny: 23.0, resolution: 1/12}
-    forcings: [runoff]
   north_atlantic:
-    about: The North Atlantic; the runoff rmax sweep runs on it
+    about: The North Atlantic
     grid: {xstart: 275.0, lenx: 80.0, ystart: 20.0, leny: 50.0, resolution: 1/12}
     forcings: [runoff]
   indo_pacific:

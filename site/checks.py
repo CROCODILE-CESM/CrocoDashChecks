@@ -18,18 +18,17 @@ from IPython.display import Markdown, display
 
 ROOT = Path(__file__).resolve().parent.parent
 INTEGRATION = ROOT / "integration"
-CESM_RUNS = INTEGRATION / "cesm_runs.json"  # the CESM runs (test_workflow.py)
+CESM_RUNS = INTEGRATION / "cesm_runs.json"  # the CESM runs (testing rows)
 HEALTH = ROOT / "data_access" / "health.json"
-WORKFLOW = INTEGRATION / "workflow.json"  # the workflow's timings (pytest-benchmark)
-WORKFLOW_OUTCOMES = (
-    INTEGRATION / "workflow.xml"
-)  # what passed, failed or was skipped, and why
+# test_workflow.py's results, one pair per suite of matrix.yaml (testing,
+# performance): <suite>.json, the timings (pytest-benchmark), and <suite>.xml,
+# what passed, failed or was skipped, and why (pytest's junit).
 MATRIX = INTEGRATION / "matrix.yaml"  # the grids, and what runs on each
 REPO_URL = "https://github.com/CROCODILE-CESM/CrocoDashChecks"
 SITE_URL = "https://crocodile-cesm.github.io/CrocoDashChecks"
 
 # A check older than this many days means its schedule stopped running.
-STALE_DAYS = {"workflow": 8, "cesm": 8, "health": 8}
+STALE_DAYS = {"testing": 8, "performance": 36, "cesm": 8, "health": 8}
 
 # CIME's test phases, in order, and what each is for a CrocoDash-built case.
 PHASES = [
@@ -52,9 +51,12 @@ def load(path):
     return json.loads(path.read_text()) if path.exists() else None
 
 
-def matrix():
-    """matrix.yaml's rows: {grid name: its grid, and what runs on it}."""
-    return yaml.safe_load(MATRIX.read_text())["grids"]
+def matrix(suite=None):
+    """matrix.yaml's rows, or one suite's: {grid name: its grid, and what runs on it}."""
+    suites = yaml.safe_load(MATRIX.read_text())
+    if suite:
+        return suites[suite]
+    return {**suites["testing"], **suites["performance"]}
 
 
 def _text(path, rev):
@@ -69,23 +71,22 @@ def _text(path, rev):
     return shown.stdout if shown.returncode == 0 else None
 
 
-def workflow(rev=None):
-    """The last run of integration/test_workflow.py (or the one committed in
-    rev), or None:
+def results(suite, rev=None):
+    """The last run of a suite of integration/test_workflow.py (or the one
+    committed in rev), or None:
     {"date", "crocodash": {branch, commit} or None,
      "cases": {test id: its pytest-benchmark case}, for the steps that passed,
      "outcomes": {test id: (OK, FAIL or NOT_RUN for skipped, why)}}.
     A test id is e.g. "test_bc[equator_0e]"."""
-    timings, junit = _text(WORKFLOW, rev), _text(WORKFLOW_OUTCOMES, rev)
+    timings = _text(INTEGRATION / f"{suite}.json", rev)
+    junit = _text(INTEGRATION / f"{suite}.xml", rev)
     if timings is None or junit is None:
         return None
     timings = json.loads(timings)
-    suite = ET.fromstring(junit)
-    if suite.tag != "testsuite":
-        suite = suite.find("testsuite")
-    props = {p.get("name"): p.get("value") for p in suite.iter("property")}
+    junit = ET.fromstring(junit)  # a <testsuite> per row
+    props = {p.get("name"): p.get("value") for p in junit.iter("property")}
     outcomes = {}
-    for case in suite.iter("testcase"):
+    for case in junit.iter("testcase"):
         mark, why = OK, ""
         for tag, tag_mark in (("failure", FAIL), ("error", FAIL), ("skipped", NOT_RUN)):
             node = case.find(tag)
@@ -108,11 +109,11 @@ def workflow(rev=None):
     }
 
 
-def past_workflows(n):
-    """The n runs of the workflow before the current one, newest first, from the
-    git history of its results (each weekly run commits them). Fewer if the
-    history is shorter, e.g. in a shallow clone."""
-    current = workflow()
+def past_results(suite, n):
+    """The n runs of a suite before the current one, newest first, from the git
+    history of its results (each run commits them). Fewer if the history is
+    shorter, e.g. in a shallow clone."""
+    current = results(suite)
     log = subprocess.run(
         [
             "git",
@@ -121,14 +122,14 @@ def past_workflows(n):
             "log",
             "--format=%H",
             "--",
-            str(WORKFLOW.relative_to(ROOT)),
+            f"integration/{suite}.json",
         ],
         capture_output=True,
         text=True,
     )
     past, dates = [], {current["date"]} if current else set()
     for rev in log.stdout.split():
-        run = workflow(rev)
+        run = results(suite, rev)
         if run and run["date"] not in dates:
             past.append(run)
             dates.add(run["date"])

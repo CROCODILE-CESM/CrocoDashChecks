@@ -1,18 +1,26 @@
-"""The test matrix (matrix.yaml) and the case every check builds (case.yaml).
+"""The matrix (matrix.yaml) and the case every check builds (case.yaml).
 
 import matrix
 for row in matrix.rows("bc"):             # the grids open boundaries run on
     config = matrix.config(row, workdir)  # that row's CrocoDash case config
+
+    python integration/matrix.py testing  # a suite's rows, for weekly.sh
 """
 
 import copy
+import sys
 from fractions import Fraction
 from pathlib import Path
 
 import yaml
 
 ROOT = Path(__file__).resolve().parent
-GRIDS = yaml.safe_load((ROOT / "matrix.yaml").read_text())["grids"]
+_MATRIX = yaml.safe_load((ROOT / "matrix.yaml").read_text())
+SUITES = {suite: _MATRIX[suite] for suite in ("testing", "performance")}
+GRIDS = {**SUITES["testing"], **SUITES["performance"]}  # every row
+assert len(GRIDS) == sum(
+    map(len, SUITES.values())
+), "matrix.yaml: a row is in both suites"
 CASE = yaml.safe_load((ROOT / "case.yaml").read_text())
 FORCINGS = {"bc": "Open boundaries", "runoff": "Runoff mapping"}  # what a row can run
 
@@ -27,13 +35,15 @@ for _name, _row in GRIDS.items():
     ), f"matrix.yaml: {_name} has cesm_runs, so it must also list {sorted(_missing)}"
 
 
-def rows(what=None):
-    """Every row, or the rows that run a forcing (or "cesm_runs"), in matrix.yaml's order."""
+def rows(what=None, suite=None):
+    """Every row (or a suite's), or the rows that run a forcing (or "cesm_runs"),
+    in matrix.yaml's order."""
+    grids = GRIDS if suite is None else SUITES[suite]
     if what is None:
-        return list(GRIDS)
+        return list(grids)
     if what == "cesm_runs":
-        return [name for name, row in GRIDS.items() if row.get("cesm_runs")]
-    return [name for name, row in GRIDS.items() if what in row.get("forcings", [])]
+        return [name for name, row in grids.items() if row.get("cesm_runs")]
+    return [name for name, row in grids.items() if what in row.get("forcings", [])]
 
 
 def is_polar(row):
@@ -69,3 +79,7 @@ def config(row, workdir):
         resolution = float(Fraction(str(spec["resolution"])))
         cfg["grid"] = {**spec, "resolution": resolution, "name": row}
     return cfg
+
+
+if __name__ == "__main__":
+    print(*rows(suite=sys.argv[1]))

@@ -1,7 +1,7 @@
 name: Publish site
 
 on:
-  # The weekly checks push their results from GLADE to main (integration/ and
+  # The checks push their results from GLADE to main (integration/ and
   # data_access/), and each push rebuilds the site.
   push:
     branches: [main]
@@ -25,8 +25,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-          # The whole history: the Status page compares this week's timings with
-          # the past runs' committed integration/workflow.json.
+          # The whole history: the Status page compares each suite's timings
+          # with its past runs' committed integration/<suite>.json.
           fetch-depth: 0
 
       - uses: actions/setup-python@v5

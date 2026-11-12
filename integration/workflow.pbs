@@ -1,57 +1,50 @@
 #!/bin/bash
-# Runs test_workflow.py on one Derecho node against a fresh clone of CrocoDash
-# main and CESMROOT, and writes integration/workflow.json (the timings),
-# workflow.xml (what passed, failed or was skipped, and why) and cesm_runs.json
-# (the CESM tests' phases) in this checkout. weekly.sh submits it every week; by
-# hand, from the repo root:
-#   qsub -v CESMROOT=/path/to/CESM integration/workflow.pbs
-# PYTEST_K runs only the steps a pytest -k expression selects, e.g. the poles:
-#   qsub -v "CESMROOT=...,PYTEST_K=pole" integration/workflow.pbs
+# One row of integration/matrix.yaml through test_workflow.py, on one Derecho
+# node, against a fresh clone of CrocoDash main and CESMROOT. Writes, in RESULTS,
+# workflow.json (the timings), workflow.xml (what passed, failed or was skipped,
+# and why) and, on a row with CESM runs, cesm_runs.json (their phases).
+# weekly.sh submits one per row, and collect.pbs merges them. By hand, from the
+# repo root:
+#   qsub -v ROW=labrador,CESMROOT=/path/to/CESM integration/workflow.pbs
+# PYTEST_K runs only the steps a pytest -k expression selects, e.g. its case:
+#   qsub -v "ROW=labrador,CESMROOT=...,PYTEST_K=test_create" integration/workflow.pbs
 #
-# CESMROOT : a checkout of CROCODILE-CESM/CESM branch crocodash (required). The job
-#            checks it is clean and at the branch's tip, and fast-forwards it if not.
-# PUBLISH  : if set, push the three results files to main, which rebuilds the site
+# ROW              : the matrix row (required)
+# CESMROOT         : a checkout of CROCODILE-CESM/CESM branch crocodash, with no
+#                    local changes (required; weekly.sh brings it to the tip)
+# RESULTS          : where the results go (default: integration/results/<ROW>)
+# CROCODASH_COMMIT : the commit of CrocoDash main to test (default: its tip)
+# RUN_ID           : names the cases (default: the time now)
 #PBS -N crocodashchecks
 #PBS -A NCGD0011
 #PBS -q main
 #PBS -l select=1:ncpus=128:mpiprocs=128:mem=235GB
-#PBS -l walltime=12:00:00
+#PBS -l walltime=04:00:00
 #PBS -j oe
 set -uo pipefail
+: "${ROW:?set ROW to a row of integration/matrix.yaml}"
 : "${CESMROOT:?set CESMROOT to a checkout of the CESM crocodash branch}"
 REPO_ROOT=$(git -C "$PBS_O_WORKDIR" rev-parse --show-toplevel) || exit 1
 cd "$REPO_ROOT" || exit 1
-
-# CESMROOT must be the tip of crocodash, with nothing changed in it.
 if [ -n "$(git -C "$CESMROOT" status --porcelain)" ]; then
   echo "$CESMROOT has local changes; not using it" >&2
   exit 1
 fi
-git -C "$CESMROOT" fetch -q origin crocodash || exit 1
-if [ "$(git -C "$CESMROOT" rev-parse HEAD)" != "$(git -C "$CESMROOT" rev-parse origin/crocodash)" ]; then
-  echo "Updating $CESMROOT to the tip of crocodash"
-  git -C "$CESMROOT" merge -q --ff-only origin/crocodash || exit 1
-  (cd "$CESMROOT" && ./bin/git-fleximod update) || exit 1
-fi
-export CESMROOT
+export ROW CESMROOT
 
 module load conda
 conda activate CrocoDash
 export ESMFMKFILE=$CONDA_PREFIX/lib/esmf.mk
 export TMPDIR=/glade/derecho/scratch/$USER/crocodashchecks_workflow.$PBS_JOBID
 CLONE_ROOT=$TMPDIR
-RESULTS=$TMPDIR/results
-mkdir -p "$RESULTS"
+RESULTS=${RESULTS:-$REPO_ROOT/integration/results/$ROW}
+mkdir -p "$TMPDIR" "$RESULTS"
 source crocodash_main.sh || exit 1
 export CESM_RUNS_JSON=$RESULTS/cesm_runs.json
-python -m pytest -p no:cacheprovider -rfEs --basetemp="$TMPDIR/pytest" ${PYTEST_K:+-k "$PYTEST_K"} \
-    integration/test_workflow.py \
+# A test with no cases on this row shows up as test_x[NOTSET]; it isn't a step.
+python -m pytest -p no:cacheprovider -rfEs --basetemp="$TMPDIR/pytest" \
+    -k "not NOTSET${PYTEST_K:+ and ($PYTEST_K)}" integration/test_workflow.py \
     --benchmark-json="$RESULTS/workflow.json" --junitxml="$RESULTS/workflow.xml"
 status=$?
-cp "$RESULTS"/* integration/
-if [ -n "${PUBLISH:-}" ]; then
-  BRANCH=main DEST=integration MSG="Weekly results $(date +%F)" \
-    bash push_results.sh "$RESULTS" || status=1
-fi
 rm -rf "$TMPDIR"
 exit $status

@@ -1,6 +1,6 @@
 """CrocoDash on every grid in matrix.yaml, through its own CLI on real cases,
-timed: an integration test and a benchmark in one, run weekly on one Derecho
-node by workflow.pbs.
+timed: an integration test and a benchmark in one. workflow.pbs runs one row
+per Derecho job: the testing rows every week, the performance rows every month.
 
 For each row of matrix.yaml:
   1. test_create makes the row's case with `crocodash create --configure-only`,
@@ -17,14 +17,15 @@ For each row of matrix.yaml:
      cesm_runs.json.
 A step on a row whose case failed to create is skipped.
 
-The sweeps vary what isn't a grid, on a few rows, for the Performance page's
-fits: `crocodash process --config` on an edited copy of the row case's forcing
+The sweeps vary what isn't a grid, on a few performance rows, for the
+Performance page's fits: `crocodash process --config` on an edited copy of the row case's forcing
 config, so they overwrite that case's forcing files (sweep rows don't run CESM).
 
 Every step runs in a forked child, timed once, with the peak memory of its whole
 process tree. The cases are kept.
 
 Environment:
+  ROW             run only this row's steps (default: every row)
   CESMROOT        a checkout of CESM's crocodash branch (required)
   CASES_ROOT      where the cases go (default /glade/derecho/scratch/$USER/croc_tests);
                   keep it short: MOM6 truncates INPUTDIR at 128 characters
@@ -32,8 +33,8 @@ Environment:
   CESM_RUNS_JSON  where the CESM tests' summary goes (default integration/cesm_runs.json)
 
 From the repo root, in the CrocoDash env, after `source crocodash_main.sh`:
-    CESMROOT=... pytest integration/test_workflow.py \\
-        --benchmark-json=integration/workflow.json --junitxml=integration/workflow.xml
+    ROW=labrador CESMROOT=... pytest integration/test_workflow.py \\
+        --benchmark-json=workflow.json --junitxml=workflow.xml
 """
 
 import cProfile
@@ -59,6 +60,8 @@ import yaml
 
 import matrix
 
+ROW = os.environ.get("ROW") or None
+assert ROW in (None, *matrix.rows()), f"ROW={ROW} isn't a row of matrix.yaml"
 CESMROOT = Path(os.environ["CESMROOT"]) if os.environ.get("CESMROOT") else None
 CASES_ROOT = Path(
     os.environ.get(
@@ -83,21 +86,18 @@ SOURCE_RES_DEG = _COMMON["function_overrides"]["resolution_deg"]
 RMAX_KM = matrix.CASE["forcings"]["DROF"]["rmax"]
 WORKERS = 1
 
-# The sweeps, on rows matrix.yaml must turn the forcing on for.
+# The sweeps, on rows matrix.yaml must turn the forcing on for: the fewest
+# points that still pin down each fit on the Performance page.
 BC_SWEEP_ROW = "pacific_10deg"
-BC_SOURCE_RES_DEG = [0.5, 0.25, 0.1, 0.05, 0.025, 0.01]
-BC_DAYS = [30, 90, 180, 360]
-# 360 days = 12 slices, which these worker counts split evenly. The 80° box is
-# where the per-slice domain cost shows.
-BC_WORKER_SETS = [
-    ("pacific_10deg", 0.25),
-    ("pacific_10deg", 0.05),
-    ("pacific_80deg", 0.25),
-]
-BC_WORKERS = [1, 2, 3, 4, 6, 12]
-# indo_pacific at rmax 80 has ~1.6e9 weights (73% of 2^31) and peaks near 76 GB;
-# rmax 100 would pass 2^31, so the sweep stops at 80.
-RUNOFF_SWEEP_ROWS = ["gulf_of_mexico", "north_atlantic", "indo_pacific"]
+BC_SOURCE_RES_DEG = [0.5, 0.25, 0.05, 0.01]
+BC_DAYS = [30, 90, 360]
+# 360 days = 12 slices, which these worker counts split evenly. Two sizes, since
+# a worker's memory grows with the domain; the 80° box is where it shows.
+BC_WORKER_SETS = [("pacific_10deg", 0.25), ("pacific_80deg", 0.25)]
+BC_WORKERS = [1, 2, 4, 12]
+# Two sizes share one rmax exponent. indo_pacific at rmax 80 has ~1.6e9 weights
+# (73% of 2^31) and peaks near 76 GB; rmax 100 would pass 2^31, so it stops at 80.
+RUNOFF_SWEEP_ROWS = ["gulf_of_mexico", "indo_pacific"]
 RUNOFF_RMAX_KM = [10, 20, 40, 80]
 
 # What `crocodash create` spends its time on: {part: (file, function)}.
@@ -113,18 +113,23 @@ STOP_OPTIONS = {"Ln": "nsteps", "Lh": "nhours", "Ld": "ndays", "Lm": "nmonths"}
 NTASKS, DATA_NTASKS = 4, 56  # CESM tests: per component; DATM, DROF and the mediator
 
 
+def _rows(what=None):
+    """matrix.rows(what), or only ROW's."""
+    return [row for row in matrix.rows(what) if ROW in (None, row)]
+
+
 def _bc_sweep():
     """(row, source resolution, days, workers) for each sweep case that isn't a row's own."""
     cases = [(BC_SWEEP_ROW, s, DAYS, WORKERS) for s in BC_SOURCE_RES_DEG]
     cases += [(BC_SWEEP_ROW, SOURCE_RES_DEG, d, WORKERS) for d in BC_DAYS]
     cases += [(row, s, 360, w) for row, s in BC_WORKER_SETS for w in BC_WORKERS]
-    on = matrix.rows("bc")
+    on = _rows("bc")
     own = {(row, SOURCE_RES_DEG, DAYS, WORKERS) for row in on}
     return [c for c in dict.fromkeys(cases) if c[0] in on and c not in own]
 
 
 def _runoff_sweep():
-    on = matrix.rows("runoff")
+    on = _rows("runoff")
     return [
         (row, rmax)
         for row in RUNOFF_SWEEP_ROWS
@@ -151,7 +156,7 @@ def _cesm_tests():
         if grid != "USER_RES" or test != "SMS" or (t["testname"], compset) in seen:
             continue
         seen.add((t["testname"], compset))
-        for row in matrix.rows("cesm_runs"):
+        for row in _rows("cesm_runs"):
             tests.append(
                 pytest.param(
                     row,
@@ -423,7 +428,7 @@ def _grid_stats(row):
     return _STATS[row]
 
 
-@pytest.mark.parametrize("row", matrix.rows())
+@pytest.mark.parametrize("row", _rows())
 def test_create(benchmark, row, tmp_path_factory):
     workdir = tmp_path_factory.mktemp(row)
     config = _config(row, BASE_COMPSET, workdir)
@@ -509,7 +514,7 @@ def _bc(benchmark, row, tmp_path_factory, tmp_path, monkeypatch, res, days, work
     )
 
 
-@pytest.mark.parametrize("row", matrix.rows("bc"))
+@pytest.mark.parametrize("row", _rows("bc"))
 def test_bc(benchmark, row, tmp_path_factory, tmp_path, monkeypatch):
     _bc(
         benchmark,
@@ -574,7 +579,7 @@ def _runoff(benchmark, row, tmp_path_factory, tmp_path, rmax):
     )
 
 
-@pytest.mark.parametrize("row", matrix.rows("runoff"))
+@pytest.mark.parametrize("row", _rows("runoff"))
 def test_runoff(benchmark, row, tmp_path_factory, tmp_path):
     _runoff(benchmark, row, tmp_path_factory, tmp_path, RMAX_KM)
 
