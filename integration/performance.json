@@ -1,0 +1,2325 @@
+{
+ "machine_info": {
+  "node": "dec0693",
+  "processor": "x86_64",
+  "machine": "x86_64",
+  "python_compiler": "GCC 15.3.0",
+  "python_implementation": "CPython",
+  "python_implementation_version": "3.11.16",
+  "python_version": "3.11.16",
+  "python_build": [
+   "main",
+   "Sep  2 2026 23:39:52"
+  ],
+  "release": "6.4.0-150600.23.53-default",
+  "system": "Linux",
+  "cpu": {
+   "python_version": "3.11.16.final.0 (64 bit)",
+   "cpuinfo_version": [
+    10,
+    1,
+    1
+   ],
+   "cpuinfo_version_string": "10.1.1",
+   "arch": "X86_64",
+   "bits": 64,
+   "count": 256,
+   "arch_string_raw": "x86_64",
+   "vendor_id_raw": "AuthenticAMD",
+   "brand_raw": "AMD EPYC 7763 64-Core Processor",
+   "hz_advertised_friendly": "1.7957 GHz",
+   "hz_actual_friendly": "1.7957 GHz",
+   "hz_advertised": [
+    1795696000,
+    0
+   ],
+   "hz_actual": [
+    1795696000,
+    0
+   ],
+   "stepping": 1,
+   "model": 1,
+   "family": 25,
+   "flags": [
+    "3dnowext",
+    "3dnowprefetch",
+    "abm",
+    "adx",
+    "aes",
+    "amd_ppin",
+    "aperfmperf",
+    "apic",
+    "arat",
+    "avx",
+    "avx2",
+    "bmi1",
+    "bmi2",
+    "bpext",
+    "brs",
+    "cat_l3",
+    "cdp_l3",
+    "clflush",
+    "clflushopt",
+    "clwb",
+    "clzero",
+    "cmov",
+    "cmp_legacy",
+    "constant_tsc",
+    "cpb",
+    "cpuid",
+    "cqm",
+    "cqm_llc",
+    "cqm_mbm_local",
+    "cqm_mbm_total",
+    "cqm_occup_llc",
+    "cr8_legacy",
+    "cx16",
+    "cx8",
+    "dbx",
+    "de",
+    "debug_swap",
+    "decodeassists",
+    "erms",
+    "extapic",
+    "extd_apicid",
+    "f16c",
+    "flushbyasid",
+    "fma",
+    "fpu",
+    "fsgsbase",
+    "fsrm",
+    "fxsr",
+    "fxsr_opt",
+    "ht",
+    "hw_pstate",
+    "ibpb",
+    "ibrs",
+    "ibs",
+    "invpcid",
+    "irperf",
+    "lahf_lm",
+    "lbrv",
+    "lm",
+    "mba",
+    "mca",
+    "mce",
+    "misalignsse",
+    "mmx",
+    "mmxext",
+    "monitor",
+    "movbe",
+    "msr",
+    "mtrr",
+    "mwaitx",
+    "nonstop_tsc",
+    "nopl",
+    "npt",
+    "nrip_save",
+    "nx",
+    "ospke",
+    "osvw",
+    "osxsave",
+    "overflow_recov",
+    "pae",
+    "pat",
+    "pausefilter",
+    "pci_l2i",
+    "pcid",
+    "pclmulqdq",
+    "pdpe1gb",
+    "perfctr_core",
+    "perfctr_llc",
+    "perfctr_nb",
+    "pfthreshold",
+    "pge",
+    "pku",
+    "pni",
+    "popcnt",
+    "pqe",
+    "pqm",
+    "pse",
+    "pse36",
+    "rapl",
+    "rdpid",
+    "rdpru",
+    "rdrand",
+    "rdrnd",
+    "rdseed",
+    "rdt_a",
+    "rdtscp",
+    "rep_good",
+    "sep",
+    "sha",
+    "sha_ni",
+    "skinit",
+    "smap",
+    "smca",
+    "smep",
+    "ssbd",
+    "sse",
+    "sse2",
+    "sse4_1",
+    "sse4_2",
+    "sse4a",
+    "ssse3",
+    "stibp",
+    "succor",
+    "svm",
+    "svm_lock",
+    "syscall",
+    "tce",
+    "topoext",
+    "tsc",
+    "tsc_scale",
+    "umip",
+    "user_shstk",
+    "v_spec_ctrl",
+    "v_vmsave_vmload",
+    "vaes",
+    "vgif",
+    "vmcb_clean",
+    "vme",
+    "vmmcall",
+    "vpclmulqdq",
+    "wbnoinvd",
+    "wdt",
+    "x2apic",
+    "xgetbv1",
+    "xsave",
+    "xsavec",
+    "xsaveerptr",
+    "xsaveopt",
+    "xsaves"
+   ],
+   "l3_cache_size": 524288,
+   "l2_cache_size": 67108864,
+   "l1_data_cache_size": 4194304,
+   "l1_instruction_cache_size": 4194304,
+   "l2_cache_line_size": 512,
+   "l2_cache_associativity": 6
+  }
+ },
+ "commit_info": {
+  "id": "18d7e8bbf485e8969de2f3655e6544bb5f6ab7b9",
+  "time": "2026-11-12T15:10:11-07:00",
+  "author_time": "2026-11-12T15:10:11-07:00",
+  "dirty": true,
+  "project": "CrocoDashChecks",
+  "branch": "main"
+ },
+ "benchmarks": [
+  {
+   "group": null,
+   "name": "test_create[gulf_1deg]",
+   "fullname": "integration/test_workflow.py::test_create[gulf_1deg]",
+   "params": {
+    "row": "gulf_1deg"
+   },
+   "param": "gulf_1deg",
+   "extra_info": {
+    "row": "gulf_1deg",
+    "area_deg2": 1.0,
+    "bathymetry": "GEBCO_2024_coarse_x8.nc",
+    "peak_mb": 629.34765625,
+    "grid_s": 0.005054336,
+    "topo_s": 4.117309984,
+    "vgrid_s": 0.000654824,
+    "case_s": 14.557966958000002,
+    "configure_s": 4.1419634830000005,
+    "nx": 12,
+    "ny": 12,
+    "n_cells": 144,
+    "ocean_cells": 102,
+    "missing_depths": 0,
+    "ocean_cell_km2": 81.36816271486741
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 23.436055738013238,
+    "max": 23.436055738013238,
+    "mean": 23.436055738013238,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 23.436055738013238,
+    "iqr": 0.0,
+    "q1": 23.436055738013238,
+    "q3": 23.436055738013238,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 23.436055738013238,
+    "hd15iqr": 23.436055738013238,
+    "ops": 0.042669296027402846,
+    "total": 23.436055738013238,
+    "data": [
+     23.436055738013238
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff[gulf_1deg]",
+   "fullname": "integration/test_workflow.py::test_runoff[gulf_1deg]",
+   "params": {
+    "row": "gulf_1deg"
+   },
+   "param": "gulf_1deg",
+   "extra_info": {
+    "nn_n_s": 400,
+    "nn_file_mb": 2060.020396232605,
+    "nnsm_n_s": 4046,
+    "nnsm_file_mb": 2060.075602531433,
+    "row": "gulf_1deg",
+    "rmax_km": 20,
+    "fold_km": 20,
+    "n_src": 21600000,
+    "n_cells": 144,
+    "n_ocn": 102,
+    "ocn_cell_km2": 81.36816271486741,
+    "peak_mb": 12748.37890625
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 42.574122839956544,
+    "max": 42.574122839956544,
+    "mean": 42.574122839956544,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 42.574122839956544,
+    "iqr": 0.0,
+    "q1": 42.574122839956544,
+    "q3": 42.574122839956544,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 42.574122839956544,
+    "hd15iqr": 42.574122839956544,
+    "ops": 0.023488446344723815,
+    "total": 42.574122839956544,
+    "data": [
+     42.574122839956544
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[gulf_4deg]",
+   "fullname": "integration/test_workflow.py::test_create[gulf_4deg]",
+   "params": {
+    "row": "gulf_4deg"
+   },
+   "param": "gulf_4deg",
+   "extra_info": {
+    "row": "gulf_4deg",
+    "area_deg2": 16.0,
+    "bathymetry": "GEBCO_2024_coarse_x8.nc",
+    "peak_mb": 636.0048828125,
+    "grid_s": 0.013888642000000001,
+    "topo_s": 7.485934654,
+    "vgrid_s": 0.000519599,
+    "case_s": 16.150423909,
+    "configure_s": 6.722281271000001,
+    "nx": 48,
+    "ny": 48,
+    "n_cells": 2304,
+    "ocean_cells": 2022,
+    "missing_depths": 0,
+    "ocean_cell_km2": 80.55527402347317
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 30.95442606601864,
+    "max": 30.95442606601864,
+    "mean": 30.95442606601864,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 30.95442606601864,
+    "iqr": 0.0,
+    "q1": 30.95442606601864,
+    "q3": 30.95442606601864,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 30.95442606601864,
+    "hd15iqr": 30.95442606601864,
+    "ops": 0.03230555778573413,
+    "total": 30.95442606601864,
+    "data": [
+     30.95442606601864
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff[gulf_4deg]",
+   "fullname": "integration/test_workflow.py::test_runoff[gulf_4deg]",
+   "params": {
+    "row": "gulf_4deg"
+   },
+   "param": "gulf_4deg",
+   "extra_info": {
+    "nn_n_s": 6400,
+    "nn_file_mb": 2060.3165998458862,
+    "nnsm_n_s": 70758,
+    "nnsm_file_mb": 2061.2986249923706,
+    "row": "gulf_4deg",
+    "rmax_km": 20,
+    "fold_km": 20,
+    "n_src": 21600000,
+    "n_cells": 2304,
+    "n_ocn": 2022,
+    "ocn_cell_km2": 80.55527402347317,
+    "peak_mb": 12750.630859375
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 43.30804280505981,
+    "max": 43.30804280505981,
+    "mean": 43.30804280505981,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 43.30804280505981,
+    "iqr": 0.0,
+    "q1": 43.30804280505981,
+    "q3": 43.30804280505981,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 43.30804280505981,
+    "hd15iqr": 43.30804280505981,
+    "ops": 0.023090399270667732,
+    "total": 43.30804280505981,
+    "data": [
+     43.30804280505981
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[gulf_of_mexico]",
+   "fullname": "integration/test_workflow.py::test_create[gulf_of_mexico]",
+   "params": {
+    "row": "gulf_of_mexico"
+   },
+   "param": "gulf_of_mexico",
+   "extra_info": {
+    "row": "gulf_of_mexico",
+    "area_deg2": 234.0,
+    "bathymetry": "GEBCO_2024_coarse_x8.nc",
+    "peak_mb": 828.3134765625,
+    "grid_s": 0.132204867,
+    "topo_s": 8.981477497,
+    "vgrid_s": 0.0006950740000000001,
+    "case_s": 14.662748613000002,
+    "configure_s": 6.587704464000001,
+    "nx": 216,
+    "ny": 156,
+    "n_cells": 33696,
+    "ocean_cells": 25477,
+    "missing_depths": 0,
+    "ocean_cell_km2": 78.21452843957111
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 30.801998957060277,
+    "max": 30.801998957060277,
+    "mean": 30.801998957060277,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 30.801998957060277,
+    "iqr": 0.0,
+    "q1": 30.801998957060277,
+    "q3": 30.801998957060277,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 30.801998957060277,
+    "hd15iqr": 30.801998957060277,
+    "ops": 0.03246542542235835,
+    "total": 30.801998957060277,
+    "data": [
+     30.801998957060277
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff[gulf_of_mexico]",
+   "fullname": "integration/test_workflow.py::test_runoff[gulf_of_mexico]",
+   "params": {
+    "row": "gulf_of_mexico"
+   },
+   "param": "gulf_of_mexico",
+   "extra_info": {
+    "nn_n_s": 93600,
+    "nn_file_mb": 2064.640950202942,
+    "nnsm_n_s": 1115398,
+    "nnsm_file_mb": 2080.2323503494263,
+    "row": "gulf_of_mexico",
+    "rmax_km": 20,
+    "fold_km": 20,
+    "n_src": 21600000,
+    "n_cells": 33696,
+    "n_ocn": 25477,
+    "ocn_cell_km2": 78.21452843957111,
+    "peak_mb": 12771.919921875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 43.303310171933845,
+    "max": 43.303310171933845,
+    "mean": 43.303310171933845,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 43.303310171933845,
+    "iqr": 0.0,
+    "q1": 43.303310171933845,
+    "q3": 43.303310171933845,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 43.303310171933845,
+    "hd15iqr": 43.303310171933845,
+    "ops": 0.023092922828059678,
+    "total": 43.303310171933845,
+    "data": [
+     43.303310171933845
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff_sweep[gulf_of_mexico-10]",
+   "fullname": "integration/test_workflow.py::test_runoff_sweep[gulf_of_mexico-10]",
+   "params": {
+    "row": "gulf_of_mexico",
+    "rmax": 10
+   },
+   "param": "gulf_of_mexico-10",
+   "extra_info": {
+    "nn_n_s": 93600,
+    "nn_file_mb": 2064.640950202942,
+    "nnsm_n_s": 340312,
+    "nnsm_file_mb": 2068.4054765701294,
+    "row": "gulf_of_mexico",
+    "rmax_km": 10,
+    "fold_km": 10,
+    "n_src": 21600000,
+    "n_cells": 33696,
+    "n_ocn": 25477,
+    "ocn_cell_km2": 78.21452843957111,
+    "peak_mb": 12781.064453125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 42.84725927596446,
+    "max": 42.84725927596446,
+    "mean": 42.84725927596446,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 42.84725927596446,
+    "iqr": 0.0,
+    "q1": 42.84725927596446,
+    "q3": 42.84725927596446,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 42.84725927596446,
+    "hd15iqr": 42.84725927596446,
+    "ops": 0.023338715635446924,
+    "total": 42.84725927596446,
+    "data": [
+     42.84725927596446
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff_sweep[gulf_of_mexico-40]",
+   "fullname": "integration/test_workflow.py::test_runoff_sweep[gulf_of_mexico-40]",
+   "params": {
+    "row": "gulf_of_mexico",
+    "rmax": 40
+   },
+   "param": "gulf_of_mexico-40",
+   "extra_info": {
+    "nn_n_s": 93600,
+    "nn_file_mb": 2064.640950202942,
+    "nnsm_n_s": 4007771,
+    "nnsm_file_mb": 2124.3664598464966,
+    "row": "gulf_of_mexico",
+    "rmax_km": 40,
+    "fold_km": 40,
+    "n_src": 21600000,
+    "n_cells": 33696,
+    "n_ocn": 25477,
+    "ocn_cell_km2": 78.21452843957111,
+    "peak_mb": 12781.072265625
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 40.06789448997006,
+    "max": 40.06789448997006,
+    "mean": 40.06789448997006,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 40.06789448997006,
+    "iqr": 0.0,
+    "q1": 40.06789448997006,
+    "q3": 40.06789448997006,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 40.06789448997006,
+    "hd15iqr": 40.06789448997006,
+    "ops": 0.024957637847686846,
+    "total": 40.06789448997006,
+    "data": [
+     40.06789448997006
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff_sweep[gulf_of_mexico-80]",
+   "fullname": "integration/test_workflow.py::test_runoff_sweep[gulf_of_mexico-80]",
+   "params": {
+    "row": "gulf_of_mexico",
+    "rmax": 80
+   },
+   "param": "gulf_of_mexico-80",
+   "extra_info": {
+    "nn_n_s": 93600,
+    "nn_file_mb": 2064.640950202942,
+    "nnsm_n_s": 15264571,
+    "nnsm_file_mb": 2296.1315965652466,
+    "row": "gulf_of_mexico",
+    "rmax_km": 80,
+    "fold_km": 80,
+    "n_src": 21600000,
+    "n_cells": 33696,
+    "n_ocn": 25477,
+    "ocn_cell_km2": 78.21452843957111,
+    "peak_mb": 12780.947265625
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 40.14044497697614,
+    "max": 40.14044497697614,
+    "mean": 40.14044497697614,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 40.14044497697614,
+    "iqr": 0.0,
+    "q1": 40.14044497697614,
+    "q3": 40.14044497697614,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 40.14044497697614,
+    "hd15iqr": 40.14044497697614,
+    "ops": 0.02491252901091611,
+    "total": 40.14044497697614,
+    "data": [
+     40.14044497697614
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[indo_pacific]",
+   "fullname": "integration/test_workflow.py::test_create[indo_pacific]",
+   "params": {
+    "row": "indo_pacific"
+   },
+   "param": "indo_pacific",
+   "extra_info": {
+    "row": "indo_pacific",
+    "area_deg2": 16800.0,
+    "bathymetry": "GEBCO_2024_coarse_x8.nc",
+    "peak_mb": 14923.8994140625,
+    "grid_s": 10.149747066,
+    "topo_s": 259.34010717900003,
+    "vgrid_s": 0.002584691,
+    "case_s": 65.387947893,
+    "configure_s": 9.807746314000001,
+    "nx": 1920,
+    "ny": 1260,
+    "n_cells": 2419200,
+    "ocean_cells": 1608659,
+    "missing_depths": 0,
+    "ocean_cell_km2": 76.28208350507592
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 345.79459091997705,
+    "max": 345.79459091997705,
+    "mean": 345.79459091997705,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 345.79459091997705,
+    "iqr": 0.0,
+    "q1": 345.79459091997705,
+    "q3": 345.79459091997705,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 345.79459091997705,
+    "hd15iqr": 345.79459091997705,
+    "ops": 0.002891890232694292,
+    "total": 345.79459091997705,
+    "data": [
+     345.79459091997705
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff[indo_pacific]",
+   "fullname": "integration/test_workflow.py::test_runoff[indo_pacific]",
+   "params": {
+    "row": "indo_pacific"
+   },
+   "param": "indo_pacific",
+   "extra_info": {
+    "nn_n_s": 9593600,
+    "nn_file_mb": 2437.110962867737,
+    "nnsm_n_s": 111765102,
+    "nnsm_file_mb": 3996.1243600845337,
+    "row": "indo_pacific",
+    "rmax_km": 20,
+    "fold_km": 20,
+    "n_src": 21600000,
+    "n_cells": 2419200,
+    "n_ocn": 1608659,
+    "ocn_cell_km2": 76.28208350507592,
+    "peak_mb": 14978.8720703125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 110.48759013903327,
+    "max": 110.48759013903327,
+    "mean": 110.48759013903327,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 110.48759013903327,
+    "iqr": 0.0,
+    "q1": 110.48759013903327,
+    "q3": 110.48759013903327,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 110.48759013903327,
+    "hd15iqr": 110.48759013903327,
+    "ops": 0.00905079021763113,
+    "total": 110.48759013903327,
+    "data": [
+     110.48759013903327
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff_sweep[indo_pacific-10]",
+   "fullname": "integration/test_workflow.py::test_runoff_sweep[indo_pacific-10]",
+   "params": {
+    "row": "indo_pacific",
+    "rmax": 10
+   },
+   "param": "indo_pacific-10",
+   "extra_info": {
+    "nn_n_s": 9593600,
+    "nn_file_mb": 2437.110962867737,
+    "nnsm_n_s": 34042036,
+    "nnsm_file_mb": 2810.164490699768,
+    "row": "indo_pacific",
+    "rmax_km": 10,
+    "fold_km": 10,
+    "n_src": 21600000,
+    "n_cells": 2419200,
+    "n_ocn": 1608659,
+    "ocn_cell_km2": 76.28208350507592,
+    "peak_mb": 14987.3642578125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 106.81603872799315,
+    "max": 106.81603872799315,
+    "mean": 106.81603872799315,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 106.81603872799315,
+    "iqr": 0.0,
+    "q1": 106.81603872799315,
+    "q3": 106.81603872799315,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 106.81603872799315,
+    "hd15iqr": 106.81603872799315,
+    "ops": 0.009361889954995413,
+    "total": 106.81603872799315,
+    "data": [
+     106.81603872799315
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff_sweep[indo_pacific-40]",
+   "fullname": "integration/test_workflow.py::test_runoff_sweep[indo_pacific-40]",
+   "params": {
+    "row": "indo_pacific",
+    "rmax": 40
+   },
+   "param": "indo_pacific-40",
+   "extra_info": {
+    "nn_n_s": 9593600,
+    "nn_file_mb": 2437.110962867737,
+    "nnsm_n_s": 416487653,
+    "nnsm_file_mb": 8645.821488380432,
+    "row": "indo_pacific",
+    "rmax_km": 40,
+    "fold_km": 40,
+    "n_src": 21600000,
+    "n_cells": 2419200,
+    "n_ocn": 1608659,
+    "ocn_cell_km2": 76.28208350507592,
+    "peak_mb": 24827.8896484375
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 121.6631051900331,
+    "max": 121.6631051900331,
+    "mean": 121.6631051900331,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 121.6631051900331,
+    "iqr": 0.0,
+    "q1": 121.6631051900331,
+    "q3": 121.6631051900331,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 121.6631051900331,
+    "hd15iqr": 121.6631051900331,
+    "ops": 0.008219418684391118,
+    "total": 121.6631051900331,
+    "data": [
+     121.6631051900331
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff_sweep[indo_pacific-80]",
+   "fullname": "integration/test_workflow.py::test_runoff_sweep[indo_pacific-80]",
+   "params": {
+    "row": "indo_pacific",
+    "rmax": 80
+   },
+   "param": "indo_pacific-80",
+   "extra_info": {
+    "nn_n_s": 9593600,
+    "nn_file_mb": 2437.110962867737,
+    "nnsm_n_s": 1563989732,
+    "nnsm_file_mb": 26155.313660621643,
+    "row": "indo_pacific",
+    "rmax_km": 80,
+    "fold_km": 80,
+    "n_src": 21600000,
+    "n_cells": 2419200,
+    "n_ocn": 1608659,
+    "ocn_cell_km2": 76.28208350507592,
+    "peak_mb": 78610.9443359375
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 186.5261614130577,
+    "max": 186.5261614130577,
+    "mean": 186.5261614130577,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 186.5261614130577,
+    "iqr": 0.0,
+    "q1": 186.5261614130577,
+    "q3": 186.5261614130577,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 186.5261614130577,
+    "hd15iqr": 186.5261614130577,
+    "ops": 0.0053611782520175495,
+    "total": 186.5261614130577,
+    "data": [
+     186.5261614130577
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[north_atlantic]",
+   "fullname": "integration/test_workflow.py::test_create[north_atlantic]",
+   "params": {
+    "row": "north_atlantic"
+   },
+   "param": "north_atlantic",
+   "extra_info": {
+    "row": "north_atlantic",
+    "area_deg2": 4000.0,
+    "bathymetry": "GEBCO_2024_coarse_x8.nc",
+    "peak_mb": 4152.5693359375,
+    "grid_s": 2.4127298180000003,
+    "topo_s": 53.559575593000005,
+    "vgrid_s": 0.001338062,
+    "case_s": 31.835205368,
+    "configure_s": 3.9883465160000005,
+    "nx": 960,
+    "ny": 600,
+    "n_cells": 576000,
+    "ocean_cells": 446772,
+    "missing_depths": 0,
+    "ocean_cell_km2": 60.26854928091516
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 92.36066566093359,
+    "max": 92.36066566093359,
+    "mean": 92.36066566093359,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 92.36066566093359,
+    "iqr": 0.0,
+    "q1": 92.36066566093359,
+    "q3": 92.36066566093359,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 92.36066566093359,
+    "hd15iqr": 92.36066566093359,
+    "ops": 0.010827119887497483,
+    "total": 92.36066566093359,
+    "data": [
+     92.36066566093359
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_runoff[north_atlantic]",
+   "fullname": "integration/test_workflow.py::test_runoff[north_atlantic]",
+   "params": {
+    "row": "north_atlantic"
+   },
+   "param": "north_atlantic",
+   "extra_info": {
+    "nn_n_s": 1600000,
+    "nn_file_mb": 2139.3508806228638,
+    "nnsm_n_s": 25967240,
+    "nnsm_file_mb": 2511.1654558181763,
+    "row": "north_atlantic",
+    "rmax_km": 20,
+    "fold_km": 20,
+    "n_src": 21600000,
+    "n_cells": 576000,
+    "n_ocn": 446772,
+    "ocn_cell_km2": 60.26854928091516,
+    "peak_mb": 13426.623046875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 52.09080193703994,
+    "max": 52.09080193703994,
+    "mean": 52.09080193703994,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 52.09080193703994,
+    "iqr": 0.0,
+    "q1": 52.09080193703994,
+    "q3": 52.09080193703994,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 52.09080193703994,
+    "hd15iqr": 52.09080193703994,
+    "ops": 0.019197247168677874,
+    "total": 52.09080193703994,
+    "data": [
+     52.09080193703994
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[pacific_10deg]",
+   "fullname": "integration/test_workflow.py::test_create[pacific_10deg]",
+   "params": {
+    "row": "pacific_10deg"
+   },
+   "param": "pacific_10deg",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "area_deg2": 100.0,
+    "bathymetry": "GEBCO_2024.nc",
+    "peak_mb": 5258.94140625,
+    "grid_s": 0.045859944,
+    "topo_s": 63.845073512000006,
+    "vgrid_s": 0.0006302100000000001,
+    "case_s": 16.176757909000003,
+    "configure_s": 8.485891648,
+    "nx": 100,
+    "ny": 100,
+    "n_cells": 10000,
+    "ocean_cells": 9997,
+    "missing_depths": 0,
+    "ocean_cell_km2": 123.48622398443848
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 89.57597024703864,
+    "max": 89.57597024703864,
+    "mean": 89.57597024703864,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 89.57597024703864,
+    "iqr": 0.0,
+    "q1": 89.57597024703864,
+    "q3": 89.57597024703864,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 89.57597024703864,
+    "hd15iqr": 89.57597024703864,
+    "ops": 0.01116370827178464,
+    "total": 89.57597024703864,
+    "data": [
+     89.57597024703864
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc[pacific_10deg]",
+   "fullname": "integration/test_workflow.py::test_bc[pacific_10deg]",
+   "params": {
+    "row": "pacific_10deg"
+   },
+   "param": "pacific_10deg",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 650.201171875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 12.151409290032461,
+    "max": 12.151409290032461,
+    "mean": 12.151409290032461,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 12.151409290032461,
+    "iqr": 0.0,
+    "q1": 12.151409290032461,
+    "q3": 12.151409290032461,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 12.151409290032461,
+    "hd15iqr": 12.151409290032461,
+    "ops": 0.08229498127598076,
+    "total": 12.151409290032461,
+    "data": [
+     12.151409290032461
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.5-30-1]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.5-30-1]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.5,
+    "days": 30,
+    "workers": 1
+   },
+   "param": "pacific_10deg-0.5-30-1",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.5,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 644.408203125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 10.899377578054555,
+    "max": 10.899377578054555,
+    "mean": 10.899377578054555,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 10.899377578054555,
+    "iqr": 0.0,
+    "q1": 10.899377578054555,
+    "q3": 10.899377578054555,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 10.899377578054555,
+    "hd15iqr": 10.899377578054555,
+    "ops": 0.09174835836621154,
+    "total": 10.899377578054555,
+    "data": [
+     10.899377578054555
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.05-30-1]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.05-30-1]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.05,
+    "days": 30,
+    "workers": 1
+   },
+   "param": "pacific_10deg-0.05-30-1",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.05,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 648.185546875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 11.079139332985505,
+    "max": 11.079139332985505,
+    "mean": 11.079139332985505,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 11.079139332985505,
+    "iqr": 0.0,
+    "q1": 11.079139332985505,
+    "q3": 11.079139332985505,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 11.079139332985505,
+    "hd15iqr": 11.079139332985505,
+    "ops": 0.09025971873309126,
+    "total": 11.079139332985505,
+    "data": [
+     11.079139332985505
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.01-30-1]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.01-30-1]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.01,
+    "days": 30,
+    "workers": 1
+   },
+   "param": "pacific_10deg-0.01-30-1",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.01,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 645.576171875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 11.121227871975861,
+    "max": 11.121227871975861,
+    "mean": 11.121227871975861,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 11.121227871975861,
+    "iqr": 0.0,
+    "q1": 11.121227871975861,
+    "q3": 11.121227871975861,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 11.121227871975861,
+    "hd15iqr": 11.121227871975861,
+    "ops": 0.08991812878143411,
+    "total": 11.121227871975861,
+    "data": [
+     11.121227871975861
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.25-90-1]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.25-90-1]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "days": 90,
+    "workers": 1
+   },
+   "param": "pacific_10deg-0.25-90-1",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 90,
+    "slices": 3,
+    "workers": 1,
+    "peak_mb": 673.283203125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 21.034861304913647,
+    "max": 21.034861304913647,
+    "mean": 21.034861304913647,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 21.034861304913647,
+    "iqr": 0.0,
+    "q1": 21.034861304913647,
+    "q3": 21.034861304913647,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 21.034861304913647,
+    "hd15iqr": 21.034861304913647,
+    "ops": 0.04754012805239674,
+    "total": 21.034861304913647,
+    "data": [
+     21.034861304913647
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.25-360-1]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.25-360-1]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 1
+   },
+   "param": "pacific_10deg-0.25-360-1",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 360,
+    "slices": 12,
+    "workers": 1,
+    "peak_mb": 674.919921875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 66.07209250493906,
+    "max": 66.07209250493906,
+    "mean": 66.07209250493906,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 66.07209250493906,
+    "iqr": 0.0,
+    "q1": 66.07209250493906,
+    "q3": 66.07209250493906,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 66.07209250493906,
+    "hd15iqr": 66.07209250493906,
+    "ops": 0.015134983047876792,
+    "total": 66.07209250493906,
+    "data": [
+     66.07209250493906
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.25-360-2]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.25-360-2]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 2
+   },
+   "param": "pacific_10deg-0.25-360-2",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 360,
+    "slices": 12,
+    "workers": 2,
+    "peak_mb": 941.4189453125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 69.41130368201993,
+    "max": 69.41130368201993,
+    "mean": 69.41130368201993,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 69.41130368201993,
+    "iqr": 0.0,
+    "q1": 69.41130368201993,
+    "q3": 69.41130368201993,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 69.41130368201993,
+    "hd15iqr": 69.41130368201993,
+    "ops": 0.014406875349598664,
+    "total": 69.41130368201993,
+    "data": [
+     69.41130368201993
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.25-360-4]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.25-360-4]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 4
+   },
+   "param": "pacific_10deg-0.25-360-4",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 360,
+    "slices": 12,
+    "workers": 4,
+    "peak_mb": 1349.560546875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 57.404417996061966,
+    "max": 57.404417996061966,
+    "mean": 57.404417996061966,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 57.404417996061966,
+    "iqr": 0.0,
+    "q1": 57.404417996061966,
+    "q3": 57.404417996061966,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 57.404417996061966,
+    "hd15iqr": 57.404417996061966,
+    "ops": 0.017420261974759533,
+    "total": 57.404417996061966,
+    "data": [
+     57.404417996061966
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_10deg-0.25-360-12]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_10deg-0.25-360-12]",
+   "params": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 12
+   },
+   "param": "pacific_10deg-0.25-360-12",
+   "extra_info": {
+    "row": "pacific_10deg",
+    "source_res_deg": 0.25,
+    "n_src": 1764,
+    "n_dst": 400,
+    "n_cells": 10000,
+    "days": 360,
+    "slices": 12,
+    "workers": 12,
+    "peak_mb": 3067.7392578125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 78.93660027498845,
+    "max": 78.93660027498845,
+    "mean": 78.93660027498845,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 78.93660027498845,
+    "iqr": 0.0,
+    "q1": 78.93660027498845,
+    "q3": 78.93660027498845,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 78.93660027498845,
+    "hd15iqr": 78.93660027498845,
+    "ops": 0.012668394591562568,
+    "total": 78.93660027498845,
+    "data": [
+     78.93660027498845
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[pacific_20deg]",
+   "fullname": "integration/test_workflow.py::test_create[pacific_20deg]",
+   "params": {
+    "row": "pacific_20deg"
+   },
+   "param": "pacific_20deg",
+   "extra_info": {
+    "row": "pacific_20deg",
+    "area_deg2": 400.0,
+    "bathymetry": "GEBCO_2024.nc",
+    "peak_mb": 17759.4111328125,
+    "grid_s": 0.152979997,
+    "topo_s": 248.16238460800002,
+    "vgrid_s": 0.0005984370000000001,
+    "case_s": 16.401395135,
+    "configure_s": 9.315515668,
+    "nx": 200,
+    "ny": 200,
+    "n_cells": 40000,
+    "ocean_cells": 39996,
+    "missing_depths": 0,
+    "ocean_cell_km2": 123.01629915664118
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 275.5371274340432,
+    "max": 275.5371274340432,
+    "mean": 275.5371274340432,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 275.5371274340432,
+    "iqr": 0.0,
+    "q1": 275.5371274340432,
+    "q3": 275.5371274340432,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 275.5371274340432,
+    "hd15iqr": 275.5371274340432,
+    "ops": 0.003629274970355403,
+    "total": 275.5371274340432,
+    "data": [
+     275.5371274340432
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc[pacific_20deg]",
+   "fullname": "integration/test_workflow.py::test_bc[pacific_20deg]",
+   "params": {
+    "row": "pacific_20deg"
+   },
+   "param": "pacific_20deg",
+   "extra_info": {
+    "row": "pacific_20deg",
+    "source_res_deg": 0.25,
+    "n_src": 3204,
+    "n_dst": 800,
+    "n_cells": 40000,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 707.6298828125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 13.486909518949687,
+    "max": 13.486909518949687,
+    "mean": 13.486909518949687,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 13.486909518949687,
+    "iqr": 0.0,
+    "q1": 13.486909518949687,
+    "q3": 13.486909518949687,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 13.486909518949687,
+    "hd15iqr": 13.486909518949687,
+    "ops": 0.07414597084639421,
+    "total": 13.486909518949687,
+    "data": [
+     13.486909518949687
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[pacific_2p5deg]",
+   "fullname": "integration/test_workflow.py::test_create[pacific_2p5deg]",
+   "params": {
+    "row": "pacific_2p5deg"
+   },
+   "param": "pacific_2p5deg",
+   "extra_info": {
+    "row": "pacific_2p5deg",
+    "area_deg2": 6.25,
+    "bathymetry": "GEBCO_2024.nc",
+    "peak_mb": 1232.9853515625,
+    "grid_s": 0.006956419,
+    "topo_s": 18.22946332,
+    "vgrid_s": 0.0006582010000000001,
+    "case_s": 17.283961364,
+    "configure_s": 9.477203398,
+    "nx": 25,
+    "ny": 25,
+    "n_cells": 625,
+    "ocean_cells": 625,
+    "missing_depths": 0,
+    "ocean_cell_km2": 123.63331689701047
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 45.396444397978485,
+    "max": 45.396444397978485,
+    "mean": 45.396444397978485,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 45.396444397978485,
+    "iqr": 0.0,
+    "q1": 45.396444397978485,
+    "q3": 45.396444397978485,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 45.396444397978485,
+    "hd15iqr": 45.396444397978485,
+    "ops": 0.022028156902185278,
+    "total": 45.396444397978485,
+    "data": [
+     45.396444397978485
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc[pacific_2p5deg]",
+   "fullname": "integration/test_workflow.py::test_bc[pacific_2p5deg]",
+   "params": {
+    "row": "pacific_2p5deg"
+   },
+   "param": "pacific_2p5deg",
+   "extra_info": {
+    "row": "pacific_2p5deg",
+    "source_res_deg": 0.25,
+    "n_src": 684,
+    "n_dst": 100,
+    "n_cells": 625,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 581.0078125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 11.4844317920506,
+    "max": 11.4844317920506,
+    "mean": 11.4844317920506,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 11.4844317920506,
+    "iqr": 0.0,
+    "q1": 11.4844317920506,
+    "q3": 11.4844317920506,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 11.4844317920506,
+    "hd15iqr": 11.4844317920506,
+    "ops": 0.08707439933529748,
+    "total": 11.4844317920506,
+    "data": [
+     11.4844317920506
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[pacific_40deg]",
+   "fullname": "integration/test_workflow.py::test_create[pacific_40deg]",
+   "params": {
+    "row": "pacific_40deg"
+   },
+   "param": "pacific_40deg",
+   "extra_info": {
+    "row": "pacific_40deg",
+    "area_deg2": 1600.0,
+    "bathymetry": "GEBCO_2024.nc",
+    "peak_mb": 66630.583984375,
+    "grid_s": 0.626900977,
+    "topo_s": 1337.913723889,
+    "vgrid_s": 0.000989731,
+    "case_s": 23.459943011,
+    "configure_s": 18.669033255000002,
+    "nx": 400,
+    "ny": 400,
+    "n_cells": 160000,
+    "ocean_cells": 159847,
+    "missing_depths": 0,
+    "ocean_cell_km2": 121.15060707165098
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 1385.3793408239726,
+    "max": 1385.3793408239726,
+    "mean": 1385.3793408239726,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 1385.3793408239726,
+    "iqr": 0.0,
+    "q1": 1385.3793408239726,
+    "q3": 1385.3793408239726,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 1385.3793408239726,
+    "hd15iqr": 1385.3793408239726,
+    "ops": 0.0007218239586316025,
+    "total": 1385.3793408239726,
+    "data": [
+     1385.3793408239726
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc[pacific_40deg]",
+   "fullname": "integration/test_workflow.py::test_bc[pacific_40deg]",
+   "params": {
+    "row": "pacific_40deg"
+   },
+   "param": "pacific_40deg",
+   "extra_info": {
+    "row": "pacific_40deg",
+    "source_res_deg": 0.25,
+    "n_src": 6084,
+    "n_dst": 1600,
+    "n_cells": 160000,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 1013.6142578125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 17.901511111995205,
+    "max": 17.901511111995205,
+    "mean": 17.901511111995205,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 17.901511111995205,
+    "iqr": 0.0,
+    "q1": 17.901511111995205,
+    "q3": 17.901511111995205,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 17.901511111995205,
+    "hd15iqr": 17.901511111995205,
+    "ops": 0.05586120600343808,
+    "total": 17.901511111995205,
+    "data": [
+     17.901511111995205
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_create[pacific_80deg]",
+   "fullname": "integration/test_workflow.py::test_create[pacific_80deg]",
+   "params": {
+    "row": "pacific_80deg"
+   },
+   "param": "pacific_80deg",
+   "extra_info": {
+    "row": "pacific_80deg",
+    "area_deg2": 6400.0,
+    "bathymetry": "GEBCO_2024_coarse_x8.nc",
+    "peak_mb": 5430.6884765625,
+    "grid_s": 2.654110692,
+    "topo_s": 76.673536078,
+    "vgrid_s": 0.001172441,
+    "case_s": 35.660898126,
+    "configure_s": 8.456445973000001,
+    "nx": 800,
+    "ny": 800,
+    "n_cells": 640000,
+    "ocean_cells": 636994,
+    "missing_depths": 0,
+    "ocean_cell_km2": 113.89493214264205
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 124.07276214007288,
+    "max": 124.07276214007288,
+    "mean": 124.07276214007288,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 124.07276214007288,
+    "iqr": 0.0,
+    "q1": 124.07276214007288,
+    "q3": 124.07276214007288,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 124.07276214007288,
+    "hd15iqr": 124.07276214007288,
+    "ops": 0.008059786715081289,
+    "total": 124.07276214007288,
+    "data": [
+     124.07276214007288
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc[pacific_80deg]",
+   "fullname": "integration/test_workflow.py::test_bc[pacific_80deg]",
+   "params": {
+    "row": "pacific_80deg"
+   },
+   "param": "pacific_80deg",
+   "extra_info": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "n_src": 11502,
+    "n_dst": 3200,
+    "n_cells": 640000,
+    "days": 30,
+    "slices": 1,
+    "workers": 1,
+    "peak_mb": 1866.7685546875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 34.58229188993573,
+    "max": 34.58229188993573,
+    "mean": 34.58229188993573,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 34.58229188993573,
+    "iqr": 0.0,
+    "q1": 34.58229188993573,
+    "q3": 34.58229188993573,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 34.58229188993573,
+    "hd15iqr": 34.58229188993573,
+    "ops": 0.02891653344384106,
+    "total": 34.58229188993573,
+    "data": [
+     34.58229188993573
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_80deg-0.25-360-1]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_80deg-0.25-360-1]",
+   "params": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 1
+   },
+   "param": "pacific_80deg-0.25-360-1",
+   "extra_info": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "n_src": 11502,
+    "n_dst": 3200,
+    "n_cells": 640000,
+    "days": 360,
+    "slices": 12,
+    "workers": 1,
+    "peak_mb": 2475.3876953125
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 260.815905972966,
+    "max": 260.815905972966,
+    "mean": 260.815905972966,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 260.815905972966,
+    "iqr": 0.0,
+    "q1": 260.815905972966,
+    "q3": 260.815905972966,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 260.815905972966,
+    "hd15iqr": 260.815905972966,
+    "ops": 0.0038341219883408937,
+    "total": 260.815905972966,
+    "data": [
+     260.815905972966
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_80deg-0.25-360-2]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_80deg-0.25-360-2]",
+   "params": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 2
+   },
+   "param": "pacific_80deg-0.25-360-2",
+   "extra_info": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "n_src": 11502,
+    "n_dst": 3200,
+    "n_cells": 640000,
+    "days": 360,
+    "slices": 12,
+    "workers": 2,
+    "peak_mb": 3051.677734375
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 173.39240100397728,
+    "max": 173.39240100397728,
+    "mean": 173.39240100397728,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 173.39240100397728,
+    "iqr": 0.0,
+    "q1": 173.39240100397728,
+    "q3": 173.39240100397728,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 173.39240100397728,
+    "hd15iqr": 173.39240100397728,
+    "ops": 0.0057672654292217915,
+    "total": 173.39240100397728,
+    "data": [
+     173.39240100397728
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_80deg-0.25-360-4]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_80deg-0.25-360-4]",
+   "params": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 4
+   },
+   "param": "pacific_80deg-0.25-360-4",
+   "extra_info": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "n_src": 11502,
+    "n_dst": 3200,
+    "n_cells": 640000,
+    "days": 360,
+    "slices": 12,
+    "workers": 4,
+    "peak_mb": 4980.763671875
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 111.50124509097077,
+    "max": 111.50124509097077,
+    "mean": 111.50124509097077,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 111.50124509097077,
+    "iqr": 0.0,
+    "q1": 111.50124509097077,
+    "q3": 111.50124509097077,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 111.50124509097077,
+    "hd15iqr": 111.50124509097077,
+    "ops": 0.008968509716498034,
+    "total": 111.50124509097077,
+    "data": [
+     111.50124509097077
+    ],
+    "iterations": 1
+   }
+  },
+  {
+   "group": null,
+   "name": "test_bc_sweep[pacific_80deg-0.25-360-12]",
+   "fullname": "integration/test_workflow.py::test_bc_sweep[pacific_80deg-0.25-360-12]",
+   "params": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "days": 360,
+    "workers": 12
+   },
+   "param": "pacific_80deg-0.25-360-12",
+   "extra_info": {
+    "row": "pacific_80deg",
+    "source_res_deg": 0.25,
+    "n_src": 11502,
+    "n_dst": 3200,
+    "n_cells": 640000,
+    "days": 360,
+    "slices": 12,
+    "workers": 12,
+    "peak_mb": 8908.8837890625
+   },
+   "options": {
+    "disable_gc": false,
+    "timer": "perf_counter",
+    "min_rounds": 5,
+    "max_time": 1.0,
+    "min_time": 5e-06,
+    "precision": null,
+    "confidence": null,
+    "warmup": false
+   },
+   "stats": {
+    "min": 105.352334626019,
+    "max": 105.352334626019,
+    "mean": 105.352334626019,
+    "stddev": 0,
+    "rounds": 1,
+    "median": 105.352334626019,
+    "iqr": 0.0,
+    "q1": 105.352334626019,
+    "q3": 105.352334626019,
+    "iqr_outliers": 0,
+    "stddev_outliers": 0,
+    "outliers": "0;0",
+    "ld15iqr": 105.352334626019,
+    "hd15iqr": 105.352334626019,
+    "ops": 0.009491958612495984,
+    "total": 105.352334626019,
+    "data": [
+     105.352334626019
+    ],
+    "iterations": 1
+   }
+  }
+ ],
+ "datetime": "2026-11-13T10:39:41.246075+00:00",
+ "version": "5.3.1"
+}
