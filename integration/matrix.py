@@ -24,15 +24,19 @@ assert len(GRIDS) == sum(
 CASE = yaml.safe_load((ROOT / "case.yaml").read_text())
 FORCINGS = {"bc": "Open boundaries", "runoff": "Runoff mapping"}  # what a row can run
 
-for _name, _row in GRIDS.items():
+# A testing row's `crocodash create` processes every forcing, and its CESM runs
+# use that case; a performance row's case is only configured, then each forcing
+# it lists is timed on its own.
+for _name, _row in SUITES["testing"].items():
+    assert (
+        "forcings" not in _row
+    ), f"matrix.yaml: {_name}: forcings are for performance rows"
+for _name, _row in SUITES["performance"].items():
     _unknown = set(_row.get("forcings", [])) - set(FORCINGS)
     assert not _unknown, f"matrix.yaml: {_name} lists unknown forcings {_unknown}"
-    # The CESM runs build every forcing (every compset needs open boundaries, and
-    # GLOFAS runoff needs its map), so their rows run each one on its own too.
-    _missing = set(FORCINGS) - set(_row.get("forcings", []))
-    assert not (
-        _row.get("cesm_runs") and _missing
-    ), f"matrix.yaml: {_name} has cesm_runs, so it must also list {sorted(_missing)}"
+    assert not _row.get(
+        "cesm_runs"
+    ), f"matrix.yaml: {_name}: cesm_runs is for testing rows"
 
 
 def rows(what=None, suite=None):

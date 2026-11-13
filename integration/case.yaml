@@ -1,8 +1,9 @@
 # The CrocoDash case every check builds: a CrocoDash case config (what
 # `crocodash create --config` reads) without its grid, which comes from each
 # row of matrix.yaml. A row can change any part of it (its `case:` key).
-# test_workflow.py fills in each case's compset and paths, makes it with
-# `crocodash create`, and processes its forcings with `crocodash process`.
+# test_workflow.py fills in each case's compset and paths and makes it with
+# `crocodash create`: whole on a testing row; on a performance row configured
+# only, then each forcing processed and timed with `crocodash process`.
 #
 # Ocean, ice and wave forcing are synthetic (no downloads); bathymetry, runoff,
 # river nutrients and the MARBL IC are real files on GLADE.

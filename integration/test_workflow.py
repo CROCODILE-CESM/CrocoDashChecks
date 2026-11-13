@@ -3,17 +3,19 @@ timed: an integration test and a benchmark in one. workflow.pbs runs one row
 per Derecho job: the testing rows every week, the performance rows every month.
 
 For each row of matrix.yaml:
-  1. test_create makes the row's case with `crocodash create --configure-only`,
-     in BASE_COMPSET, from case.yaml plus the row: grid, bathymetry, vertical
-     grid, the CESM case, and its forcings configured. It runs under Python's
-     profiler, which splits its time into those parts.
-  2. test_bc and test_runoff run `crocodash process --bc` or `--runoff` on that
-     case, for each forcing the row turns on.
-  3. On rows with cesm_runs, test_cesm runs every regional SMS test in
-     MOM_interface's testlist_mom.xml as a case on the row: the row's own case
-     for BASE_COMPSET, and for every other compset a new case made from the row
-     case's grid, bathymetry and vertical grid files. Each processes all its
-     forcings, takes the test's options, builds and runs; the phases go to
+  1. test_create makes the row's case with `crocodash create`, in BASE_COMPSET,
+     from case.yaml plus the row: grid, bathymetry, vertical grid, the CESM
+     case, and its forcings. On a testing row that is the whole step, as a user
+     runs it: every forcing the compset turns on is processed too. On a
+     performance row it is `--configure-only`, so each forcing is timed on its
+     own. It runs under Python's profiler, which splits its time into those parts.
+  2. On performance rows, test_bc and test_runoff run `crocodash process --bc`
+     or `--runoff` on that case, for each forcing the row lists.
+  3. On rows with cesm_runs (testing rows), test_cesm runs every regional SMS
+     test in MOM_interface's testlist_mom.xml as a case on the row: the row's
+     own case for BASE_COMPSET, and for every other compset a new case made from
+     the row case's grid, bathymetry and vertical grid files, with all its
+     forcings. Each takes the test's options, builds and runs; the phases go to
      cesm_runs.json.
 A step on a row whose case failed to create is skipped.
 
@@ -374,6 +376,12 @@ def _config(row, compset, workdir, files=None):
     return path
 
 
+def _create_flags(row):
+    """A testing row's case is made whole, as a user makes it; a performance
+    row's is only configured, so test_bc and test_runoff can time each forcing."""
+    return [] if row in matrix.SUITES["testing"] else ["--configure-only"]
+
+
 def _create(config, workdir, *flags, profile=None):
     os.chdir(workdir)  # anything create leaves behind stays out of the repo
     CASES_ROOT.joinpath("inputdir").mkdir(parents=True, exist_ok=True)
@@ -398,7 +406,7 @@ def _case(row, tmp_path_factory):
         workdir = tmp_path_factory.mktemp(row)
         config = _config(row, BASE_COMPSET, workdir)
         try:
-            _in_child(_create, config, workdir, "--configure-only")
+            _in_child(_create, config, workdir, *_create_flags(row))
             _CASES[row] = _paths(row, BASE_COMPSET)[0]
         except RuntimeError as error:
             _CASES[row] = error
@@ -435,7 +443,7 @@ def test_create(benchmark, row, tmp_path_factory):
     profile = workdir / "profile.json"
     try:
         create = functools.partial(_create, profile=profile)
-        peak_mb = _timed(benchmark, create, config, workdir, "--configure-only")
+        peak_mb = _timed(benchmark, create, config, workdir, *_create_flags(row))
     except RuntimeError as error:
         _CASES[row] = error
         raise
@@ -682,9 +690,8 @@ def test_cesm(row, test, compset, opts, options, tmp_path_factory, tmp_path):
         phases.append(["CREATE_NEWCASE", "FAIL"])
         raise
     try:
-        if compset == BASE_COMPSET:
-            _in_child(_crocodash, "process", "--caseroot", base, "--all")
-        else:  # a new case on the row case's grid, bathymetry and vertical grid
+        if compset != BASE_COMPSET:  # BASE_COMPSET's is the row's own, whole case
+            # A new case on the row case's grid, bathymetry and vertical grid.
             config = _config(row, compset, tmp_path, files=_state(base))
             _in_child(_create, config, tmp_path)
         phase("CREATE_NEWCASE", True)

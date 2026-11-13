@@ -1,17 +1,19 @@
 # The matrix: one row per grid, and what runs on it, in two parts.
 #
-#   testing:      places CrocoDash must work (a coast, both seams, both poles),
-#                 every step on each, CESM runs included. Every week.
-#   performance:  sizes, for the Performance page's fits, and the sweeps
-#                 test_workflow.py runs on a few of them. On the first Monday of
-#                 each month.
+#   testing:      places CrocoDash must work (a coast, both seams, both poles).
+#                 Each row's case is made whole by `crocodash create`, as a user
+#                 makes it, every forcing included; with `cesm_runs: true`, every
+#                 regional test compset in MOM_interface's testlist is built and
+#                 run as a case on it. Every week.
+#   performance:  sizes, for the Performance page's fits. Each row's case is
+#                 made by `crocodash create --configure-only`, then each forcing
+#                 it lists is timed on its own with `crocodash process`, and
+#                 test_workflow.py's sweeps run on a few of them. On the first
+#                 Monday of each month.
 #
-# Every row gets a real case, made by `crocodash create` from case.yaml plus the
-# row; each forcing the row lists is processed on it with `crocodash process`; and
-# with `cesm_runs: true`, every regional test compset in MOM_interface's
-# testlist is built and run as a case on it (all in test_workflow.py, one job
-# per row). To turn something on for a grid, add it to the row; to turn it off,
-# delete it; to stop running a grid, delete its row.
+# Every row is a real case, made from case.yaml plus the row (all in
+# test_workflow.py, one job per row). To turn something on for a grid, add it to
+# the row; to turn it off, delete it; to stop running a grid, delete its row.
 #
 #   about:     what the grid is for
 #   grid:      a latitude/longitude box (xstart, lenx, ystart, leny and
@@ -19,9 +21,9 @@
 #              stereographic square centred on a pole (crs, width_km,
 #              resolution_km)
 #   case:      changes to case.yaml for this row only
-#   forcings:  the forcings to run on it, by their `crocodash process` flag:
-#              bc (open boundaries) or runoff (runoff mapping)
-#   cesm_runs: true to run MOM_interface's regional tests on it in CESM
+#   forcings:  performance rows: the forcings to time on it, by their
+#              `crocodash process` flag: bc (open boundaries) or runoff (runoff mapping)
+#   cesm_runs: testing rows: true to run MOM_interface's regional tests on it in CESM
 
 # Full-resolution GEBCO (15 arcseconds), for the bathymetry fit. A polar cap,
 # or a box past 40°, needs more memory than a node has.
@@ -30,27 +32,22 @@ full_gebco: &full_gebco
 
 testing:
   labrador:
-    about: A coast with sea ice and rivers, with every step on it, CESM runs included
+    about: A coast with sea ice and rivers, CESM runs included
     grid: {xstart: 299.0, lenx: 5.0, ystart: 54.0, leny: 4.0, resolution: 0.25}
-    forcings: [bc, runoff]
     cesm_runs: true
   equator_0e:
     about: All four hemispheres, across the prime meridian
     grid: {xstart: -5.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.25}
-    forcings: [bc]
   equator_180e:
     about: Across the antimeridian, at 180°E
     grid: {xstart: 175.0, lenx: 10.0, ystart: -5.0, leny: 10.0, resolution: 0.25}
-    forcings: [bc, runoff]
     cesm_runs: true
   north_pole:
     about: Polar stereographic, centred on the North Pole
     grid: {crs: "EPSG:3995", width_km: 7000, resolution_km: 100}
-    forcings: [bc]
   south_pole:
     about: Polar stereographic, centred on the South Pole, wide enough to reach the open ocean
     grid: {crs: "EPSG:3031", width_km: 7000, resolution_km: 100}
-    forcings: [bc]
 
 performance:
   # Sizes: squares of open ocean centred on 200°E, 0°N, at 0.1°, for the

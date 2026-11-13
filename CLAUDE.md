@@ -40,19 +40,21 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
 - **Use the real CLI, never MCP servers or the container:** this runs from cron, so every step is a
   `crocodash` command (called as `CrocoDash.cli.main` in a forked child) or a CIME script.
 - **The matrix is `integration/matrix.yaml`, one row per grid, in two suites** (`testing`,
-  `performance`; read by `matrix.py`). Testing stays small: places CrocoDash must work, with
-  every step. Performance holds only the sizes and sweeps a Performance fit needs. Every row is
+  `performance`; read by `matrix.py`). Testing stays small: places CrocoDash must work, each case
+  made whole. Performance holds only the sizes and sweeps a Performance fit needs. Every row is
   independent: its own job, its own case. Every case starts from `case.yaml`, and
-  `case.yaml` is a CrocoDash case config without its grid. A row gives its grid, any
-  changes to `case.yaml`, the forcings to run (`crocodash process` flags) and `cesm_runs`. Add
-  grids there, never inside a test; a new forcing needs a step in `test_workflow.py` and its flag
-  in `matrix.FORCINGS`. A `cesm_runs` row must list every forcing, since the CESM runs build
-  them all (GLOFAS runoff needs its map); `matrix.py` asserts it.
+  `case.yaml` is a CrocoDash case config without its grid. A row gives its grid and any
+  changes to `case.yaml`; a testing row may add `cesm_runs`, a performance row the forcings to
+  time (`crocodash process` flags). Add grids there, never inside a test; a new forcing to time
+  needs a step in `test_workflow.py` and its flag in `matrix.FORCINGS`. `matrix.py` asserts
+  each key is on the right suite's rows.
 - **The workflow is one file, `integration/test_workflow.py`, run one row at a time (`ROW`):**
-  `test_create` makes the row's case (`crocodash create --configure-only`, profiled into
-  grid/topo/vgrid/case), `test_bc` and
-  `test_runoff` run `crocodash process` on it, and `test_cesm` builds and runs every testlist
-  compset on `cesm_runs` rows (other compsets reuse the row case's grid files). Sweeps run
+  `test_create` makes the row's case (profiled into grid/topo/vgrid/case): on a testing row,
+  whole, as a user makes it (`crocodash create`, every forcing processed: testing asks only
+  whether a case comes out); on a performance row, `--configure-only`, and then `test_bc` and
+  `test_runoff` time `crocodash process` on it, one forcing each. `test_cesm` builds and runs
+  every testlist compset on `cesm_runs` rows (`CR_JRA_GLOFAS` is the row's own case; other
+  compsets reuse its grid files). Sweeps run
   `crocodash process --config` on an edited copy of a row case's forcing config. Every step runs in
   a forked child; its timing goes to the row's `workflow.json`, its pass/fail/skip with the reason
   to `workflow.xml` (pytest's junit), and the CESM phases to `cesm_runs.json`. `collect.pbs`
@@ -100,9 +102,11 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   bash's parsing** of the whole script; `bash -n` each script on its own.
 - **`qsub -v` strips quotes,** so a multi-word pytest `-k` goes in `PYTEST_K`, which the job passes
   as one argument.
-- **A step on a row whose case failed to create is skipped, not failed:** `equator_180e` fails
-  at `test_create` (mom6_forge #173, the GEBCO ±180° gap), so its forcings show as skipped and its
-  CESM tests fail at CREATE_NEWCASE.
+- **A step on a row whose case failed to create is skipped, not failed,** except its CESM tests,
+  which fail at CREATE_NEWCASE: `equator_180e` fails at `test_create` (mom6_forge #173, the
+  GEBCO ±180° gap).
+- **A testing row's `test_create` time includes all its forcings;** a performance row's doesn't
+  (`--configure-only`). Don't compare the two.
 - **The `CrocoDash` env imports its own installed CrocoDash** (the 2026 workshop checkout), not
   `main`, unless `crocodash_main.sh` was sourced first.
 - **MOM6 truncates `INPUTDIR` at 128 characters,** so keep the CESM runs' test paths short.

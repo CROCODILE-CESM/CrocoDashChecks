@@ -2,22 +2,22 @@
 
 | Check | When | What it does | Where | Results, on `main` |
 |---|---|---|---|---|
-| Testing | Every Monday, 02:00 MT | Each testing row of the matrix: `crocodash create`, then `crocodash process` for each forcing it turns on; on rows marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | A Derecho develop job per row (64 cores; 4 at a time) | `integration/testing.json`, `testing.xml`, `cesm_runs.json` |
-| Performance | First Monday of each month | The same on the performance rows, timed, plus the sweeps for the [fits](performance.ipynb) | A whole Derecho node per row | `integration/performance.json`, `performance.xml` |
+| Testing | Every Monday, 02:00 MT | Each testing row of the matrix: its case, made whole by `crocodash create` as a user makes it (every forcing processed); on rows marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | A Derecho develop job per row (64 cores; 4 at a time) | `integration/testing.json`, `testing.xml`, `cesm_runs.json` |
+| Performance | First Monday of each month | Each performance row's case, configured, then each forcing it lists processed and timed on its own, plus the sweeps for the [fits](performance.ipynb) | A whole Derecho node per row | `integration/performance.json`, `performance.xml` |
 | Data access | Every Monday | Calls every way CrocoDash fetches data | Casper | `data_access/health.json` |
 
 ## The matrix
 
 - [`integration/matrix.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/integration/matrix.yaml):
-  one row per grid, in two parts: `testing` (places CrocoDash must work) and `performance`
-  (sizes, for the fits). A row lists the forcings to process on it (`bc`, `runoff`) and
-  `cesm_runs: true`.
+  one row per grid, in two parts: `testing` (places CrocoDash must work; a row can add
+  `cesm_runs: true`) and `performance` (sizes, for the fits; a row lists the forcings to time
+  on it, `bc` and `runoff`).
 - [`integration/case.yaml`](https://github.com/CROCODILE-CESM/CrocoDashChecks/blob/main/integration/case.yaml):
   the CrocoDash case config every row starts from (coarse GEBCO, synthetic forcing); a row can
   change it under `case:`.
 - Every row's case is a real case, kept after the run; a CESM row's other compsets reuse its
   grid, bathymetry and vertical grid files.
-- To add a grid, add a row; to turn a step off, delete it from its row.
+- To add a grid, add a row; to turn CESM runs or a timed forcing off, delete it from its row.
 - ▲ or ▼ beside a step: it got more than 25% (and 5 s or 1 GB) slower or faster than the median
   of its suite's last 4 runs, which the site reads from git history. Nothing shows otherwise.
 

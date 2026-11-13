@@ -77,7 +77,7 @@ def results(suite, rev=None):
     {"date", "crocodash": {branch, commit} or None,
      "cases": {test id: its pytest-benchmark case}, for the steps that passed,
      "outcomes": {test id: (OK, FAIL or NOT_RUN for skipped, why)}}.
-    A test id is e.g. "test_bc[equator_0e]"."""
+    A test id is e.g. "test_bc[pacific_10deg]"."""
     timings = _text(INTEGRATION / f"{suite}.json", rev)
     junit = _text(INTEGRATION / f"{suite}.xml", rev)
     if timings is None or junit is None:
