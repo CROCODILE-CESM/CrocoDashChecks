@@ -37,13 +37,14 @@ OPTS=(-m ae -M "${MAILTO:-$USER@ucar.edu}" -o "$RUN/logs/")
 
 mkdir -p "$RUN/logs"
 cp -r "$(cd "$(dirname "$0")" && pwd)" "$RUN/CrocoDashChecks"
-cd "$RUN/CrocoDashChecks"
 
 # NCAR's default environment: git-fleximod and matrix.py need a newer Python
-# than the system's. /etc/profile isn't written for set -eu.
+# than the system's. /etc/profile isn't written for set -eu, and in a PBS job
+# (as from cron) it cds to the job's PBS_O_WORKDIR, so cd only after it.
 set +eu
 source /etc/profile >/dev/null 2>&1
 set -eu
+cd "$RUN/CrocoDashChecks"
 
 # CESM at the tip of crocodash.
 if [ -n "$(git -C "$CESMROOT" status --porcelain)" ]; then
@@ -72,8 +73,9 @@ for suite in "${SUITES[@]}"; do
   else
     WHERE=(-q main@desched1)
   fi
+  rows=$(python3 integration/matrix.py "$suite")  # on its own line, so set -e stops on an error
   jobs=()
-  for row in $(python3 integration/matrix.py "$suite"); do
+  for row in $rows; do
     jobs+=("$($QSUB "${WHERE[@]}" -N "$row" "${OPTS[@]}" \
       -v "ROW=$row,CESMROOT=$CESMROOT,CROCODASH_COMMIT=$COMMIT,RUN_ID=$RUN_ID,RESULTS=$RUN/results/$suite/$row" \
       integration/workflow.pbs)")
