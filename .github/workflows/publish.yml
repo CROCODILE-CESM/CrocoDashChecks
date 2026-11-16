@@ -5,6 +5,9 @@ on:
   # data_access/), and each push rebuilds the site.
   push:
     branches: [main]
+  # By hand (Actions tab, or `gh workflow run publish.yml`), e.g. after GitHub
+  # fails a deploy: re-running a failed run finds two site artifacts and fails.
+  workflow_dispatch:
   workflow_dispatch:
 
 permissions:
