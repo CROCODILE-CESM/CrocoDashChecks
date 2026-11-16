@@ -100,6 +100,12 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
 - **`/etc/profile` isn't `set -e` safe** (`weekly.sh` sources it for a Python new enough for
   `git-fleximod`; the cron host's is 3.6), and **an apostrophe inside `${VAR:?message}` breaks
   bash's parsing** of the whole script; `bash -n` each script on its own.
+- **In a PBS job, `/etc/profile` cds to `PBS_O_WORKDIR`** (NCAR's `localinit.sh`, the first time
+  it runs in the job). The cron job is submitted from `$HOME`, so `weekly.sh` cds into its run
+  directory only after sourcing it; the first cron run (2026-11-16) ran from `$HOME` and submitted
+  nothing. A login shell doesn't show this: test a `weekly.sh` change as the cron job does, from
+  `$HOME` on the cron host, with `qsub -v QSUB=echo` added to the crontab line (it only prints the
+  submissions).
 - **`qsub -v` strips quotes,** so a multi-word pytest `-k` goes in `PYTEST_K`, which the job passes
   as one argument.
 - **A step on a row whose case failed to create is skipped, not failed,** except its CESM tests,
