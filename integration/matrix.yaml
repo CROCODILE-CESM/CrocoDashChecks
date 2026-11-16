@@ -9,7 +9,7 @@
 #                 made by `crocodash create --configure-only`, then each forcing
 #                 it lists is timed on its own with `crocodash process`, and
 #                 test_workflow.py's sweeps run on a few of them. On the first
-#                 Monday of each month.
+#                 Tuesday of each month.
 #
 # Every row is a real case, made from case.yaml plus the row (all in
 # test_workflow.py, one job per row). To turn something on for a grid, add it to

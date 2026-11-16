@@ -7,14 +7,14 @@
 # changes; this brings it to the branch's tip first, before any job builds from
 # it. The one crontab line on cron.hpc.ucar.edu (site/how_it_works.md) starts a
 # small Casper job that clones this repo into a temporary directory and runs
-# this script from it every Monday; the cron host itself has no git.
+# this script from it every Tuesday; the cron host itself has no git.
 #
 # It submits, from this run's own directory:
 #   testing      every week: one Derecho develop job per testing row of
 #                integration/matrix.yaml (workflow.pbs), then collect.pbs
 #                to merge and publish their results once they have all ended
 #   performance  the same for the performance rows, each on a whole main node,
-#                on the first Monday of each month
+#                on the first Tuesday of each month
 #   data access  data_access/check.pbs on Casper
 # Every row's job tests the same CrocoDash main commit (its tip now).
 #

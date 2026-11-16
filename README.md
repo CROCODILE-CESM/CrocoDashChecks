@@ -2,8 +2,8 @@
 
 [![weekly CESM runs](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/cesm_runs.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#cesm) [![data access](https://img.shields.io/endpoint?url=https://crocodile-cesm.github.io/CrocoDashChecks/badges/data_access.json)](https://crocodile-cesm.github.io/CrocoDashChecks/#data-access)
 
-Checks CrocoDash `main` end to end on NCAR's systems: testing every Monday, performance on the
-first Monday of each month. **<https://crocodile-cesm.github.io/CrocoDashChecks/>**
+Checks CrocoDash `main` end to end on NCAR's systems: testing every Tuesday, performance on the
+first Tuesday of each month. **<https://crocodile-cesm.github.io/CrocoDashChecks/>**
 
 | Folder | What's in it |
 |---|---|

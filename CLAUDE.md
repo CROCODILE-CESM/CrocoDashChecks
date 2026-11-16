@@ -3,8 +3,8 @@
 CrocoDashChecks checks CrocoDash end to end, in two folders: `integration/` (the matrix of
 grids, and `test_workflow.py`, which takes a row through the CrocoDash CLI on a real case and
 builds and runs CESM on the rows marked for it, one Derecho job per row) and `data_access/` (every
-data access method, on Casper). The matrix has two suites: `testing` rows run every Monday,
-`performance` rows (sizes and sweeps, for the fits) on the first Monday of each month. All of it
+data access method, on Casper). The matrix has two suites: `testing` rows run every Tuesday,
+`performance` rows (sizes and sweeps, for the fits) on the first Tuesday of each month. All of it
 starts from `weekly.sh <CESMROOT>`, run by one crontab line. Shared job
 scripts (`weekly.sh`, `crocodash_main.sh`, `push_results.sh`) are at the root. `site/` is a Sphinx
 site on GitHub Pages; its Status and Performance pages are notebooks that read that JSON. How it all
@@ -74,7 +74,7 @@ Every job records the CrocoDash branch and commit it tested (`crocodash` in `ces
   `#mom6-scaling` (the gallery's `ocean_only` notebook) on the Status page.
 - **Nothing is kept between weekly runs:** the crontab line clones this repo fresh and runs
   `weekly.sh`, which copies the clone into that run's directory and submits every job from there,
-  so whatever is on `main` on Monday runs. Keep the crontab line itself minimal (clone, then
+  so whatever is on `main` on Tuesday runs. Keep the crontab line itself minimal (clone, then
   `weekly.sh`); everything else belongs in `weekly.sh`.
 - Use black on Python and the notebooks (`black[jupyter]`) before committing. Build the site with
   `sphinx-build --fail-on-warning site site/_build/html`, as CI does.

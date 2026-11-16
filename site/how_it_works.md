@@ -2,9 +2,9 @@
 
 | Check | When | What it does | Where | Results, on `main` |
 |---|---|---|---|---|
-| Testing | Every Monday, 02:00 MT | Each testing row of the matrix: its case, made whole by `crocodash create` as a user makes it (every forcing processed); on rows marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | A Derecho develop job per row (64 cores; 4 at a time) | `integration/testing.json`, `testing.xml`, `cesm_runs.json` |
-| Performance | First Monday of each month | Each performance row's case, configured, then each forcing it lists processed and timed on its own, plus the sweeps for the [fits](performance.ipynb) | A whole Derecho node per row | `integration/performance.json`, `performance.xml` |
-| Data access | Every Monday | Calls every way CrocoDash fetches data | Casper | `data_access/health.json` |
+| Testing | Every Tuesday, 22:00 MT | Each testing row of the matrix: its case, made whole by `crocodash create` as a user makes it (every forcing processed); on rows marked `cesm_runs`, every regional SMS compset in MOM_interface's `testlist_mom.xml`, built and run | A Derecho develop job per row (64 cores; 4 at a time) | `integration/testing.json`, `testing.xml`, `cesm_runs.json` |
+| Performance | First Tuesday of each month | Each performance row's case, configured, then each forcing it lists processed and timed on its own, plus the sweeps for the [fits](performance.ipynb) | A whole Derecho node per row | `integration/performance.json`, `performance.xml` |
+| Data access | Every Tuesday | Calls every way CrocoDash fetches data | Casper | `data_access/health.json` |
 
 ## The matrix
 
@@ -27,7 +27,7 @@
   clones this repo and runs `weekly.sh`, with the CESM checkout to use as its argument:
 
   ```
-  0 2 * * 1 /opt/pbs/bin/qsub -q casper@casper-pbs -A NCGD0011 -l select=1:ncpus=1:mem=4GB -l walltime=00:30:00 -j oe -o /glade/derecho/scratch/$USER/crocodashchecks/ -- /bin/bash -c 'D=$(mktemp -d) && git clone -q https://github.com/CROCODILE-CESM/CrocoDashChecks $D && bash $D/weekly.sh /glade/u/home/$USER/work/installs/CESM_crocodashchecks' >> /glade/derecho/scratch/$USER/crocodashchecks/cron.log 2>&1
+  0 22 * * 2 /opt/pbs/bin/qsub -q casper@casper-pbs -A NCGD0011 -l select=1:ncpus=1:mem=4GB -l walltime=00:30:00 -j oe -o /glade/derecho/scratch/$USER/crocodashchecks/ -- /bin/bash -c 'D=$(mktemp -d) && git clone -q https://github.com/CROCODILE-CESM/CrocoDashChecks $D && bash $D/weekly.sh /glade/u/home/$USER/work/installs/CESM_crocodashchecks' >> /glade/derecho/scratch/$USER/crocodashchecks/cron.log 2>&1
   ```
 - `weekly.sh` brings the CESM checkout to the tip of CESM's `crocodash` branch (it must have no
   local changes), then submits one job per row, all testing the same CrocoDash `main` commit.
@@ -46,7 +46,7 @@ From a clone of this repo:
 qsub -q main@desched1 -v ROW=labrador,CESMROOT=/path/to/CESM integration/workflow.pbs
 # data access
 qsub -q casper@casper-pbs data_access/check.pbs
-# everything, as on a Monday, with the performance rows too
+# everything, as on a Tuesday, with the performance rows too
 PERFORMANCE=1 bash weekly.sh /path/to/CESM
 ```
 
