@@ -35,7 +35,8 @@ VALIDATE_WORKERS = 8  # access methods checked at once
 
 # Inputs for the methods that read files the user points them at, which have
 # nothing to read otherwise. Each method gets only the arguments it takes, so
-# one table works across CrocoDash branches (freq is newer than main).
+# one table works across CrocoDash branches. data_freq is the cadence of the
+# files given (the CESM output readers can't know it); freq would thin it.
 HAWAII = (
     "/glade/campaign/cgd/oce/projects/CROCODILE/workshops/2026/dart/hawaii_pmo/ocn/hist"
 )
@@ -51,13 +52,13 @@ METHOD_ARGS = {
         **IN_HAWAII,
         "dataset_path": HAWAII,
         "file_glob": "hawaii_pmo.mom6.h.[sz]*.2023-06.nc",  # z-space + surface
-        "freq": "D",
+        "data_freq": "D",
     },
     # The same run split one variable per file; see the README there.
     ("cesm_mom_output", "get_mom6_single_variable_data"): {
         **IN_HAWAII,
         "dataset_path": "/glade/work/manishrv/croc_ci/inputs/mom6_tseries",
-        "freq": "MS",
+        "data_freq": "MS",
     },
     # The gallery's CESM3 restart, on tx2_3v3, and that grid from inputdata.
     ("cice_restart", "get_cice_restart_subset"): {
