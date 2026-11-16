@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-12T22:28:07+00:00",
+  "date": "2026-11-16T17:18:13+00:00",
   "crocodash": {
     "branch": "main",
     "commit": "2ad0c272"
@@ -9,126 +9,125 @@
       "product": "cesm-ww3-jra",
       "method": "get_cesm_ww3_jra_spectra",
       "ok": true,
-      "elapsed_s": 12.63
+      "elapsed_s": 6.26
     },
     {
       "product": "cesm_mom_output",
       "method": "get_mom6_output_data",
       "ok": false,
-      "elapsed_s": 9.33,
+      "elapsed_s": 2.21,
       "detail": "cesm_mom_output.get_mom6_output_data reads whatever cadence the data you point it at has, so it must be given: pass data_freq, e.g. 'MS' for monthly or 'D' for daily output."
     },
     {
       "product": "cesm_mom_output",
       "method": "get_mom6_single_variable_data",
       "ok": false,
-      "elapsed_s": 9.36,
+      "elapsed_s": 2.16,
       "detail": "cesm_mom_output.get_mom6_single_variable_data reads whatever cadence the data you point it at has, so it must be given: pass data_freq, e.g. 'MS' for monthly or 'D' for daily output."
     },
     {
       "product": "cesm_pop_output",
       "method": "get_cesm_single_variable_data",
       "ok": true,
-      "elapsed_s": 69.38
+      "elapsed_s": 50.29
     },
     {
       "product": "cice_restart",
       "method": "get_cice_restart_subset",
       "ok": true,
-      "elapsed_s": 12.52
+      "elapsed_s": 6.3
     },
     {
       "product": "era5_wave_spectra",
       "method": "get_era5_2d_spectra",
       "ok": true,
-      "elapsed_s": 37.38
+      "elapsed_s": 893.81
     },
     {
       "product": "gebco",
       "method": "get_gebco_data_script",
       "ok": true,
-      "elapsed_s": 9.34
+      "elapsed_s": 2.25
     },
     {
       "product": "gebco",
       "method": "get_gebco_data_with_python",
       "ok": false,
-      "elapsed_s": 320.53,
+      "elapsed_s": 516.81,
       "detail": "File is not a zip file"
     },
     {
       "product": "glofas",
       "method": "get_global_data_with_python",
       "ok": false,
-      "elapsed_s": 3.68,
+      "elapsed_s": 5.87,
       "detail": "400 Client Error: Bad Request for url: https://ewds.climate.copernicus.eu/api/retrieve/v1/processes/cems-glofas-historical/execution"
     },
     {
       "product": "glofas",
       "method": "get_processed_global_glofas_script_for_cli",
       "ok": true,
-      "elapsed_s": 1.98
+      "elapsed_s": 2.12
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_from_cds_api",
       "ok": true,
-      "elapsed_s": 77.4
+      "elapsed_s": 82.65
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_from_rda",
       "ok": true,
-      "elapsed_s": 17.71
+      "elapsed_s": 13.51
     },
     {
       "product": "glorys",
       "method": "get_glorys_data_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.06
+      "elapsed_s": 1.98
     },
     {
       "product": "reference_ice",
       "method": "get_reference_ice_data",
       "ok": true,
-      "elapsed_s": 2.36
+      "elapsed_s": 2.18
     },
     {
       "product": "reference_ocean",
       "method": "get_reference_ocean_data",
       "ok": true,
-      "elapsed_s": 2.36
+      "elapsed_s": 2.46
     },
     {
       "product": "reference_waves",
       "method": "get_reference_wave_spectra",
       "ok": true,
-      "elapsed_s": 2.29
+      "elapsed_s": 2.25
     },
     {
       "product": "seawifs",
       "method": "get_global_seawifs_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.04
+      "elapsed_s": 2.0
     },
     {
       "product": "seawifs",
       "method": "get_processed_global_seawifs_script_for_cli",
       "ok": true,
-      "elapsed_s": 2.08
+      "elapsed_s": 2.1
     },
     {
       "product": "srtm",
       "method": "get_srtm_data_script",
       "ok": true,
-      "elapsed_s": 2.04
+      "elapsed_s": 2.11
     },
     {
       "product": "srtm",
       "method": "get_srtm_data_with_python",
-      "ok": false,
-      "elapsed_s": 901.01,
-      "detail": "timed out after 900 s"
+      "ok": true,
+      "elapsed_s": 506.72
     }
   ]
 }
