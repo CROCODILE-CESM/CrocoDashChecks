@@ -1,12 +1,12 @@
 {
- "date": "2026-11-18T06:27:21+00:00",
+ "date": "2026-11-25T07:28:37+00:00",
  "cesm": {
   "branch": "crocodash",
   "commit": "8d654c3"
  },
  "crocodash": {
   "branch": "main",
-  "commit": "82c84dae"
+  "commit": "ee4a010b"
  },
  "tests": [
   {
@@ -150,10 +150,10 @@
     ],
     [
      "RUN",
-     "FAIL"
+     "PASS"
     ]
    ],
-   "passed": false
+   "passed": true
   },
   {
    "name": "SMS_D_Ld2.USER_RES.GR_JRA_GLOFAS.derecho_intel.crocodash-labrador",
@@ -264,10 +264,10 @@
     ],
     [
      "RUN",
-     "FAIL"
+     "PASS"
     ]
    ],
-   "passed": false
+   "passed": true
   }
  ]
 }

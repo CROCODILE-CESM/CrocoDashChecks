@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="219.635" timestamp="2026-11-17T22:04:03.637059-07:00" hostname="dec1007"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="82c84dae" /></properties><testcase classname="integration.test_workflow" name="test_create[equator_0e]" time="213.295" /></testsuite><testsuite name="pytest" errors="0" failures="1" skipped="5" tests="6" time="38.202" timestamp="2026-11-17T22:02:22.679271-07:00" hostname="dec1515"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="82c84dae" /></properties><testcase classname="integration.test_workflow" name="test_create[equator_180e]" time="25.994"><failure message="RuntimeError: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">benchmark = &lt;pytest_benchmark.fixture.BenchmarkFixture object at 0x14b8409c9b90&gt;
+<testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="214.067" timestamp="2026-11-24T22:01:32.348863-07:00" hostname="dec1034"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="ee4a010b" /></properties><testcase classname="integration.test_workflow" name="test_create[equator_0e]" time="203.324" /></testsuite><testsuite name="pytest" errors="0" failures="1" skipped="5" tests="6" time="35.968" timestamp="2026-11-24T22:01:32.348955-07:00" hostname="dec1061"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="ee4a010b" /></properties><testcase classname="integration.test_workflow" name="test_create[equator_180e]" time="24.696"><failure message="RuntimeError: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">benchmark = &lt;pytest_benchmark.fixture.BenchmarkFixture object at 0x146d7ebf2890&gt;
 row = 'equator_180e'
-tmp_path_factory = TempPathFactory(_given_basetemp=PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223758.desched1/p...recho/scratch/manishrv/crocodashchecks_workflow.8223758.desched1/pytest'), _retention_count=3, _retention_policy='all')
+tmp_path_factory = TempPathFactory(_given_basetemp=PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8303050.desched1/p...recho/scratch/manishrv/crocodashchecks_workflow.8303050.desched1/pytest'), _retention_count=3, _retention_policy='all')
 
     @pytest.mark.parametrize("row", _rows())
     def test_create(benchmark, row, tmp_path_factory):
@@ -33,9 +33,9 @@ integration/test_workflow.py:269: in measure_peak_rss
              ^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-fn = functools.partial(&lt;function _create at 0x14b865ff18a0&gt;, profile=PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223758.desched1/pytest/equator_180e0/profile.json'))
-args = (PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223758.desched1/pytest/equator_180e0/crocodash_config.yaml'), PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223758.desched1/pytest/equator_180e0'))
-read_end = 13, write_end = 14, pid = 953591
+fn = functools.partial(&lt;function _create at 0x146d7ed398a0&gt;, profile=PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8303050.desched1/pytest/equator_180e0/profile.json'))
+args = (PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8303050.desched1/pytest/equator_180e0/crocodash_config.yaml'), PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8303050.desched1/pytest/equator_180e0'))
+read_end = 13, write_end = 14, pid = 1354893
 
     def _in_child(fn, *args):
         """Run fn(*args) in a forked child; if it fails, raise its last error line
@@ -67,140 +67,4 @@ read_end = 13, write_end = 14, pid = 953591
             )
 E           RuntimeError: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.
 
-integration/test_workflow.py:302: RuntimeError</failure></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-CR_JRA_GLOFAS]" time="0.010"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-17_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-CR1850MARBL_JRA_GLOFAS]" time="0.007"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-17_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-GR_JRA_GLOFAS]" time="0.006"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-17_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-CWR_JRA_GLOFAS]" time="0.112"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-17_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-GWR1850MARBL_JRA_GLOFAS]" time="0.065"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-17_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase></testsuite><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="6" time="5003.616" timestamp="2026-11-17T22:03:58.763242-07:00" hostname="dec0956"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="82c84dae" /></properties><testcase classname="integration.test_workflow" name="test_create[labrador]" time="111.766" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-CR_JRA_GLOFAS]" time="874.374" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-CR1850MARBL_JRA_GLOFAS]" time="1111.917"><failure message="Failed: RUN failed: see /glade/derecho/scratch/manishrv/croc_tests/labrador.CR1850MARBL_JRA_GLOFAS.20261117_2200/CaseStatus">row = 'labrador', test = 'SMS_D_Ld2', compset = 'CR1850MARBL_JRA_GLOFAS'
-opts = ['D', 'Ld2'], options = {'wallclock': '02:00:00'}
-tmp_path_factory = TempPathFactory(_given_basetemp=PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223756.desched1/p...recho/scratch/manishrv/crocodashchecks_workflow.8223756.desched1/pytest'), _retention_count=3, _retention_policy='all')
-tmp_path = PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223756.desched1/pytest/test_cesm_labrador_CR1850MARBL0')
-
-    @pytest.mark.parametrize("row, test, compset, opts, options", _cesm_tests())
-    def test_cesm(row, test, compset, opts, options, tmp_path_factory, tmp_path):
-        phases = []
-        _CESM.append(
-            {
-                "name": f"{test}.USER_RES.{compset}.{MACHINE}_{COMPILER}.crocodash-{row}",
-                "test": test,
-                "compset": compset,
-                "grid": row,
-                "longname": _longname(compset),
-                "phases": phases,
-                "passed": False,
-            }
-        )
-        caseroot = _paths(row, compset)[0]
-        log = CASES_ROOT / f"{caseroot.name}.log"
-    
-        def phase(name, ok, why=""):
-            phases.append([name, "PASS" if ok else "FAIL"])
-            if not ok:
-                pytest.fail(f"{name} failed: {why or f'see {log}'}")
-    
-        try:
-            base = _case(row, tmp_path_factory)
-        except pytest.skip.Exception:
-            phases.append(["CREATE_NEWCASE", "FAIL"])
-            raise
-        try:
-            if compset != BASE_COMPSET:  # BASE_COMPSET's is the row's own, whole case
-                # A new case on the row case's grid, bathymetry and vertical grid.
-                config = _config(row, compset, tmp_path, files=_state(base))
-                _in_child(_create, config, tmp_path)
-            phase("CREATE_NEWCASE", True)
-        except RuntimeError as error:
-            phase("CREATE_NEWCASE", False, str(error))
-        try:
-            changes = _xmlchanges(opts, options)
-        except ValueError as error:
-            phase("XML", False, str(error))
-        phase("XML", all(_run(["./xmlchange", c], log, caseroot) for c in changes))
-        # crocodash create already ran case.setup: redo it for the new layout.
-        phase("SETUP", _run(["./case.setup", "--reset"], log, caseroot))
-        built = _run(["./case.build"], log, caseroot)
-        phase("SHAREDLIB_BUILD", built)
-        phase("MODEL_BUILD", built)
-        phase("SUBMIT", _run(["./case.submit", "--no-batch"], log, caseroot))
-        # case.run logs "success" only after CIME checks the coupler log's last line.
-        status = caseroot / "CaseStatus"
-        ran = status.exists() and "case.run success" in status.read_text()
-&gt;       phase("RUN", ran, f"see {status}")
-
-integration/test_workflow.py:714: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-name = 'RUN', ok = False
-why = 'see /glade/derecho/scratch/manishrv/croc_tests/labrador.CR1850MARBL_JRA_GLOFAS.20261117_2200/CaseStatus'
-
-    def phase(name, ok, why=""):
-        phases.append([name, "PASS" if ok else "FAIL"])
-        if not ok:
-&gt;           pytest.fail(f"{name} failed: {why or f'see {log}'}")
-E           Failed: RUN failed: see /glade/derecho/scratch/manishrv/croc_tests/labrador.CR1850MARBL_JRA_GLOFAS.20261117_2200/CaseStatus
-
-integration/test_workflow.py:685: Failed</failure></testcase><testcase classname="integration.test_workflow" name="test_cesm[labrador-GR_JRA_GLOFAS]" time="951.718" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-CWR_JRA_GLOFAS]" time="1060.039" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-GWR1850MARBL_JRA_GLOFAS]" time="881.995"><failure message="Failed: RUN failed: see /glade/derecho/scratch/manishrv/croc_tests/labrador.GWR1850MARBL_JRA_GLOFAS.20261117_2200/CaseStatus">row = 'labrador', test = 'SMS_D_Ld2', compset = 'GWR1850MARBL_JRA_GLOFAS'
-opts = ['D', 'Ld2'], options = {'wallclock': '02:00:00'}
-tmp_path_factory = TempPathFactory(_given_basetemp=PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223756.desched1/p...recho/scratch/manishrv/crocodashchecks_workflow.8223756.desched1/pytest'), _retention_count=3, _retention_policy='all')
-tmp_path = PosixPath('/glade/derecho/scratch/manishrv/crocodashchecks_workflow.8223756.desched1/pytest/test_cesm_labrador_GWR1850MARB0')
-
-    @pytest.mark.parametrize("row, test, compset, opts, options", _cesm_tests())
-    def test_cesm(row, test, compset, opts, options, tmp_path_factory, tmp_path):
-        phases = []
-        _CESM.append(
-            {
-                "name": f"{test}.USER_RES.{compset}.{MACHINE}_{COMPILER}.crocodash-{row}",
-                "test": test,
-                "compset": compset,
-                "grid": row,
-                "longname": _longname(compset),
-                "phases": phases,
-                "passed": False,
-            }
-        )
-        caseroot = _paths(row, compset)[0]
-        log = CASES_ROOT / f"{caseroot.name}.log"
-    
-        def phase(name, ok, why=""):
-            phases.append([name, "PASS" if ok else "FAIL"])
-            if not ok:
-                pytest.fail(f"{name} failed: {why or f'see {log}'}")
-    
-        try:
-            base = _case(row, tmp_path_factory)
-        except pytest.skip.Exception:
-            phases.append(["CREATE_NEWCASE", "FAIL"])
-            raise
-        try:
-            if compset != BASE_COMPSET:  # BASE_COMPSET's is the row's own, whole case
-                # A new case on the row case's grid, bathymetry and vertical grid.
-                config = _config(row, compset, tmp_path, files=_state(base))
-                _in_child(_create, config, tmp_path)
-            phase("CREATE_NEWCASE", True)
-        except RuntimeError as error:
-            phase("CREATE_NEWCASE", False, str(error))
-        try:
-            changes = _xmlchanges(opts, options)
-        except ValueError as error:
-            phase("XML", False, str(error))
-        phase("XML", all(_run(["./xmlchange", c], log, caseroot) for c in changes))
-        # crocodash create already ran case.setup: redo it for the new layout.
-        phase("SETUP", _run(["./case.setup", "--reset"], log, caseroot))
-        built = _run(["./case.build"], log, caseroot)
-        phase("SHAREDLIB_BUILD", built)
-        phase("MODEL_BUILD", built)
-        phase("SUBMIT", _run(["./case.submit", "--no-batch"], log, caseroot))
-        # case.run logs "success" only after CIME checks the coupler log's last line.
-        status = caseroot / "CaseStatus"
-        ran = status.exists() and "case.run success" in status.read_text()
-&gt;       phase("RUN", ran, f"see {status}")
-
-integration/test_workflow.py:714: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-name = 'RUN', ok = False
-why = 'see /glade/derecho/scratch/manishrv/croc_tests/labrador.GWR1850MARBL_JRA_GLOFAS.20261117_2200/CaseStatus'
-
-    def phase(name, ok, why=""):
-        phases.append([name, "PASS" if ok else "FAIL"])
-        if not ok:
-&gt;           pytest.fail(f"{name} failed: {why or f'see {log}'}")
-E           Failed: RUN failed: see /glade/derecho/scratch/manishrv/croc_tests/labrador.GWR1850MARBL_JRA_GLOFAS.20261117_2200/CaseStatus
-
-integration/test_workflow.py:685: Failed</failure></testcase></testsuite><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="303.167" timestamp="2026-11-17T22:03:24.904385-07:00" hostname="dec1755"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="82c84dae" /></properties><testcase classname="integration.test_workflow" name="test_create[north_pole]" time="291.950" /></testsuite><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="300.434" timestamp="2026-11-17T22:04:10.309663-07:00" hostname="dec2456"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="82c84dae" /></properties><testcase classname="integration.test_workflow" name="test_create[south_pole]" time="294.604" /></testsuite></testsuites>
+integration/test_workflow.py:302: RuntimeError</failure></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-CR_JRA_GLOFAS]" time="0.007"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-24_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-CR1850MARBL_JRA_GLOFAS]" time="0.031"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-24_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-GR_JRA_GLOFAS]" time="0.007"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-24_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-CWR_JRA_GLOFAS]" time="0.120"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-24_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase><testcase classname="integration.test_workflow" name="test_cesm[equator_180e-GWR1850MARBL_JRA_GLOFAS]" time="0.065"><skipped type="pytest.skip" message="its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.">/glade/derecho/scratch/manishrv/crocodashchecks/2026-11-24_2200/CrocoDashChecks/integration/test_workflow.py:414: its case failed to create: ValueError: The longitude of the data doesn't seem to include the longitude of the grid.</skipped></testcase></testsuite><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="6" time="8826.220" timestamp="2026-11-24T22:01:32.348831-07:00" hostname="dec0190"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="ee4a010b" /></properties><testcase classname="integration.test_workflow" name="test_create[labrador]" time="115.318" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-CR_JRA_GLOFAS]" time="881.153" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-CR1850MARBL_JRA_GLOFAS]" time="3968.040" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-GR_JRA_GLOFAS]" time="955.271" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-CWR_JRA_GLOFAS]" time="1068.830" /><testcase classname="integration.test_workflow" name="test_cesm[labrador-GWR1850MARBL_JRA_GLOFAS]" time="1826.507" /></testsuite><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="298.533" timestamp="2026-11-24T22:02:09.972055-07:00" hostname="dec0990"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="ee4a010b" /></properties><testcase classname="integration.test_workflow" name="test_create[north_pole]" time="285.898" /></testsuite><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="241.726" timestamp="2026-11-24T22:02:52.399607-07:00" hostname="dec1061"><properties><property name="crocodash_branch" value="main" /><property name="crocodash_commit" value="ee4a010b" /></properties><testcase classname="integration.test_workflow" name="test_create[south_pole]" time="240.741" /></testsuite></testsuites>
