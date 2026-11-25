@@ -5,8 +5,7 @@ on:
   # data_access/), and each push rebuilds the site.
   push:
     branches: [main]
-  # By hand (Actions tab, or `gh workflow run publish.yml`), e.g. after GitHub
-  # fails a deploy: re-running a failed run finds two site artifacts and fails.
+  # By hand: Actions tab, or `gh workflow run publish.yml`.
   workflow_dispatch:
 
 permissions:
@@ -18,8 +17,12 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# Build and deploy are separate jobs so that, when GitHub fails a deploy (it
+# sometimes can't find the artifact just uploaded), "Re-run failed jobs" reruns
+# only the deploy. "Re-run all jobs" uploads a second site artifact to the same
+# run, and the deploy refuses two.
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       # ref: main, so a run dispatched from another branch still publishes
@@ -53,5 +56,9 @@ jobs:
         with:
           path: site/_build/html
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
